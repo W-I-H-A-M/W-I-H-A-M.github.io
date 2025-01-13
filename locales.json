@@ -59,7 +59,7 @@
     "newEvent": "Neues Ereignis",
     "newPlace": "Neuer Ort",
     "selectedObject": "Ausgewähltes Objekt",
-    "infoForSelected": "Informationen zum ausgewählten Objekt.",
+    "infoForSelected": "Informationen zum ausgewählten Objekt. Hover über etwas auf dem Grid und clicke das Bild an um Details zu sehen oder klicke auf das 🛈 Icon einer Karte.",
     "attributes": "Attribute:",
     "located_with": "Befindet sich bei: ",
     "inventory": "Inventar: ",
@@ -71,7 +71,9 @@
     "allNPCs": "Alle NPCs",
     "allObjects": "Alle Objekte",
     "placeEditor": "Ort Editor",
-    "startPlace": "Abenteuer hier starten"
+    "startPlace": "Abenteuer hier starten",
+    "explainAllNPC": "Ziehe die NPCs von hier auf das Grid um sie zur ausgewählten Zeit dort zu positionieren.",
+    "explainAllObjects": "Ziehe die Objekte von hier auf das Grid um sie dort zu positionieren."
   },
   "en": {
     "languageTitel": "English",
@@ -133,7 +135,7 @@
     "newEvent": "New Event",
     "newPlace": "New Place",
     "selectedObject": "Selected Object",
-    "infoForSelected": "Information for the selected object.",
+    "infoForSelected": "Information for the selected object. Hover over something on the Grid and click on there image to see details or click the 🛈 icon on any card.",
     "attributes": "Attributes:",
     "located_with": "Located at: ",
     "inventory": "Inventory: ",
@@ -145,6 +147,8 @@
     "allNPCs":"All NPC's",
     "allObjects":"All Object's",
     "placeEditor": "Place Editor",
-    "startPlace": "Start adventure here"
+    "startPlace": "Start adventure here",
+    "explainAllNPC": "Move NPC's onto the grid to position them here at the selected Time.",
+    "explainAllObjects": "Move Object's onto the grid to position them here."
   }
 }
