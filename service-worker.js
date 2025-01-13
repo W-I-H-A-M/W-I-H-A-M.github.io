@@ -56,19 +56,22 @@ self.addEventListener("activate", event => {
 // Fetch-Ereignis: Automatische Aktualisierung
 self.addEventListener("fetch", event => {
     event.respondWith(
-        fetch(event.request)
-            .then(networkResponse => {
-                // Netzwerkantwort im Cache speichern
-                caches.open(CACHE_NAME).then(cache => {
-                    cache.put(event.request, networkResponse.clone());
-                });
-                return networkResponse; // Aktuelle Version aus dem Netzwerk zurückgeben
-            })
-            .catch(() => {
-                // Fallback auf Cache, wenn das Netzwerk nicht verfügbar ist
-                return caches.match(event.request).then(cachedResponse => {
-                    return cachedResponse || caches.match("/index.html");
-                });
-            })
+        fetch(event.request).then(networkResponse => {
+            // Klone die Antwort, da sie sowohl gecacht als auch zurückgegeben wird
+            const responseClone = networkResponse.clone();
+
+            // Speichere die Antwort im Cache
+            caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, responseClone);
+            });
+
+            // Gib die Originalantwort zurück
+            return networkResponse;
+        }).catch(() => {
+            // Fallback: Lade aus dem Cache, wenn das Netzwerk fehlschlägt
+            return caches.match(event.request).then(cachedResponse => {
+                return cachedResponse || caches.match("/index.html");
+            });
+        })
     );
 });
