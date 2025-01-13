@@ -11,7 +11,7 @@
 
 ## ✨ Overview
 **WIHAM?** is your all-in-one solution for designing immersive pen-and-paper role-playing scenarios. Use it to craft intricate worlds, manage characters, plan events, and keep track of your game universe—all from the comfort of your browser.
-
+![alt text](assets/screenshots/application.png)
 <details>
 <summary><strong>Why WIHAM?</strong></summary>
 
@@ -54,6 +54,16 @@
 - A modern browser with JavaScript enabled (Chrome, Firefox, Edge, Safari).
 - Navigate to [w-i-h-a-m.github.io](https://w-i-h-a-m.github.io/) in your browser.
 
+*Optional: If you want to use it offline, install this page as Application.
+<details>
+  <summary>MS Edge</summary>
+  <img src="assets/screenshots/MSEdge.png">
+</details>
+<details>
+  <summary>Chrome</summary>
+  <img src="assets/screenshots/chrome.png">
+</details>
+
 You’re good to go! No extra steps needed.
 
 ---
@@ -67,6 +77,7 @@ WIHAM/
 │   └── style.css
 ├── js/                  # Java Script code
 ├── assets/              # Default images and icons
+├── service-worker.js    # For Offline functionality
 ├── locales.json         # Language files
 └── index.html           # Main application file
 ```
