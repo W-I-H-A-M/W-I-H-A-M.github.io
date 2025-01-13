@@ -84,13 +84,11 @@ h3,
 h4,
 h5,
 h6 {
-  color: var(--text-color);
   margin-bottom: 10px;
   font-weight: bold;
 }
 
 p {
-  color: var(--text-color);
   margin-bottom: 10px;
   line-height: 1.5;
 }
@@ -207,6 +205,10 @@ select option {
   flex-direction: column;
   align-items: flex-start;
   padding: 10px;
+}
+
+.tab-content {
+  color: var(--neutral-light);
 }
 
 #sidebarMenu {
@@ -726,6 +728,7 @@ header {
 #objectListHere,
 #divAllNPCListRight,
 #divAllObjectsListRight {
+  color: var(--text-color);
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
@@ -830,6 +833,7 @@ header {
 
 /* Character sheet style */
 .character-sheet {
+  color: var(--text-color);
   padding: 5px;
   border: 2px solid #000;
   border-radius: 10px;
@@ -986,6 +990,7 @@ div.attributes-section > div > div:nth-child(2) {
 }
 
 .quill-editor {
+  color: var(--text-color);
   height: 150px;
   background-color: white;
   border: 1px solid #ccc;
