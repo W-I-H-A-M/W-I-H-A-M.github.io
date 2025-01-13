@@ -1,10 +1,4 @@
-//menunavigation.js
-
-////////////////////////////
-//Variable Initialisierung//
-////////////////////////////
-
-//Menu Buttons
+// Menu button references
 const btnScenario = document.getElementById("btnScenario");
 const btnNPCs = document.getElementById("btnNPCs");
 const btnObjects = document.getElementById("btnObjects");
@@ -13,7 +7,7 @@ const btnTimeline = document.getElementById("btnTimeline");
 const btnEditScenario = document.getElementById("btnEditScenario");
 const btnEvents = document.getElementById("btnEvents");
 
-//Main Container
+// Main content containers
 const divNPCEditor = document.getElementById("divNPCEditor");
 const divObjectEditor = document.getElementById("divObjectEditor");
 const divPlaceEditor = document.getElementById("divPlaceEditor");
@@ -21,7 +15,7 @@ const divTimelineEditor = document.getElementById("divTimelineEditor");
 const divEditScenario = document.getElementById("divEditScenario");
 const divEventEditor = document.getElementById("divEventEditor");
 
-//Tab Buttons
+// Tab button references
 const tabBtnNPCEditor = document.querySelector('.tab-button[data-tab="tabNPCEditor"]');
 const tabBtnObjectEditor = document.querySelector('.tab-button[data-tab="tabObjectEditor"]');
 const tabBtnPlaceEditor = document.querySelector('.tab-button[data-tab="tabPlaceEditor"]');
@@ -34,8 +28,11 @@ const tabBtnEventEditor = document.querySelector('.tab-button[data-tab="tabEvent
 const tabBtnMatadata = document.querySelector('.tab-button[data-tab="tabMatadata"]');
 const tabBtnInventory = document.querySelector('.tab-button[data-tab="tabInventory"]');
 
+// Collect all tab buttons and tab contents
 const allTabButtons = document.querySelectorAll("#infoTabs .tab-button");
 const tabContents = document.querySelectorAll("#tabContents .tab-content");
+
+// Collect all containers for toggling visibility
 const allContainer = [
     divNPCEditor,
     divObjectEditor,
@@ -46,83 +43,80 @@ const allContainer = [
     divEventEditor
 ];
 
-/////////////////
-//Eventlistener//
-/////////////////
+/**
+ * Navigates to the Timeline Editor and re-renders the timeline.
+ */
 btnTimeline.addEventListener("click", () => {
-    exeptBtns = [
-        tabBtnSelected
-    ];
-    switchMenu (divTimelineEditor,exeptBtns);
-
+    const exeptBtns = [tabBtnSelected];
+    switchMenu(divTimelineEditor, exeptBtns);
     unsavedTimeline = [...timeline];
     renderTimeline();
 });
 
+/**
+ * Navigates to the Place Editor.
+ */
 btnWorld.addEventListener("click", () => {
-    exeptBtns = [
-        tabBtnPlaceEditor
-    ];
-    switchMenu (divPlaceEditor,exeptBtns);
+    const exeptBtns = [tabBtnPlaceEditor];
+    switchMenu(divPlaceEditor, exeptBtns);
 });
 
+/**
+ * Navigates to the NPC Editor.
+ */
 btnNPCs.addEventListener("click", () => {
-    exeptBtns = [
-        tabBtnNPCEditor
-    ];
-    switchMenu (divNPCEditor,exeptBtns);
+    const exeptBtns = [tabBtnNPCEditor];
+    switchMenu(divNPCEditor, exeptBtns);
 });
 
+/**
+ * Navigates to the Object Editor.
+ */
 btnObjects.addEventListener("click", () => {
-    exeptBtns = [
-        tabBtnObjectEditor
-    ];
-    switchMenu (divObjectEditor,exeptBtns);
+    const exeptBtns = [tabBtnObjectEditor];
+    switchMenu(divObjectEditor, exeptBtns);
 });
 
+/**
+ * Navigates to the Event Editor.
+ */
 btnEvents.addEventListener("click", () => {
-    exeptBtns = [
-        tabBtnEventEditor
-    ];
-    switchMenu (divEventEditor,exeptBtns);
+    const exeptBtns = [tabBtnEventEditor];
+    switchMenu(divEventEditor, exeptBtns);
     renderdivEventListRight();
 });
 
+/**
+ * Navigates to the scenario editing mode.
+ */
 btnEditScenario.addEventListener("click", () => {
-    exeptBtns = [
-        tabBtnAllNPC,
-        tabBtnAllObjects,
-        tabBtnMatadata
-    ];
+    const exeptBtns = [tabBtnAllNPC, tabBtnAllObjects, tabBtnMatadata];
     editScenarioEnabled = true;
-    switchMenu (divEditScenario,exeptBtns);
+    switchMenu(divEditScenario, exeptBtns);
     loadSelectedPlace(locationSelect.value);
-    enableDragAndDropTabs()
+    enableDragAndDropTabs();
 });
 
+/**
+ * Navigates back to the main map display (scenario view).
+ */
 btnScenario.addEventListener("click", () => {
-    exeptBtns = [
-        tabBtnSelected,
-        tabBtnNPCs,
-        tabBtnObjects,
-        tabBtnInventory
-    ];
+    const exeptBtns = [tabBtnSelected, tabBtnNPCs, tabBtnObjects, tabBtnInventory];
     editScenarioEnabled = false;
-    switchMenu (mapContainer,exeptBtns);
+    switchMenu(mapContainer, exeptBtns);
     loadSelectedPlace(locationSelect.value);
     renderdivInventoryListRight();
 });
 
+/**
+ * Sets up the tab buttons to hide/show the correct tab content.
+ */
 allTabButtons.forEach((button) => {
     button.addEventListener("click", () => {
-        // 1) Alle Buttons & Inhalte zurücksetzen
         allTabButtons.forEach((btn) => btn.classList.remove("active"));
         tabContents.forEach((content) => (content.style.display = "none"));
-
-        // 2) Diesen Button aktiv setzen
         button.classList.add("active");
 
-        // 3) Entsprechenden Inhalt einblenden
         const targetId = button.getAttribute("data-tab");
         const targetContent = document.getElementById(targetId);
         if (targetContent) {
@@ -131,11 +125,13 @@ allTabButtons.forEach((button) => {
     });
 });
 
-/////////////
-//Functions//
-/////////////
-
-function switchMenu (Container, exeptBtns){
+/**
+ * Shows the specified container and toggles tab button visibility.
+ * This function also hides other containers and tab buttons not in use.
+ * @param {HTMLElement} Container - The main container to display.
+ * @param {HTMLElement[]} exeptBtns - The list of tab buttons to show.
+ */
+function switchMenu(Container, exeptBtns) {
     allContainer.forEach((con) => {
         con.style.display = "none";
     });

@@ -1,28 +1,64 @@
 <div style="display: flex; align-items: center;">
   <img src="assets/logo.png" alt="WIHAM Logo" style="width: 50px; margin-right: 10px;">
-  <h1>WIHAM? - What Is Happening Around Me?</h1>
+  <h1>WIHAM? — What Is Happening Around Me?</h1>
 </div>
 
+<p align="center">
+  <b>An interactive platform to create, manage, and explore your pen-and-paper adventures!</b>
+</p>
 
-WIHAM? is an interactive platform for planning and managing pen-and-paper adventures. The application offers numerous features to easily create, edit, and export scenarios, characters (NPCs), objects, locations, and timelines.
+---
 
-## Features
+## ✨ Overview
+**WIHAM?** is your all-in-one solution for designing immersive pen-and-paper role-playing scenarios. Use it to craft intricate worlds, manage characters, plan events, and keep track of your game universe—all from the comfort of your browser.
 
-- **Scenario Management:** Import and export scenarios as ZIP files.
-- **NPC Editor:** Create and manage non-player characters (including attributes, appearance, schedules).
-- **Object Editor:** Edit objects, including positioning them on maps.
-- **Location Editor:** Manage locations with grid size and background images.
-- **Timeline Editor:** Dynamic timelines with drag-and-drop support.
-- **Event Editor:** Add events with conditions.
-- **Multilingual Support:** Support for multiple languages (e.g., English, German).
+<details>
+<summary><strong>Why WIHAM?</strong></summary>
 
-## Installation
+- **Collaborative & Flexible**: Perfect for GMs who want to build worlds together or just keep everything organized in one place.
+- **Intuitive UI**: With drag-and-drop editing for timelines, locations, and events, you'll be up and running in no time.
+- **Export & Import**: Share your unique creations with others or keep them safe in a tidy ZIP file.
+- **Multilingual**: Customize language settings for players around the globe.
+</details>
+
+---
+
+## 🚀 Features
+
+1. **Scenario Management**  
+   \- Seamlessly **import** and **export** entire scenarios as ZIP files.
+
+2. **NPC Editor**  
+   \- Create detailed NPC profiles including schedules, stats, and visuals.
+
+3. **Object Editor**  
+   \- Position and describe objects; place them on maps or assign them to NPCs.
+
+4. **Location Editor**  
+   \- Customize backgrounds, grids, and default images for your in-game locations.
+
+5. **Timeline Editor**  
+   \- Organize and reorder events chronologically with drag-and-drop simplicity.
+
+6. **Event Editor**  
+   \- Define events with specific trigger conditions (time, location, NPC status).
+
+7. **Multilingual Support**  
+   \- Easily switch between languages such as English and German.
+
+---
+
+## 🛠 Installation
+
 ### Prerequisites
-- A modern browser with JavaScript support.
-- Browse to [w-i-h-a-m.github.io](https://w-i-h-a-m.github.io/).
+- A modern browser with JavaScript enabled (Chrome, Firefox, Edge, Safari).
+- Navigate to [w-i-h-a-m.github.io](https://w-i-h-a-m.github.io/) in your browser.
 
+You’re good to go! No extra steps needed.
 
-## Directory Structure
+---
+
+## 📁 Directory Structure
 
 ```
 WIHAM/
@@ -35,9 +71,9 @@ WIHAM/
 └── index.html           # Main application file
 ```
 
-## ZIP File Structure
+## 📦 ZIP File Structure
 
-When exporting a scenario, the following structure is used:
+When **exporting** a scenario, you'll get a `.zip` file containing all data:
 
 ```
 scenario.zip
@@ -54,29 +90,39 @@ scenario.zip
     └── place_<id>.png  # Background images for places
 ```
 
-## Usage
+## 🎮 Usage
 
-### Importing/Exporting Scenarios
-- Import a scenario using the **"Import Scenario"** button.
-- Export a scenario to save or share it.
+### Importing & Exporting
+- **Import** scenarios with the **"Import Scenario"** button.
+- **Export** scenarios to share them with fellow GMs or back them up.
 
 ### Creating Content
-- **NPCs:** Create characters, add attributes, and manage their schedules.
-- **Objects:** Add new items and assign them to locations or characters.
-- **Locations:** Define maps with grid sizes and background images.
-- **Timelines:** Organize events chronologically.
+- **NPCs**: Give them stats, images, and schedules that govern their behavior.
+- **Objects**: Flesh out the world by placing interactive items on the map or assigning them to NPC inventories.
+- **Locations**: Define visual settings and grid sizes for your adventure’s maps.
+- **Timelines**: Keep events in logical order; re-arrange them as you see fit.
+- **Events**: Connect in-game actions to triggers like time, place, or NPC interactions.
 
-### Events and Conditions
-- Create events that can be triggered by conditions (e.g., time, location, NPC interactions).
+---
 
-## Development
+## 🛠 Development
 
 ### Local Development
-1. Modify the code in the relevant JavaScript or CSS files.
-2. Use Live Server to see changes directly in the browser.
+1. Clone or download the WIHAM? repository.
+2. Make changes to the `.js` or `.css` files.
+3. Use a local server (e.g., Live Server) to see real-time updates.
 
 ### Contributions
-Pull requests are welcome! Please ensure that you add tests for new features.
+Pull requests are welcome! Make sure to include tests for any new features to ensure stability.
 
-## License
-This project is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** license. See the [LICENSE](https://creativecommons.org/licenses/by-nc-sa/4.0/) file for details.
+---
+
+## 📜 License
+This project is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** license.  
+Please refer to the official [LICENSE](https://creativecommons.org/licenses/by-nc-sa/4.0/) for full details.
+
+---
+
+<p align="center">
+  Made with 💖 for passionate GMs and storytellers. Enjoy building your worlds with WIHAM!
+</p>

@@ -1,8 +1,6 @@
-//npcEditor.js
-
-////////////////////////////
-//Variable Initialisierung//
-////////////////////////////
+// ***************************************
+// DOM Element References and Global State
+// ***************************************
 
 const txtNPCId = document.getElementById("txtNPCId");
 const txtNPCName = document.getElementById("txtNPCName");
@@ -18,50 +16,56 @@ const numNPCMentalMaxHP = document.getElementById("numNPCMentalMaxHP");
 const numNPCMentalCurrentHP = document.getElementById("numNPCMentalCurrentHP");
 const txtNPCAppearance = document.getElementById("txtNPCAppearance");
 
-
 const btnNPCScheduleAdd = document.getElementById("btnNPCScheduleAdd");
 const btnNPCSave = document.getElementById("btnNPCSave");
 const btnNewNPC = document.getElementById("btnNewNPC");
 const btnNPCDelete = document.getElementById("btnNPCDelete");
-const btnAddEntry = document.querySelectorAll('.btnAddEntry');
+const btnAddEntry = document.querySelectorAll(".btnAddEntry");
 
 let inEditorselectedNPC = null;
 
-const npcDescriptionEditor = new Quill('#txtNPCDescription', {
-    theme: 'snow',
+const npcDescriptionEditor = new Quill("#txtNPCDescription", {
+    theme: "snow",
     modules: {
         toolbar: [
-            ['bold', 'italic', 'underline'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['link', 'blockquote'],
-            [{ 'spoiler': true }]
-        ]
-    }
+            ["bold", "italic", "underline"],
+            [{ list: "ordered" }, { list: "bullet" }],
+            ["link", "blockquote"],
+            [{ spoiler: true }],
+        ],
+    },
 });
 
-const npcAppearanceEditor = new Quill('#txtNPCAppearance', {
-    theme: 'snow',
+const npcAppearanceEditor = new Quill("#txtNPCAppearance", {
+    theme: "snow",
     modules: {
         toolbar: [
-            ['bold', 'italic', 'underline'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['link', 'blockquote'],
-            [{ 'spoiler': true }]
-        ]
-    }
+            ["bold", "italic", "underline"],
+            [{ list: "ordered" }, { list: "bullet" }],
+            ["link", "blockquote"],
+            [{ spoiler: true }],
+        ],
+    },
 });
 
-/////////////////
-//Eventlistener//
-/////////////////
+// ***************************************
+// Event Listeners
+// ***************************************
 
-btnAddEntry.forEach(button => {
-    button.addEventListener('click', () => {
+/**
+ * Adds a new attribute row in the specified category (Physical, Knowledge, Social).
+ */
+btnAddEntry.forEach((button) => {
+    button.addEventListener("click", () => {
         const category = button.dataset.category;
         addEntryRow(category);
     });
 });
 
+/**
+ * Creates a new NPC, adds it to the global list, and immediately loads it
+ * into the editor for further editing.
+ */
 btnNewNPC.addEventListener("click", () => {
     const newNpc = {
         id: generateID(),
@@ -70,22 +74,28 @@ btnNewNPC.addEventListener("click", () => {
         image: "",
         appearance: "",
         description: "",
-        schedule: []
+        schedule: [],
     };
     npcs.push(newNpc);
     renderNPCListRight();
     inEditorselectedNPC = newNpc;
     loadNPCIntoEditor(inEditorselectedNPC);
-    console.log("Neuer NPC hinzugefügt:", newNpc);
+    console.log("New NPC added:", newNpc);
 });
 
+/**
+ * Deletes the currently selected NPC after user confirmation.
+ */
 btnNPCDelete.addEventListener("click", () => {
     deleteNPC(inEditorselectedNPC);
 });
 
+/**
+ * Saves the currently loaded NPC data from the editor back into the global list.
+ * If no NPC is in the editor, creates a new one instead.
+ */
 btnNPCSave.addEventListener("click", () => {
     try {
-
         if (!inEditorselectedNPC) {
             inEditorselectedNPC = {
                 id: generateID(),
@@ -94,8 +104,7 @@ btnNPCSave.addEventListener("click", () => {
             npcs.push(inEditorselectedNPC);
         }
         saveNPCFromEditor(inEditorselectedNPC);
-        console.log("NPC gespeichert:", inEditorselectedNPC);
-
+        console.log("NPC saved:", inEditorselectedNPC);
         renderNPCListRight();
         showNotification({
             type: "success",
@@ -105,17 +114,23 @@ btnNPCSave.addEventListener("click", () => {
     } catch (error) {
         showNotification({
             type: "error",
-            content: "<strong>Fehler:</strong> Could not Save.",
+            content: "<strong>Error:</strong> Could not save.",
             duration: 0,
         });
     }
 });
 
-
+/**
+ * Opens a file dialog for uploading the NPC's image.
+ */
 btnNPCImageUpload.addEventListener("click", () => {
     inputNPCImageFile.click();
 });
 
+/**
+ * Reads the selected NPC image file as base64 data, updates the preview image,
+ * and sets the NPC's image property.
+ */
 inputNPCImageFile.addEventListener("change", (event) => {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
@@ -123,42 +138,48 @@ inputNPCImageFile.addEventListener("change", (event) => {
     const reader = new FileReader();
     reader.onload = function (e) {
         const base64Data = e.target.result;
-
         if (inEditorselectedNPC) {
             inEditorselectedNPC.image = base64Data;
         }
-
         imgNPCImagePreview.src = base64Data;
         imgNPCImagePreview.style.display = "inline-block";
     };
     reader.readAsDataURL(file);
 });
 
+/**
+ * Adds a new empty row to the schedule for the currently edited NPC.
+ */
 btnNPCScheduleAdd.addEventListener("click", () => {
     addScheduleRow();
 });
 
-/////////////
-//Functions//
-/////////////
+// ***************************************
+// Functions
+// ***************************************
+
+/**
+ * Adds a new attribute row inside the given category container
+ * and sets up event listeners for points and deletion.
+ */
 function addEntryRow(category) {
     const container = document.querySelector(`#category${category} .entries`);
-    const row = document.createElement('div');
-    row.className = 'entry-row';
+    const row = document.createElement("div");
+    row.className = "entry-row";
 
     row.innerHTML = `
-      <input type="text" placeholder="Entry Name">
-      <input type="number" class="points" min="0" value="0">
-      <input type="number" class="bonus" value="0" disabled>
-      <input type="number" class="total" value="0" disabled>
-      <button class="btnDeleteEntry">❌</button>
-    `;
+    <input type="text" placeholder="Entry Name">
+    <input type="number" class="points" min="0" value="0">
+    <input type="number" class="bonus" value="0" disabled>
+    <input type="number" class="total" value="0" disabled>
+    <button class="btnDeleteEntry">❌</button>
+  `;
 
-    // Event-Listener für das Punkte-Feld
-    row.querySelector('.points').addEventListener('input', () => updateCategoryTotals(category));
+    row.querySelector(".points").addEventListener("input", () => {
+        updateCategoryTotals(category);
+    });
 
-    // Event-Listener für den Löschen-Button
-    row.querySelector('.btnDeleteEntry').addEventListener('click', () => {
+    row.querySelector(".btnDeleteEntry").addEventListener("click", () => {
         row.remove();
         updateCategoryTotals(category);
     });
@@ -166,59 +187,61 @@ function addEntryRow(category) {
     container.appendChild(row);
 }
 
+/**
+ * Updates the bonus and total points for a specific attribute category
+ * whenever points change or entries are added/removed.
+ */
 function updateCategoryTotals(category) {
     const container = document.querySelector(`#category${category}`);
-    const pointsInputs = container.querySelectorAll('.points');
-    const bonusInputs = container.querySelectorAll('.bonus');
-    const totalInputs = container.querySelectorAll('.total');
+    const pointsInputs = container.querySelectorAll(".points");
+    const bonusInputs = container.querySelectorAll(".bonus");
+    const totalInputs = container.querySelectorAll(".total");
     const powerPointsDisplay = document.getElementById(`powerPoints${category}`);
-    const bonusPointsDisplay = document.getElementById(`bonusPoints${category}`); // Bonuspunkte direkt hinter der Kategorieüberschrift
+    const bonusPointsDisplay = document.getElementById(`bonusPoints${category}`);
 
-    // Bonuspunkte für die Kategorie berechnen
-    const bonusPoints = calculateBonusPoints(category); // Beispiel: 10% der Gesamtpunkte
-    const powerBonusPoints = Math.ceil(calculateBonusPoints(category) * 0.1); // ⚡ Punkte für die Kategorie
+    // Calculate bonus points for the category
+    const bonusPoints = calculateBonusPoints(category);
+    const powerBonusPoints = Math.ceil(calculateBonusPoints(category) * 0.1);
 
-    // Bonuspunkte auf der Kategorienebene anzeigen
     if (bonusPointsDisplay) {
         bonusPointsDisplay.textContent = `+ ${bonusPoints}`;
     }
-
-    // ⚡ Punkte anzeigen
     powerPointsDisplay.textContent = `⚡ ${powerBonusPoints}`;
 
-    // Bonuspunkte und Gesamtpunkte pro Attribut in der Tabelle aktualisieren
     pointsInputs.forEach((input, index) => {
         const points = parseInt(input.value, 10) || 0;
-        bonusInputs[index].value = bonusPoints; // Kategorie-Bonuspunkte setzen
-        totalInputs[index].value = points + bonusPoints; // Total = Punkte + Bonus
+        bonusInputs[index].value = bonusPoints;
+        totalInputs[index].value = points + bonusPoints;
     });
 }
 
-//loads NPC into editor formular
+/**
+ * Loads the given NPC data into all relevant editor fields,
+ * including attributes, schedule, image preview, etc.
+ */
 function loadNPCIntoEditor(npc) {
     txtNPCId.value = npc.id || "";
     txtNPCName.value = npc.name || "";
     npcDescriptionEditor.root.innerHTML = npc.description || "";
-    txtNPCProfession.value = npc.profession;
-    npcAppearanceEditor.root.innerHTML = npc.appearance;
-    numNPCMaxHP.value = npc.maxHP;
-    numNPCCurrentHP.value = npc.currentHP;
-    numNPCMentalMaxHP.value = npc.maxMentalHP;
-    numNPCMentalCurrentHP.value = npc.currentMentalHP;
+    txtNPCProfession.value = npc.profession || "";
+    npcAppearanceEditor.root.innerHTML = npc.appearance || "";
+    numNPCMaxHP.value = npc.maxHP || "";
+    numNPCCurrentHP.value = npc.currentHP || "";
+    numNPCMentalMaxHP.value = npc.maxMentalHP || "";
+    numNPCMentalCurrentHP.value = npc.currentMentalHP || "";
 
-    loadCategoryAttributes('Physical', npc.attributes?.Physical.entries || []);
-    updateCategoryTotals('Physical'); // Bonuspunkte und ⚡ für Kategorie aktualisieren
+    loadCategoryAttributes("Physical", npc.attributes?.Physical.entries || []);
+    updateCategoryTotals("Physical");
 
-    loadCategoryAttributes('Knowledge', npc.attributes?.Knowledge.entries || []);
-    updateCategoryTotals('Knowledge');
+    loadCategoryAttributes("Knowledge", npc.attributes?.Knowledge.entries || []);
+    updateCategoryTotals("Knowledge");
 
-    loadCategoryAttributes('Social', npc.attributes?.Social.entries || []);
-    updateCategoryTotals('Social');
+    loadCategoryAttributes("Social", npc.attributes?.Social.entries || []);
+    updateCategoryTotals("Social");
 
-    // create Schedule table
     npcScheduleTableBody.innerHTML = "";
     if (npc.schedule && npc.schedule.length > 0) {
-        npc.schedule.forEach(entry => {
+        npc.schedule.forEach((entry) => {
             addScheduleRow(entry);
         });
     }
@@ -232,7 +255,10 @@ function loadNPCIntoEditor(npc) {
     }
 }
 
-//Saves values from formular into npc variable
+/**
+ * Reads data from the editor fields and assigns it to the given NPC object.
+ * This includes basic info, attributes, and schedule rows.
+ */
 function saveNPCFromEditor(npc) {
     npc.id = txtNPCId.value;
     npc.name = txtNPCName.value;
@@ -246,123 +272,131 @@ function saveNPCFromEditor(npc) {
 
     npc.attributes = {
         Physical: {
-            entries: getCategoryAttributes('Physical'),
-            powerPoints: getPowerPoints('Physical'),
-            bonusPoints: calculateBonusPoints('Physical') // Bonuspunkte speichern
+            entries: getCategoryAttributes("Physical"),
+            powerPoints: getPowerPoints("Physical"),
+            bonusPoints: calculateBonusPoints("Physical"),
         },
         Knowledge: {
-            entries: getCategoryAttributes('Knowledge'),
-            powerPoints: getPowerPoints('Knowledge'),
-            bonusPoints: calculateBonusPoints('Knowledge')
+            entries: getCategoryAttributes("Knowledge"),
+            powerPoints: getPowerPoints("Knowledge"),
+            bonusPoints: calculateBonusPoints("Knowledge"),
         },
         Social: {
-            entries: getCategoryAttributes('Social'),
-            powerPoints: getPowerPoints('Social'),
-            bonusPoints: calculateBonusPoints('Social')
-        }
+            entries: getCategoryAttributes("Social"),
+            powerPoints: getPowerPoints("Social"),
+            bonusPoints: calculateBonusPoints("Social"),
+        },
     };
 
-    // read schedule from each table row
     npc.schedule = [];
     const rows = npcScheduleTableBody.querySelectorAll("tr");
-    rows.forEach(row => {
+    rows.forEach((row) => {
         const startVal = row.querySelector(".schedStart").value;
         const placeVal = row.querySelector(".schedPlace").value;
         const xVal = row.querySelector(".schedX").value;
         const yVal = row.querySelector(".schedY").value;
 
-        const scheduleEntry = {
+        npc.schedule.push({
             timeStart: startVal,
             placeId: placeVal,
             row: parseInt(yVal, 10) || 0,
-            col: parseInt(xVal, 10) || 0
-        };
-
-        npc.schedule.push(scheduleEntry);
+            col: parseInt(xVal, 10) || 0,
+        });
     });
-
-    console.log("NPC gespeichert:", npc);
+    console.log("NPC saved:", npc);
 }
 
+/**
+ * Calculates the bonus points for a category based on the sum of all points.
+ * Puts a cap at 30 bonus points, for example.
+ */
 function calculateBonusPoints(category) {
     const pointsInputs = document.querySelectorAll(`#category${category} .points`);
     let totalPoints = 0;
-
-    pointsInputs.forEach(input => {
+    pointsInputs.forEach((input) => {
         totalPoints += parseInt(input.value, 10) || 0;
     });
-    totalPoints = Math.floor(totalPoints / 10)
-    if (totalPoints > 30){
-        totalPoints = 30
+    totalPoints = Math.floor(totalPoints / 10);
+    if (totalPoints > 30) {
+        totalPoints = 30;
     }
-    return totalPoints; // Beispiel: 10% der Gesamtpunkte
+    return totalPoints;
 }
 
+/**
+ * Updates the displayed power points for the specified category.
+ */
 function updatePowerPointsDisplay(category, powerPoints) {
     const powerPointsDisplay = document.getElementById(`powerPoints${category}`);
     powerPointsDisplay.textContent = `⚡ ${powerPoints}`;
 }
 
+/**
+ * Extracts and returns the current power points value from the category UI.
+ */
 function getPowerPoints(category) {
     const powerPointsDisplay = document.getElementById(`powerPoints${category}`);
-    return parseInt(powerPointsDisplay.textContent.replace('⚡ ', ''), 10) || 0;
+    return parseInt(powerPointsDisplay.textContent.replace("⚡ ", ""), 10) || 0;
 }
 
+/**
+ * Loads an array of attribute entries for the specified category
+ * and populates the related editor fields.
+ */
 function loadCategoryAttributes(category, attributes) {
     const container = document.querySelector(`#category${category} .entries`);
-    container.innerHTML = ''; // Vorhandene Einträge löschen
-
-    attributes.forEach(attr => {
-        const row = document.createElement('div');
-        row.className = 'entry-row';
-
+    container.innerHTML = "";
+    attributes.forEach((attr) => {
+        const row = document.createElement("div");
+        row.className = "entry-row";
         row.innerHTML = `
-        <input type="text" value="${attr.name}">
-        <input type="number" class="points" value="${attr.points}">
-        <input type="number" class="bonus" value="${attr.bonus}" disabled>
-        <input type="number" class="total" value="${attr.total}" disabled>
-        <button class="btnDeleteEntry">❌</button>
-      `;
+      <input type="text" value="${attr.name}">
+      <input type="number" class="points" value="${attr.points}">
+      <input type="number" class="bonus" value="${attr.bonus}" disabled>
+      <input type="number" class="total" value="${attr.total}" disabled>
+      <button class="btnDeleteEntry">❌</button>
+    `;
 
-        // Event-Listener für das Punkte-Feld
-        row.querySelector('.points').addEventListener('input', () => updateCategoryTotals(category));
-
-        // Event-Listener für den Löschen-Button
-        row.querySelector('.btnDeleteEntry').addEventListener('click', () => {
+        row.querySelector(".points").addEventListener("input", () => {
+            updateCategoryTotals(category);
+        });
+        row.querySelector(".btnDeleteEntry").addEventListener("click", () => {
             row.remove();
             updateCategoryTotals(category);
         });
-
         container.appendChild(row);
     });
-
     updateCategoryTotals(category);
 }
 
+/**
+ * Retrieves all attribute rows for the specified category, assembling
+ * them into an array of objects (name, points, bonus, total).
+ */
 function getCategoryAttributes(category) {
     const container = document.querySelector(`#category${category} .entries`);
-    const rows = container.querySelectorAll('.entry-row');
-
-    return Array.from(rows).map(row => {
+    const rows = container.querySelectorAll(".entry-row");
+    return Array.from(rows).map((row) => {
         return {
             name: row.querySelector('input[type="text"]').value,
-            points: parseInt(row.querySelector('.points').value, 10) || 0,
-            bonus: parseInt(row.querySelector('.bonus').value, 10) || 0,
-            total: parseInt(row.querySelector('.total').value, 10) || 0,
+            points: parseInt(row.querySelector(".points").value, 10) || 0,
+            bonus: parseInt(row.querySelector(".bonus").value, 10) || 0,
+            total: parseInt(row.querySelector(".total").value, 10) || 0,
         };
     });
 }
 
-//adds a row into the schedule
+/**
+ * Adds a new schedule row (time, place, x, y) to the NPC schedule table.
+ * Prefills data if an entry object is provided.
+ */
 function addScheduleRow(entry = {}) {
     const tr = document.createElement("tr");
 
-    // Starttime (Dropdown)
     const tdStart = document.createElement("td");
     const selectStart = document.createElement("select");
     selectStart.className = "schedStart";
-
-    timeline.forEach(item => {
+    timeline.forEach((item) => {
         const option = document.createElement("option");
         option.value = item.id;
         option.textContent = item.title;
@@ -374,12 +408,10 @@ function addScheduleRow(entry = {}) {
     tdStart.appendChild(selectStart);
     tr.appendChild(tdStart);
 
-    // place (Dropdown)
     const tdPlace = document.createElement("td");
     const selectPlace = document.createElement("select");
     selectPlace.className = "schedPlace";
-
-    places.forEach(place => {
+    places.forEach((place) => {
         const option = document.createElement("option");
         option.value = place.id;
         option.textContent = place.name;
@@ -391,7 +423,6 @@ function addScheduleRow(entry = {}) {
     tdPlace.appendChild(selectPlace);
     tr.appendChild(tdPlace);
 
-    // X
     const tdX = document.createElement("td");
     const inputX = document.createElement("input");
     inputX.type = "number";
@@ -400,7 +431,6 @@ function addScheduleRow(entry = {}) {
     tdX.appendChild(inputX);
     tr.appendChild(tdX);
 
-    // Y
     const tdY = document.createElement("td");
     const inputY = document.createElement("input");
     inputY.type = "number";
@@ -409,7 +439,6 @@ function addScheduleRow(entry = {}) {
     tdY.appendChild(inputY);
     tr.appendChild(tdY);
 
-    // Delete/Remove Button
     const tdRemove = document.createElement("td");
     const removeBtn = document.createElement("button");
     removeBtn.textContent = "❌";
@@ -419,19 +448,19 @@ function addScheduleRow(entry = {}) {
     tdRemove.appendChild(removeBtn);
     tr.appendChild(tdRemove);
 
-    // add new row to table body
     npcScheduleTableBody.appendChild(tr);
-
 }
 
-//renders short preview to select in editor
+/**
+ * Renders a list of NPCs in the right panel, creating clickable cards
+ * that allow switching between NPCs in the editor.
+ */
 function renderNPCListRight() {
     const container = document.getElementById("npcListRight");
     container.innerHTML = "";
-
     npcs.forEach((npc) => {
-        const card = renderItemCard(npc, 'npc');
-        card.addEventListener('click', () => {
+        const card = renderItemCard(npc, "npc");
+        card.addEventListener("click", () => {
             inEditorselectedNPC = npc;
             loadNPCIntoEditor(npc);
             highlightSelectedItemCard(card);
@@ -440,15 +469,15 @@ function renderNPCListRight() {
     });
 }
 
-
-
-//delete an NPC
+/**
+ * Deletes the specified NPC from the global list after user confirmation
+ * and clears the editor if the deleted NPC was currently selected.
+ */
 function deleteNPC(npc) {
-    // Confirmation
-    const confirmed = window.confirm(`Möchtest du "${npc.name || 'diesen NPC'}" wirklich löschen?`);
-
+    if (!npc) return;
+    const confirmed = window.confirm(`Do you really want to delete "${npc.name || "this NPC"}"?`);
     if (!confirmed) {
-        console.log("Löschen abgebrochen.");
+        console.log("Deletion canceled.");
         return;
     }
 
@@ -456,13 +485,14 @@ function deleteNPC(npc) {
     if (index !== -1) {
         npcs.splice(index, 1);
     }
-    console.log("NPC gelöscht:", npc.name);
-
+    console.log("NPC deleted:", npc.name);
     renderNPCListRight();
-    clearNPCEditorFields()
+    clearNPCEditorFields();
 }
 
-//empty editor formular
+/**
+ * Clears all NPC-related fields in the editor.
+ */
 function clearNPCEditorFields() {
     txtNPCId.value = "";
     txtNPCName.value = "";

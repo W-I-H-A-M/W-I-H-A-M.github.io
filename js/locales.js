@@ -1,49 +1,55 @@
+/**
+ * Holds loaded language data.
+ */
 let languages = {};
+
+/**
+ * Stores the currently active language code.
+ */
 let currentLanguage = 'de';
+
+/**
+ * Holds the translation strings for the active language.
+ */
 let translations = {};
 
+/**
+ * Loads available languages from the 'locales.json' file,
+ * sets the default language based on the browser's preference or fallback,
+ * populates the language dropdown, and attaches a listener for language changes.
+ */
 async function loadLanguages() {
     try {
-        // Sprachdaten laden
         const response = await fetch('locales.json');
         if (!response.ok) {
             throw new Error(`HTTP-Error: ${response.status}`);
         }
-
-        // JSON-Daten in languages speichern
         languages = await response.json();
-        console.log("Geladene Sprachdaten:", languages);
 
-        // Browser-Sprache ermitteln
         const browserLang = getBrowserLanguage();
-        console.log("Erkannte Browser-Sprache:", browserLang);
-
-        // Standardsprache setzen: Browser-Sprache oder Englisch als Fallback
         currentLanguage = languages[browserLang] ? browserLang : 'en';
 
-        // Dropdown mit verfügbaren Sprachen befüllen
         populateLanguageSelector(languages);
-
-        // Standardsprache laden
         loadLanguage(currentLanguage, languages);
 
-        // Event-Listener hinzufügen
         document.getElementById('languageSelector').addEventListener('change', (e) => {
             const selectedLanguage = e.target.value;
-
             if (!languages[selectedLanguage]) {
-                console.error(`Ungültige Sprache ausgewählt: '${selectedLanguage}'`);
+                console.error(`Invalid language chosen: '${selectedLanguage}'`);
                 return;
             }
-
             currentLanguage = selectedLanguage;
             loadLanguage(currentLanguage, languages);
         });
     } catch (error) {
-        console.error("Fehler beim Laden der Sprachen:", error);
+        console.error("Error loading language data:", error);
     }
 }
 
+/**
+ * Populates the language dropdown with available languages,
+ * setting the default or first language as the selected option.
+ */
 function populateLanguageSelector(languages) {
     const languageSelector = document.getElementById('languageSelector');
     languageSelector.innerHTML = "";
@@ -55,7 +61,6 @@ function populateLanguageSelector(languages) {
         languageSelector.appendChild(option);
     }
 
-    // Standardwert setzen
     if (languages[currentLanguage]) {
         languageSelector.value = currentLanguage;
     } else {
@@ -65,22 +70,30 @@ function populateLanguageSelector(languages) {
     }
 }
 
+/**
+ * Loads the translations for the given language code
+ * and updates all translatable text on the page.
+ */
 function loadLanguage(langCode, languages) {
     if (!languages[langCode]) {
-        console.error(`Sprache '${langCode}' nicht gefunden! Verfügbare Sprachen:`, Object.keys(languages));
+        console.error(`Language '${langCode}' not found!`);
         return;
     }
-
     translations = languages[langCode];
-    console.log("Geladene Übersetzungen für:", langCode, translations);
-
     updateTexts();
 }
 
+/**
+ * Retrieves a translation by key. If none is found, returns the key itself.
+ */
 function t(key) {
     return translations[key] || key;
 }
 
+/**
+ * Updates the text content of all elements with a 'data-i18n' attribute
+ * based on the currently active translations.
+ */
 function updateTexts() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -88,14 +101,19 @@ function updateTexts() {
     });
 }
 
-// Funktion zum Ermitteln der Browser-Sprache
+/**
+ * Determines the browser's default language by reading 'navigator.language'
+ * (or 'navigator.languages' as a fallback), returning only the base code.
+ */
 function getBrowserLanguage() {
     const userLang = navigator.language || navigator.languages[0] || 'en';
-    const langCode = userLang.split('-')[0]; // Nur den Sprachcode ohne Region (z. B. 'de' statt 'de-DE')
+    const langCode = userLang.split('-')[0];
     return langCode;
 }
 
-// Starten beim Laden der Seite
+/**
+ * Initializes language loading after DOM is ready.
+ */
 document.addEventListener('DOMContentLoaded', () => {
     loadLanguages();
 });

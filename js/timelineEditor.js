@@ -1,8 +1,8 @@
-//timelineEditor.js
+// *********************************
+// Variable Declarations
+// *********************************
 
-////////////////////////////
-//Variable Initialisierung//
-////////////////////////////
+// Local copy of the timeline and references to table elements
 const timelineTableBody = document.querySelector("#timelineTable tbody");
 const btnNewTimelineEntry = document.getElementById("btnNewTimelineEntry");
 const btnSaveTimeline = document.getElementById("btnSaveTimeline");
@@ -10,53 +10,64 @@ const currentTime = document.getElementById("currentTime");
 const prevTime = document.getElementById("prevTime");
 const nextTime = document.getElementById("nextTime");
 
-let unsavedTimeline = [...timeline]; // Lokale Kopie der Timeline
-let currentIndex = 0; // Aktueller Index in der Timeline
+let unsavedTimeline = [...timeline];
+let currentIndex = 0;
 
-/////////////////
-//Eventlistener//
-/////////////////
+// *********************************
+// Event Listeners
+// *********************************
 
+/**
+ * Saves all modifications from the local timeline copy back to the main timeline.
+ * If successful, triggers a notification and updates the display.
+ */
 btnSaveTimeline.addEventListener("click", () => {
     try {
-        timeline = [...unsavedTimeline]; // Änderungen übernehmen
-        console.log("Änderungen gespeichert:", timeline);
+        timeline = [...unsavedTimeline];
+        console.log("Changes saved:", timeline);
         updateTimeDisplay(currentIndex);
         showNotification({
             type: "success",
             content: "Successfully Saved",
-            duration: 1000,
+            duration: 1000
         });
     } catch (error) {
         showNotification({
             type: "error",
-            content: "<strong>Fehler:</strong> Could not Save.",
-            duration: 0,
+            content: "<strong>Error:</strong> Could not save.",
+            duration: 0
         });
     }
 });
 
+/**
+ * Navigates to the previous timeline entry, if one exists,
+ * and updates the display accordingly.
+ */
 prevTime.addEventListener("click", () => {
     if (currentIndex > 0) {
-        currentIndex--; // Einen Schritt zurückgehen
-        updateTimeDisplay(currentIndex); // Zeitanzeige aktualisieren
+        currentIndex--;
+        updateTimeDisplay(currentIndex);
         updateDynamicLists();
     }
 });
 
+/**
+ * Navigates to the next timeline entry, if one exists,
+ * and updates the display accordingly.
+ */
 nextTime.addEventListener("click", () => {
     if (currentIndex < timeline.length - 1) {
-        currentIndex++; // Einen Schritt vorgehen
-        updateTimeDisplay(currentIndex); // Zeitanzeige aktualisieren
+        currentIndex++;
+        updateTimeDisplay(currentIndex);
         updateDynamicLists();
     }
 });
 
-/////////////
-//Functions//
-/////////////
-
-// Adds new entry
+/**
+ * Adds a new timeline entry to the local timeline copy and
+ * re-renders the timeline table in the UI.
+ */
 btnNewTimelineEntry.addEventListener("click", () => {
     const newEntry = {
         id: generateID(),
@@ -64,17 +75,28 @@ btnNewTimelineEntry.addEventListener("click", () => {
         description: "",
         order: unsavedTimeline.length + 1
     };
-    unsavedTimeline.push(newEntry); // Neuen Eintrag zur lokalen Kopie hinzufügen
-    renderTimeline(); // Tabelle neu rendern
+    unsavedTimeline.push(newEntry);
+    renderTimeline();
 });
 
-// delets entry
+// *********************************
+// Functions
+// *********************************
+
+/**
+ * Removes a specific timeline entry from the global timeline array,
+ * then re-renders the timeline.
+ */
 function deleteTimelineEntry(id) {
     timeline = timeline.filter(entry => entry.id !== id);
     renderTimeline();
 }
 
-//adds drag and drop functionality to move the orders arround
+/**
+ * Enables drag-and-drop functionality on the timeline rows, allowing
+ * users to reorder them by dragging the handle. Updates the 'order'
+ * property in the local timeline array.
+ */
 function enableDragAndDrop() {
     const rows = Array.from(timelineTableBody.children);
     let dropIndicator = null;
@@ -101,10 +123,8 @@ function enableDragAndDrop() {
                 const isAboveMiddle = e.clientY < rect.top + rect.height / 2;
 
                 if (isAboveMiddle) {
-                    // Drop-Indikator vor der Zielzeile platzieren
                     timelineTableBody.insertBefore(dropIndicator, targetRow);
                 } else {
-                    // Drop-Indikator nach der Zielzeile platzieren
                     timelineTableBody.insertBefore(dropIndicator, targetRow.nextSibling);
                 }
             }
@@ -119,7 +139,6 @@ function enableDragAndDrop() {
 
         row.addEventListener("drop", (e) => {
             e.preventDefault();
-
             const draggedId = e.dataTransfer.getData("text/plain");
 
             if (dropIndicator && dropIndicator.parentNode) {
@@ -130,7 +149,6 @@ function enableDragAndDrop() {
                     const [draggedEntry] = timeline.splice(draggedIndex, 1);
                     timeline.splice(indicatorIndex, 0, draggedEntry);
 
-                    // Reihenfolge aktualisieren
                     timeline.forEach((entry, index) => {
                         entry.order = index + 1;
                     });
@@ -155,22 +173,26 @@ function enableDragAndDrop() {
     });
 }
 
-//creates tabele from timeline
+/**
+ * Renders the timeline entries in a table, sorted by their 'order'.
+ * Each row is made draggable, and input fields allow on-the-fly editing.
+ */
 function renderTimeline() {
-    timelineTableBody.innerHTML = ""; // Tabelle leeren
+    timelineTableBody.innerHTML = "";
 
+    // Sort entries by order before displaying
     unsavedTimeline.sort((a, b) => a.order - b.order).forEach(entry => {
         const row = document.createElement("tr");
         row.classList.add("draggable");
-        row.setAttribute("data-id", entry.id); // Setze die ID für jede Zeile
+        row.setAttribute("data-id", entry.id);
 
-        // Reihenfolge-Spalte mit Drag-Handle und Nummer
+        // Order cell with drag handle
         const orderCell = document.createElement("td");
         const dragHandle = document.createElement("span");
-        dragHandle.textContent = "⋮⋮"; // Unicode-Symbol für Drag-and-Drop
+        dragHandle.textContent = "⋮⋮";
         dragHandle.style.cursor = "grab";
         dragHandle.classList.add("drag-handle");
-        dragHandle.setAttribute("draggable", true); // Drag-and-Drop nur für das Handle
+        dragHandle.setAttribute("draggable", true);
 
         const orderNumber = document.createElement("span");
         orderNumber.textContent = ` ${entry.order}`;
@@ -180,34 +202,34 @@ function renderTimeline() {
         orderCell.appendChild(orderNumber);
         row.appendChild(orderCell);
 
-        // Titel-Spalte (bearbeitbar)
+        // Title cell (editable)
         const titleCell = document.createElement("td");
         const titleInput = document.createElement("input");
         titleInput.type = "text";
         titleInput.value = entry.title;
         titleInput.addEventListener("input", () => {
-            entry.title = titleInput.value; // Lokale Kopie aktualisieren
+            entry.title = titleInput.value;
         });
         titleCell.appendChild(titleInput);
         row.appendChild(titleCell);
 
-        // Beschreibung-Spalte (bearbeitbar)
+        // Description cell (editable)
         const descriptionCell = document.createElement("td");
         const descriptionInput = document.createElement("textarea");
         descriptionInput.value = entry.description;
         descriptionInput.addEventListener("input", () => {
-            entry.description = descriptionInput.value; // Lokale Kopie aktualisieren
+            entry.description = descriptionInput.value;
         });
         descriptionCell.appendChild(descriptionInput);
         row.appendChild(descriptionCell);
 
-        // Aktionen-Spalte
+        // Actions cell (delete button)
         const actionsCell = document.createElement("td");
         const deleteBtn = document.createElement("button");
         deleteBtn.dataset.i18n = "delete";
         deleteBtn.textContent = "Löschen";
         deleteBtn.addEventListener("click", () => {
-            unsavedTimeline = unsavedTimeline.filter(e => e.id !== entry.id); // Lokale Kopie aktualisieren
+            unsavedTimeline = unsavedTimeline.filter(e => e.id !== entry.id);
             renderTimeline();
         });
         actionsCell.appendChild(deleteBtn);
@@ -216,41 +238,39 @@ function renderTimeline() {
         timelineTableBody.appendChild(row);
     });
 
-    enableDragAndDrop(); // Drag-and-Drop aktivieren
+    // Enable drag and drop after table rows have been created
+    enableDragAndDrop();
 }
 
-//controlls the current time display
+/**
+ * Updates the visible time entries (previous, current, next) based on
+ * the current index. Also triggers updates for the place and event checks.
+ */
 function updateTimeDisplay(currentIndex) {
-    const prevTime = document.getElementById("prevTime");
-    const currentTime = document.getElementById("currentTime");
-    const nextTime = document.getElementById("nextTime");
-
-    // Prüfen, ob es einen vorherigen Eintrag gibt
     if (currentIndex > 0) {
-        prevTime.textContent = `${timeline[currentIndex - 1].title}`;
+        prevTime.textContent = timeline[currentIndex - 1].title;
         prevTime.title = timeline[currentIndex - 1].description;
     } else {
-        prevTime.textContent = "—"; // Platzhalter
+        prevTime.textContent = "—";
         prevTime.title = "";
     }
 
-    // Aktuelle Zeit anzeigen
     if (timeline[currentIndex]) {
-        currentTime.textContent = `${timeline[currentIndex].title}`;
+        currentTime.textContent = timeline[currentIndex].title;
         currentTime.title = timeline[currentIndex].description;
     } else {
-        currentTime.textContent = "—"; // Falls kein Eintrag vorhanden ist
+        currentTime.textContent = "—";
         currentTime.title = "";
     }
 
-    // Prüfen, ob es einen nächsten Eintrag gibt
     if (currentIndex < timeline.length - 1) {
-        nextTime.textContent = `${timeline[currentIndex + 1].title}`;
+        nextTime.textContent = timeline[currentIndex + 1].title;
         nextTime.title = timeline[currentIndex + 1].description;
     } else {
-        nextTime.textContent = "—"; // Platzhalter
+        nextTime.textContent = "—";
         nextTime.title = "";
     }
+
     loadSelectedPlace(locationSelect.value);
     updateAndCheckEvents();
 }

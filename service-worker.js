@@ -1,12 +1,13 @@
-//service-worker.js
-
+// Defines the cache name, including a version string.
 const CACHE_NAME = "wiham-cache-v6";
+
+// Lists the application files to be cached for offline availability.
 const urlsToCache = [
-    "/", // Wurzelverzeichnis
-    "/index.html", // Haupt-HTML-Datei
+    "/",
+    "/index.html",
     "/locales.json",
-    "/css/style.css", // Haupt-CSS-Datei
-    "/js/main.js", // Haupt-JavaScript-Datei
+    "/css/style.css",
+    "/js/main.js",
     "/js/data.js",
     "/js/locales.js",
     "/js/meta.js",
@@ -24,12 +25,15 @@ const urlsToCache = [
     "/js/notification.js",
     "/assets/logo.png",
     "/assets/favicon.ico",
-    "/assets/default_place.png", 
-    "/assets/default_object.png", 
+    "/assets/default_place.png",
+    "/assets/default_object.png",
     "/assets/default_npc.png"
 ];
 
-// Installations-Event: Dateien im Cache speichern
+/**
+ * Handles the 'install' event for the service worker.
+ * Opens the specified cache and stores the predefined URLs.
+ */
 self.addEventListener("install", event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
@@ -38,7 +42,10 @@ self.addEventListener("install", event => {
     );
 });
 
-// Aktivierungs-Event: Alte Caches löschen
+/**
+ * Handles the 'activate' event for the service worker.
+ * Cleans up old caches, keeping only the current cache version.
+ */
 self.addEventListener("activate", event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
@@ -53,25 +60,27 @@ self.addEventListener("activate", event => {
     );
 });
 
-// Fetch-Ereignis: Automatische Aktualisierung
+/**
+ * Intercepts fetch requests:
+ * 1) Attempts to fetch the resource from the network.
+ * 2) If the request succeeds, clones the response and caches it.
+ * 3) If the request fails, attempts to serve the resource from the cache.
+ * 4) Falls back to the index.html if no cached resource is found.
+ */
 self.addEventListener("fetch", event => {
     event.respondWith(
-        fetch(event.request).then(networkResponse => {
-            // Klone die Antwort, da sie sowohl gecacht als auch zurückgegeben wird
-            const responseClone = networkResponse.clone();
-
-            // Speichere die Antwort im Cache
-            caches.open(CACHE_NAME).then(cache => {
-                cache.put(event.request, responseClone);
-            });
-
-            // Gib die Originalantwort zurück
-            return networkResponse;
-        }).catch(() => {
-            // Fallback: Lade aus dem Cache, wenn das Netzwerk fehlschlägt
-            return caches.match(event.request).then(cachedResponse => {
-                return cachedResponse || caches.match("/index.html");
-            });
-        })
+        fetch(event.request)
+            .then(networkResponse => {
+                const responseClone = networkResponse.clone();
+                caches.open(CACHE_NAME).then(cache => {
+                    cache.put(event.request, responseClone);
+                });
+                return networkResponse;
+            })
+            .catch(() => {
+                return caches.match(event.request).then(cachedResponse => {
+                    return cachedResponse || caches.match("/index.html");
+                });
+            })
     );
 });
