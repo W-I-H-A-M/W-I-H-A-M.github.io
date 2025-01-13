@@ -1,1 +1,514 @@
-<h1>Hello World</h1>
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <title>WIHAM?</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+
+  <!-- Hier werden später unsere CSS-Dateien eingebunden -->
+</head>
+
+<body>
+  <!-- Header-Bereich (oben) -->
+  <div id="notificationContainer"></div>
+  <header>
+    <div id="headerLeft">
+      <img src="/assets/logo.png" id="logo" alt="Logo">
+      <div id="timeContainer">
+        <div id="realTimeContainer">
+          <label data-i18n="realTimeLabel">Uhrzeit:</label>
+          <span id="realTime"></span>
+        </div>
+        <div id="pageTimerContainer">
+          <label data-i18n="timerLabel">Timer:</label>
+          <span id="pageTimer"></span>
+        </div>
+      </div>
+    </div>
+    <div id="headerCenter">
+      <div id="locationTimeBar">
+        <label for="locationSelect">Ort:</label>
+        <select id="locationSelect">
+        </select>
+        <label for="timeSlider">Zeit:</label>
+        <div id="timeDisplay">
+          <span id="prevTime" class="time-element" title="Vorherige Zeit"></span>
+          <span id="currentTime" class="time-element current-time" title="Aktuelle Zeit"></span>
+          <span id="nextTime" class="time-element" title="Nächste Zeit"></span>
+        </div>
+      </div>
+    </div>
+    <div id="headerRight">
+      <select id="languageSelector"></select>
+    </div>
+  </header>
+
+  <!-- Haupt-Bereich unserer App -->
+  <div id="app">
+
+    <!-- Seitenleiste (links) -->
+    <nav id="sidebar" class="collapsed">
+      <!-- Hamburger-Menü-Icon -->
+      <button id="toggleSidebar" style="
+      width: 100%;
+  " aria-label="Seitenleiste umschalten">
+        ☰
+      </button>
+
+      <!-- Menü-Liste -->
+      <ul id="sidebarMenu">
+        <li><button id="btnScenario"><span id="sidebarMenuBtnIcon">📜</span><span id="sidebarMenuBtnTxt"
+              class="collapsed" data-i18n="scenario">Scenario</span></button></li>
+        <li><button id="btnNPCs"><span id="sidebarMenuBtnIcon">👤</span><span id="sidebarMenuBtnTxt" class="collapsed"
+              data-i18n="npcs">NPCs</span></button></li>
+        <li><button id="btnObjects"><span id="sidebarMenuBtnIcon">🔎</span><span id="sidebarMenuBtnTxt"
+              class="collapsed" data-i18n="objects">Objekte</span></button></li>
+        <li><button id="btnWorld"><span id="sidebarMenuBtnIcon">🗺️</span><span id="sidebarMenuBtnTxt" class="collapsed"
+              data-i18n="world">Welt</span></button></li>
+        <li><button id="btnTimeline"><span id="sidebarMenuBtnIcon">🕙</span><span id="sidebarMenuBtnTxt"
+              class="collapsed" data-i18n="timeline">Zeitlinie</span></button></li>
+        <li><button id="btnEvents"><span id="sidebarMenuBtnIcon">⚡</span><span id="sidebarMenuBtnTxt" class="collapsed"
+              data-i18n="events">Events</span></button></li>
+      </ul>
+      <ul id="sidebarMenu" style="margin-top: auto;">
+        <li><button id="btnImportScenario"><span id="sidebarMenuBtnIcon">📂</span><span id="sidebarMenuBtnTxt"
+              class="collapsed" data-i18n="import">Szenario importieren</span></button></li>
+        <input type="file" id="importFileInput" style="display: none;" accept=".zip" />
+        <li><button id="btnExportScenario"><span id="sidebarMenuBtnIcon">💾</span><span id="sidebarMenuBtnTxt"
+              class="collapsed" data-i18n="export">Szenario exportieren</span></button></li>
+        <li><button id="btnEditScenario"><span id="sidebarMenuBtnIcon">✏️</span><span id="sidebarMenuBtnTxt"
+              class="collapsed" data-i18n="editscenario">Scenario bearbeiten</span></button></li>
+      </ul>
+    </nav>
+
+    <!-- Haupt-Inhalt in der Mitte -->
+    <main id="mainContent">
+      <div id="mapContainer">
+        <div id="mapGrid"></div>
+      </div>
+
+      <div id="divEditScenario" style="display: none;">
+        <div id="editMapGrid"></div>
+      </div>
+
+      <div id="divNPCEditor" style="display: none;">
+        <h2 data-i18n="npcEditor">NPC-Editor</h2>
+
+        <div class="editor-field">
+          <label data-i18n="id" for="txtNPCId">ID:</label>
+          <input type="text" id="txtNPCId" disabled>
+          <!-- disabled: nehmen wir nur zum Anzeigen, wenn du IDs auto-generieren willst -->
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="name" for="txtNPCName">Name:</label>
+          <input type="text" id="txtNPCName">
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="profession" for="txtNPCProfession">Profession:</label>
+          <input type="text" id="txtNPCProfession">
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="image" for="npcImage">Image:</label>
+          <button data-i18n="upload" id="btnNPCImageUpload">Upload</button>
+          <input type="file" id="inputNPCImageFile" accept="image/*" style="display: none;" />
+
+          <!-- Eine kleine Vorschau -->
+          <img id="imgNPCImagePreview" src="" alt="Preview"
+            style="width: 100px; height: 100px; object-fit: cover; display: none;" />
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="appearance" for="txtNPCAppearance">Appearance:</label>
+          <div id="txtNPCAppearance" class="quill-editor" rows="4"></div>
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="description" for="txtNPCDescription">Description:</label>
+          <div id="txtNPCDescription" class="quill-editor" rows="4"></div>
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="maxhp" for="numNPCMaxHP">Max HP:</label>
+          <input type="number" id="numNPCMaxHP" rows="1" \>
+          <label data-i18n="currhp" for="numNPCCurrentHP">Current HP:</label>
+          <input type="number" id="numNPCCurrentHP" rows="1" \>
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="maxmentalhp" for="numNPCMentalMaxHP">Max Mental HP:</label>
+          <input type="number" id="numNPCMentalMaxHP" rows="1" \>
+          <label data-i18n="currentmentalhp" for="numNPCMentalCurrentHP">Current Mental HP:</label>
+          <input type="number" id="numNPCMentalCurrentHP" rows="1" \>
+        </div>
+
+        <div class="editor-field">
+          <div id="npcAttributesContainer">
+            <div class="category" id="categoryPhysical">
+              <h3>
+                <span data-i18n="physical">Physical</span>
+                <span class="bonus-points" id="bonusPointsPhysical">+ 0</span>
+              </h3>
+              <span class="power-points" id="powerPointsPhysical">⚡ 0</span>
+              <div class="entries">
+                <!-- Dynamische Einträge -->
+              </div>
+              <button class="btnAddEntry" data-category="Physical" data-i18n="addEntry">+ Add Entry</button>
+            </div>
+
+            <div class="category" id="categoryKnowledge">
+              <h3>
+                <span data-i18n="knowledge">Knowledge</span>
+                <span class="bonus-points" id="bonusPointsKnowledge">+ 0</span>
+              </h3>
+              <span class="power-points" id="powerPointsKnowledge">⚡ 0</span>
+              <div class="entries">
+                <!-- Dynamische Einträge -->
+              </div>
+              <button class="btnAddEntry" data-category="Knowledge" data-i18n="addEntry">+ Add Entry</button>
+            </div>
+
+            <div class="category" id="categorySocial">
+              <h3>
+                <span data-i18n="social">Social</span>
+                <span class="bonus-points" id="bonusPointsSocial">+ 0</span>
+              </h3>
+              <span class="power-points" id="powerPointsSocial">⚡ 0</span>
+              <div class="entries">
+                <!-- Dynamische Einträge -->
+              </div>
+              <button class="btnAddEntry" data-category="Social" data-i18n="addEntry">+ Add Entry</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="editor-field">
+          <!-- Schedule-Tabelle -->
+          <h3 data-i18n="schedule">Schedule</h3>
+          <div id="npcScheduleContainer">
+            <!-- Hier fügen wir eine kleine Tabelle oder Liste ein -->
+            <table id="npcScheduleTable">
+              <thead>
+                <tr>
+                  <th data-i18n="start">Start</th>
+                  <th data-i18n="place">Place</th>
+                  <th>X</th>
+                  <th>Y</th>
+                  <th></th> <!-- Spalte für "Löschen"-Button -->
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Dynamisch füllen wir später per JS Zeilen ein -->
+              </tbody>
+            </table>
+            <button id="btnNPCScheduleAdd" data-i18n="addEntry">+ Neues Zeitfenster</button>
+          </div>
+        </div>
+
+
+        <!-- Buttons unten -->
+        <div class="editor-field">
+          <div id="npcEditorButtons">
+            <button id="btnNPCSave" data-i18n="save">Save</button>
+            <button id="btnNPCDelete" data-i18n="delete" style="background-color: red; color: white;">Löschen</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="divObjectEditor" style="display: none;">
+        <h2 data-i18n="objectEditor">Objekt-Editor</h2>
+
+        <!-- Formular -->
+        <div class="editor-field">
+          <label data-i18n="id" for="objectId">ID:</label>
+          <input type="text" id="objectId" disabled />
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="name" for="objectName">Name:</label>
+          <input type="text" id="objectName" />
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="image" for="objectImage">Bild:</label>
+          <button data-i18n="upload" id="btnObjectImageUpload">Upload</button>
+          <input type="file" id="inputObjectImageFile" accept="image/*" style="display: none;" />
+          <img id="imgObjectImagePreview" src="" alt="Preview"
+            style="width: 100px; height: 100px; object-fit: cover; display: none;" />
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="description" for="objectDescription">Beschreibung:</label>
+          <div id="objectDescription" class="quill-editor" rows="4"></div>
+        </div>
+        <div class="editor-field">
+          <label data-i18n="position">Position:</label>
+          <select id="selectObjectPositionType">
+            <option data-i18n="none" value="none">Keine</option>
+            <option data-i18n="npc" value="npc">NPC</option>
+            <option data-i18n="place" value="place">place</option>
+          </select>
+          <select id="objectPositionTarget"></select>
+          <label id="objectPositionXLabel" style="display: none;">X:</label>
+          <input type="number" id="objectPositionX" style="display: none;">
+          <label id="objectPositionYLabel" style="display: none;">Y:</label>
+          <input type="number" id="objectPositionY" style="display: none;">
+        </div>
+        <button data-i18n="save" id="btnObjectSave">Speichern</button>
+        <button id="btnObjectDelete" style="background-color: red; color: white;">Löschen</button>
+      </div>
+
+      <div id="divPlaceEditor" style="display: none;">
+        <h2 data-i18n="placeEditor">Ortsverwaltung</h2>
+        <div class="editor-field">
+          <label data-i18n="id" for="placeId">ID:</label>
+          <input type="text" id="placeId" disabled />
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="name" for="placeName">Name:</label>
+          <input type="text" id="placeName" />
+          <label data-i18n="startPlace" for="startPlace">Name:</label>
+          <input type="checkbox" id="startPlace" />
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="background" for="placeBackground">Hintergrundbild:</label>
+          <button data-i18n="upload" id="btnPlaceBackgroundUpload">Upload</button>
+          <input type="file" id="inputPlaceBackgroundFile" accept="image/*" style="display: none;" />
+          <img id="imgPlaceImagePreview" src="" alt="Preview"
+            style="width: 100px; height: 100px; object-fit: cover; display: none;" />
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="gridRow" for="placeGridSizeRows">Grid-Zeilen:</label>
+          <input type="number" id="placeGridSizeRows" min="1" />
+        </div>
+        <div class="editor-field">
+          <label data-i18n="gridCol" for="placeGridSizeCols">Grid-Spalten:</label>
+          <input type="number" id="placeGridSizeCols" min="1" />
+        </div>
+
+        <div class="placeEditorButtons">
+          <button data-i18n="save" id="btnPlaceSave">Save</button>
+          <button data-i18n="delete" id="btnPlaceDelete" style="background-color: red; color: white;">Delete</button>
+        </div>
+      </div>
+
+      <div id="divTimelineEditor" style="display: none;">
+        <h2 data-i18n="timelineEditor">Zeitlinien-Editor</h2>
+        <table id="timelineTable">
+          <thead>
+            <tr>
+              <th data-i18n="order">Reihenfolge</th>
+              <th data-i18n="title">Titel</th>
+              <th data-i18n="description">Beschreibung</th>
+              <th data-i18n="action">Aktionen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Zeilen werden hier dynamisch hinzugefügt -->
+          </tbody>
+        </table>
+        <button data-i18n="addEntry" id="btnNewTimelineEntry">Neuer Eintrag</button>
+        <button data-i18n="save" id="btnSaveTimeline">Speichern</button>
+      </div>
+
+      <div id="divEventEditor" style="display: none;">
+        <h2 data-i18n="eventEditor">Event-Editor</h2>
+
+        <!-- Formular -->
+        <div class="editor-field">
+          <label data-i18n="id" for="eventId">ID:</label>
+          <input type="text" id="eventId" disabled />
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="name" for="eventName">Name:</label>
+          <input type="text" id="eventName" />
+        </div>
+
+        <div class="editor-field">
+          <label data-i18n="description" for="eventDescription">Beschreibung:</label>
+          <div id="eventDescription" class="quill-editor" rows="4"></div>
+        </div>
+        <div class="editor-field">
+          <div id="eventConditionContainer">
+            <h3 data-i18n="trigger">Trigger</h3>
+            <div id="conditionsList"></div>
+            <button data-i18n="addCondition" id="btnAddCondition">+ Neue Bedingung</button>
+          </div>
+        </div>
+        <div class="editor-field">
+          <button data-i18n="save" id="btnEventSave">Speichern</button>
+          <button data-i18n="delete" id="btnEventDelete" style="background-color: red; color: white;">Löschen</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Rechte Seitenleiste -->
+    <aside id="infoSidebar">
+
+      <!-- Tab-Menü / Reiter -->
+      <div id="infoTabs">
+        <button data-i18n="selected" class="tab-button active" data-tab="tabSelected">Selected</button>
+        <button data-i18n="npcs" class="tab-button" data-tab="tabNPCs">NPCs</button>
+        <button data-i18n="objects" class="tab-button" data-tab="tabObjects">Objects</button>
+        <button data-i18n="npcEditor" class="tab-button" data-tab="tabNPCEditor" style="display: none;">
+          NPC-Editor
+        </button>
+        <button data-i18n="objectEditor" class="tab-button" data-tab="tabObjectEditor" style="display: none;">
+          Object-Editor
+        </button>
+        <button data-i18n="placeEditor" class="tab-button" data-tab="tabPlaceEditor" style="display: none;">
+          Place-Editor
+        </button>
+        <button data-i18n="eventEditor" class="tab-button" data-tab="tabEventEditor" style="display: none;">
+          Event-Editor
+        </button>
+        <button data-i18n="allNPCs" class="tab-button" data-tab="tabAllNPC" style="display: none;">
+          Alle NPCs
+        </button>
+        <button data-i18n="allObjects" class="tab-button" data-tab="tabAllObjects" style="display: none;">
+          Alle Objekte
+        </button>
+        <button data-i18n="metadata" class="tab-button" data-tab="tabMatadata" style="display: none;">
+          Matadata
+        </button>
+        <button data-i18n="inventory" class="tab-button" data-tab="tabInventory" style="display: block;">
+          Inventory
+        </button>
+      </div>
+
+      <!-- Tab-Inhalte -->
+      <div id="tabContents">
+        <!-- Inhalt für "Selected" -->
+        <div class="tab-content" id="tabSelected">
+          <h3 data-i18n="selectedObject">Ausgewähltes Objekt</h3>
+          <p data-i18n="infoForSelected">Hier erscheinen Infos zum geklickten NPC/Objekt.</p>
+        </div>
+
+        <!-- Inhalt für "NPCs" -->
+        <div class="tab-content" id="tabNPCs" style="display: none;">
+          <h3 data-i18n="npcsHere">NPCs an diesem Ort</h3>
+          <div id="npcListHere">
+            <!-- Dynamisch gefüllte Liste der NPCs -->
+          </div>
+        </div>
+
+        <!-- Reiter für Objekte -->
+        <div class="tab-content" id="tabObjects" style="display: none;">
+          <h3 data-i18n="objectsHere">Objekte an diesem Ort</h3>
+          <div id="objectListHere">
+            <!-- Dynamisch gefüllte Liste der Objekte -->
+          </div>
+        </div>
+
+        <div class="tab-content" id="tabNPCEditor" style="display: none;">
+          <div id="npcListRight">
+          </div>
+
+          <button data-i18n="newNPC" id="btnNewNPC">Neuer NPC</button>
+        </div>
+
+        <div class="tab-content" id="tabObjectEditor" style="display: none;">
+          <div id="divObjectListRight">
+            <!-- Hier tauchen alle Objekte auf -->
+          </div>
+          <button data-i18n="newObject" id="btnNewObject">Neues Objekt</button>
+        </div>
+
+        <div class="tab-content" id="tabEventEditor" style="display: none;">
+          <div id="divEventListRight">
+            <!-- Hier tauchen alle Events auf -->
+          </div>
+          <button data-i18n="newEvent" id="btnNewEvent">Neues Event</button>
+        </div>
+
+        <div class="tab-content" id="tabPlaceEditor" style="display: none;">
+          <div id="divplaceListRight">
+          </div>
+          <button data-i18n="newPlace" id="btnNewPlace">Neuer Ort</button>
+        </div>
+
+        <div class="tab-content" id="tabAllNPC" style="display: none;">
+          <div id="divAllNPCListRight">
+          </div>
+        </div>
+
+        <div class="tab-content" id="tabAllObjects" style="display: none;">
+          <div id="divAllObjectsListRight">
+          </div>
+        </div>
+
+        <div class="tab-content" id="tabMatadata" style="display: none;">
+          <div data-i18n="metadata" class="editor-field">
+            <h1>Matadaten:</h1>
+          </div>
+
+          <div class="editor-field">
+            <label data-i18n="scenarioName" for="txtMetaScenarioName">Scenario Name:</label>
+            <input type="text" value="Scenario" id="txtMetaScenarioName">
+            <div id="errorMessage"><span data-i18n="forbiddenCharsRemoved">forbiddenCharsRemoved</span>\ / : * ? " &lt;
+              &gt; |</div>
+          </div>
+
+          <div class="editor-field">
+            <label data-i18n="creator" for="txtMetaCreator">Creator:</label>
+            <input type="text" value="" id="txtMetaCreator">
+          </div>
+
+          <div class="editor-field">
+            <label data-i18n="plot" for="txtMeatPlot">Plot:</label>
+            <div style=" width: 100%;" id="txtMeatPlot" class="quill-editor" rows="12"></div>
+          </div>
+
+          <div class="editor-field">
+            <label data-i18n="ruleset" for="MetaSelectRuleset">Ruleset:</label>
+            <select id="MetaSelectRuleset">
+              <option value="htbah">How to be a Hero</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="tab-content" id="tabInventory" style="display: none;">
+          <div id="divInventoryListRight">
+            <p data-i18n="infoForInventory">Das ist mein Inventar.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- Script-Einbindung am Ende des Body -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/locales.js"></script>
+  <script src="js/meta.js"></script>
+  <script src="js/npcEditor.js"></script>
+  <script src="js/objectEditor.js"></script>
+  <script src="js/eventEditor.js"></script>
+  <script src="js/grid.js"></script>
+  <script src="js/placeEditor.js"></script>
+  <script src="js/timelineEditor.js"></script>
+  <script src="js/editScenario.js"></script>
+  <script src="js/inventory.js"></script>
+  <script src="js/menunavigation.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/import.js"></script>
+  <script src="js/notification.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1085 @@
+/* style.css */
+:root {
+  --primary-color: #007BFF;
+  /* Blau */
+  --secondary-color: #28A745;
+  /* Grün */
+  --accent-color: #FFC107;
+  /* Orange */
+  --neutral-light: #F0F0F0;
+  /* Hellgrau */
+  --neutral-dark: #333333;
+  /* Dunkelgrau */
+  --accent-dark: #555555;
+  --accent2-dark: #e8e8e8;
+  --text-color: #212529;
+  /* Standard-Schriftfarbe */
+  --negativ-color: #ff0000;
+}
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background-color: var(--accent2-dark);
+  color: var(--text-color);
+}
+
+button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+  background-color: var(--secondary-color);
+  transform: scale(1.05);
+}
+
+button:active {
+  background-color: var(--accent-color);
+  color: var(--text-color);
+  transform: scale(0.95);
+}
+
+button:disabled {
+  background-color: var(--neutral-light);
+  color: var(--neutral-dark);
+  cursor: not-allowed;
+}
+
+.card {
+  background-color: white;
+  border: 1px solid var(--neutral-light);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  width: 88px;
+  padding: 32px 8px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.card:hover {
+  background-color: var(--neutral-light);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+}
+
+.card h1,
+.card h2,
+.card h3 {
+  color: var(--text-color);
+  margin-bottom: 10px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-color);
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+p {
+  color: var(--text-color);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.container {
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 1200px;
+  /* Zentrales Layout */
+}
+
+.tooltip {
+  position: relative;
+  cursor: pointer;
+}
+
+.tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  /* Tooltip oberhalb des Elements */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--neutral-dark);
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+select {
+  appearance: none;
+  /* Entfernt Standard-Styling */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-color: var(--neutral-light);
+  border: 1px solid var(--neutral-dark);
+  border-radius: 4px;
+  padding: 10px 15px;
+  font-size: 1rem;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  line-height: 1.5;
+}
+
+
+select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 4px var(--primary-color);
+  outline: none;
+  /* Entfernt den Standard-Fokus-Ring */
+}
+
+select:hover {
+  border-color: var(--secondary-color);
+}
+
+select option {
+  color: var(--text-color);
+  background-color: var(--neutral-light);
+}
+
+/* --- Layout-Grundstruktur --- */
+
+/* Der #app-Container umschließt die Sidebar, den Main-Bereich und das Info-Panel */
+#app {
+  display: flex;
+  /* Wir verwenden Flexbox */
+  height: calc(100vh - 60px);
+  /* Gesamthöhe minus Header-Höhe (z.B. 60px),
+                                   damit wir die komplette Bildschirmhöhe nutzen */
+  margin: 0;
+}
+
+/* Linke Sidebar */
+#sidebar {
+  width: 250px;
+  background-color: var(--accent-dark);
+  /* Nur zur Veranschaulichung */
+  display: flex;
+  /* Damit wir den Inhalt (Button & ul) schön anordnen können */
+  flex-direction: column;
+  /* Inhalte untereinander */
+  align-items: flex-start;
+  padding: 10px;
+}
+
+/* Hamburger-Menü-Knopf oben in der Sidebar */
+
+
+/* Die Menü-Liste in der Sidebar */
+#sidebarMenu {
+  list-style: none;
+  /* Keine Bullet Points */
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+#sidebarMenu li {
+  margin: 5px 0;
+}
+
+#sidebarMenu li button {
+  width: 100%;
+  padding: 8px;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+
+/* Hauptbereich (Mitte) */
+#mainContent {
+  flex: 1;
+  /* Damit das Kind (#mapGrid) die volle Höhe/WIDTH bekommt */
+  display: flex;
+  overflow: hidden;
+  /* falls es doch größer wird */
+}
+
+/* Rechte Sidebar */
+#infoSidebar {
+  width: 365px;
+  background-color: var(--accent-dark);
+  /* Nur zur Veranschaulichung */
+  padding: 10px;
+  overflow: auto;
+}
+
+/* Header-Bereich oben */
+header {
+  color: var(--neutral-light);
+  height: 60px;
+  /* Beispielhöhe, kann an Layout angepasst werden */
+  background-color: var(--neutral-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0;
+  /* Entfernen, wenn du oben mehr Abstand wünschst */
+}
+
+
+/* --- Sidebar eingeklappt --- */
+#sidebar.collapsed {
+  width: 60px;
+  /* oder eine andere kleinere Breite nach Wunsch */
+  padding: 10px 5px;
+  /* engerer Innenabstand, damit Platz gespart wird */
+}
+
+
+#sidebarMenuBtnTxt.collapsed {
+  display: none;
+  /* Menü ausblenden, wenn die Sidebar eingeklappt ist */
+}
+
+/* --- Location & Time-Bar oben im Header --- */
+#locationTimeBar {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+  /* Etwas Abstand links vom H1 */
+}
+
+#locationTimeBar label {
+  margin: 0 8px;
+  font-weight: bold;
+}
+
+#locationTimeBar select,
+#locationTimeBar input[type="range"] {
+  margin-right: 12px;
+  /* Kleiner Abstand zwischen Elementen */
+}
+
+/* --- Grid-Karte --- */
+#mapContainer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  /* Falls wir Positionierungen machen wollen */
+  display: block;
+  justify-content: center;
+  align-items: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+#mapGrid {
+  height: 100%;
+  display: grid;
+  gap: 0px;
+  border: 1px solid #ccc;
+}
+
+#divEditScenario {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  /* Falls wir Positionierungen machen wollen */
+  display: block;
+  justify-content: center;
+  align-items: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+#editMapGrid {
+  display: grid;
+  gap: 0px;
+  border: 1px solid #ccc;
+}
+
+.mapCell {
+  border: 1px #7878787a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-style: dashed;
+}
+
+/* Den NPC-Editor nur zeigen/verstecken via JS – hier mal Standard-Styling */
+#divNPCEditor {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+#divNPCEditor *>textarea {
+  width: 100%;
+}
+
+#divObjectEditor {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+#divObjectEditor *>textarea {
+  width: 100%;
+}
+
+#divPlaceEditor {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+
+#divPlaceEditor *>textarea {
+  width: 100%;
+}
+
+/* Einfache Felder */
+.editor-field {
+  min-height: 1.4em;
+  padding: 1px;
+}
+
+#npcScheduleTable {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+#npcScheduleTable th,
+#npcScheduleTable td {
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  text-align: center;
+}
+
+#npcEditorButtons {
+  margin-top: 20px;
+}
+
+/* Reiterleiste */
+#infoTabs {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.tab-button {
+  flex: 1;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.tab-button.active {
+  background-color: var(--accent-color);
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+
+
+.npcItemRight {
+  position: relative;
+  /* Für die Positionierung des Trash-Buttons */
+  border: 1px solid #ccc;
+  background-color: #fff;
+  width: 80px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.npcImageRight {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+}
+
+.objectItemRight {
+  border: 1px solid #ccc;
+  background-color: #fff;
+  width: 80px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+
+#divTimelineEditor {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+#timelineTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+#timelineTable th,
+#timelineTable td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.draggable {
+  cursor: grab;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+.drop-indicator {
+  height: 4px;
+  background-color: #007bff;
+  margin: -2px 0;
+}
+
+.drag-handle {
+  cursor: grab;
+  user-select: none;
+  font-size: 18px;
+  padding: 4px;
+  display: inline-block;
+  color: #333;
+  text-align: center;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+  color: #007bff;
+  /* Farbe ändern, wenn aktiv */
+}
+
+
+#timeDisplay {
+  display: flex;
+  justify-content: space-between;
+  /* Gleichmäßige Verteilung */
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  /* Immer die volle Breite */
+  max-width: 600px;
+  /* Optional: Beschränkung der Breite */
+  padding: 2px;
+  /* Gleichmäßige Abstände */
+  background-color: var(--neutral-light);
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  color: black ;
+  min-height: 2em;
+}
+
+.time-element {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  padding: 5px;
+  width: 120px;
+  /* Maximale Breite */
+  overflow: hidden;
+  /* Verhindert Überlauf */
+  text-overflow: ellipsis;
+  /* Zeigt Überlauf als "..." */
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border-radius: 5px;
+}
+
+.time-element:hover {
+  background-color: var(--secondary-color);
+}
+
+.current-time {
+  font-size: 16px;
+  font-weight: bold;
+  background-color: transparent;
+  min-width: 100px;
+  /* Feste Mindestbreite für aktuelle Zeit */
+  text-align: center;
+
+}
+
+.current-time:hover {
+  background-color: transparent;
+}
+
+.mapElement {
+  font-size: 0.8rem;
+  position: relative;
+  cursor: pointer;
+  outline: #000000;
+  outline-style: auto;
+  background-color: #b4b4b475;
+}
+
+.hoverOverlay {
+  position: absolute;
+  bottom: 100%;
+  /* Standardmäßig Tooltip nach oben */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  display: none;
+  /* Standardmäßig ausgeblendet */
+  flex-direction: column;
+  align-items: center;
+  width: max-content;
+}
+
+.mapElement:hover .hoverOverlay {
+  display: flex;
+  /* Tooltip bei Hover sichtbar */
+}
+
+.hoverItem {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+}
+
+.hoverImage {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  margin-right: 10px;
+  border-radius: 50%;
+  /* Runde Bilder */
+}
+
+#sidebarMenuBtnIcon {
+  font-size: 2em;
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px -1px 0 #000;
+}
+
+.placeItemRight {
+  border: 1px solid #ccc;
+  background-color: #fff;
+  width: 80px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.highlight {
+  outline: auto;
+}
+
+.tooltipBtnRemove {
+  margin: 5px;
+
+}
+
+#mapContainer,
+#editMapGrid {
+  max-height: 100%;
+  overflow: hidden;
+  /* Verhindert, dass Inhalte überlaufen */
+}
+
+#editMapGrid {
+  height: 100%;
+  display: grid;
+  gap: 0px;
+  border: 1px solid #ccc;
+}
+
+.eventItemRight {
+  border: 1px solid #ccc;
+  background-color: #fff;
+  width: 80px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+#conditionsList{
+  color: var(--neutral-light);
+}
+
+.condition {
+  border:#000 1px solid;
+  padding: 5px;
+  margin: 5px 0;
+  border-radius: 5px;
+  background-color: var(--accent-dark);
+}
+
+.condition.or {
+  margin-left: 20px;
+  border-left: 4px solid var(--primary-color);
+  background-color: var(--neutral-dark);
+}
+
+#divEventEditor {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+#divEventEditor *>textarea {
+  width: 100%;
+}
+
+.condition>button {
+  margin: 5px;
+  padding: 5px 10px;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.condition>button:hover {
+  background-color: #e0e0e0;
+}
+
+#notificationContainer {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+  z-index: 1000;
+  width: 35%;
+}
+
+.notification {
+  min-width: 300px;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.notification .content {
+  flex-grow: 1;
+}
+
+.notification .close-btn {
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.notification.info {
+  background-color: #e7f5ff;
+  color: #3178c6;
+}
+
+.notification.success {
+  background-color: #d3f9d8;
+  color: #37b24d;
+}
+
+.notification.warning {
+  background-color: #fff3bf;
+  color: #f08c00;
+}
+
+.notification.error {
+  background-color: #ffe3e3;
+  color: #d6336c;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.hoverOverlay {
+  font-size: 14px;
+  /* Festgelegte Schriftgröße für Tooltips */
+}
+
+#npcListRight,
+#divObjectListRight,
+#divplaceListRight,
+#divEventListRight,
+#npcListHere,
+#objectListHere,
+#divAllNPCListRight,
+#divAllObjectsListRight {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 16px;
+  padding-bottom: 1em;
+}
+
+#npcAttributesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.category {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: #fff;
+}
+
+.category h3 {
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.bonus-points {
+  font-size: 16px;
+  font-weight: bold;
+  color: #007bff;
+  margin-left: 10px;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.category-header h3 {
+  margin: 0;
+}
+
+.power-points {
+  font-size: 16px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.entries {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Abstand zwischen Zeilen */
+}
+
+.entry-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Abstand zwischen den Spalten */
+}
+
+.entry-row input {
+  flex: 1;
+  /* Gleichmäßige Verteilung der Breite */
+  padding: 5px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.entry-row button {
+  background: none;
+  border: none;
+  color: var(--negativ-color);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.entry-row button:hover {
+  color: darkred;
+}
+
+
+.btnDeleteEntry {
+  background: none;
+  border: none;
+  color: var(--negativ-color);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.btnDeleteEntry:hover {
+  color: darkred;
+}
+
+.character-sheet {
+  padding: 5px;
+  border: 2px solid #000;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.character-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border: 2px solid #000;
+  border-radius: 50%;
+  display: block;
+  margin: 0 auto;
+}
+
+.character-name {
+  text-align: center;
+  margin-top: 10px;
+  color: #333;
+}
+
+.attributes-section {
+  margin-top: 20px;
+}
+
+.attributes-title {
+  border-bottom: 2px solid #000;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.attributes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+}
+
+div.attributes-section>div>div:nth-child(2) {
+  border-left: solid 2px black;
+  border-right: solid 2px black;
+}
+
+.attribute-category h3 {
+  border-bottom: solid 2px black;
+  font-size: small;
+  margin-bottom: 5px;
+  color: #333;
+  white-space: pre-line;
+}
+
+.attributes-list {
+  font-size: 0.8em;
+  list-style: none;
+  padding: 0;
+}
+
+.attributes-list li {
+  border-bottom: dashed rgba(0, 0, 0, 0.179);
+  margin-bottom: 3px;
+}
+
+.object-details {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.object-description {
+  font-style: italic;
+  color: #555;
+}
+
+.inventory-section {
+  margin-top: 20px;
+}
+
+.inventory-title {
+  border-bottom: 2px solid #000;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.inventory-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.inventory-item {
+  width: 100px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.inventory-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.inventory-name {
+  font-size: 14px;
+  color: #333;
+}
+
+.no-items-message {
+  text-align: center;
+  font-style: italic;
+  color: #777;
+}
+
+.owner-image {
+  margin: auto;
+  max-width: 50%;
+  display: block;
+}
+
+#errorMessage {
+  display: none;
+  /* Anfangs unsichtbar */
+  color: var(--negativ-color);
+  font-size: 0.9em;
+  margin-top: 4px;
+}
+
+#timeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+#realTimeContainer,
+#pageTimerContainer {
+  align-items: center;
+  gap: 10px;
+}
+
+#realTime,
+#pageTimer {
+  padding: 5px 10px;
+
+
+
+}
+
+.spoiler {
+  background-color: black;
+  color: black;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.spoiler:hover {
+  background-color: gray;
+}
+
+.quill-editor {
+  height: 150px;
+  /* Höhe des Editors */
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.ql-spoiler::before {
+  content: "⚠️";
+  /* Spoiler-Symbol */
+  font-size: 16px;
+}
+
+.ql-spoiler {
+  width: 30px;
+  text-align: center;
+}
+
+#headerLeft {
+  position: absolute;
+  left: 10px;
+  display: flex;
+  align-items: center;
+}
+
+#headerRight {
+  position: absolute;
+  right: 10px;
+}
+
+#logo {
+  height: 50px; /* Logo-Höhe */
+}
