@@ -1021,6 +1021,8 @@ div.attributes-section > div > div:nth-child(2) {
 #headerRight {
   position: absolute;
   right: 10px;
+  display: flex;
+  align-items: center;
 }
 
 #logo {
