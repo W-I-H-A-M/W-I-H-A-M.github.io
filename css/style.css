@@ -124,6 +124,42 @@ p {
   z-index: 10;
 }
 
+/* /* Checkboxen elements */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--neutral-dark);
+  border-radius: 4px;
+  background-color: var(--neutral-light);
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white"><path d="M6.173 10.577l-2.83-2.829 1.415-1.415 1.415 1.414L11.243 3l1.414 1.414-6.484 6.485z"/></svg>');
+  background-size: 12px 12px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+input[type="checkbox"]:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 3px var(--accent-color);
+}
+
+input[type="checkbox"]:hover {
+  border-color: var(--secondary-color);
+}
+
 /* Select elements */
 select {
   appearance: none;
