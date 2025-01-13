@@ -17,15 +17,9 @@ WIHAM? is an interactive platform for planning and managing pen-and-paper advent
 - **Multilingual Support:** Support for multiple languages (e.g., English, German).
 
 ## Installation
-
 ### Prerequisites
 - A modern browser with JavaScript support.
 - Browse to [w-i-h-a-m.github.io](https://w-i-h-a-m.github.io/).
-
-### Steps
-1. Download or clone the repository:
-2. Start a local server in the application's root directory.
-3. Open `index.html` in your browser.
 
 ## Directory Structure
 
