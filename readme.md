@@ -21,6 +21,7 @@ WIHAM? is an interactive platform for planning and managing pen-and-paper advent
 - A modern browser with JavaScript support.
 - Browse to [w-i-h-a-m.github.io](https://w-i-h-a-m.github.io/).
 
+
 ## Directory Structure
 
 ```
