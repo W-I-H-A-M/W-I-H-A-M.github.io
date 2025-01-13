@@ -857,16 +857,6 @@ div.attributes-section > div > div:nth-child(2) {
   margin-bottom: 3px;
 }
 
-.object-details {
-  margin-top: 20px;
-  text-align: center;
-}
-
-.object-description {
-  font-style: italic;
-  color: #555;
-}
-
 /* Inventory */
 .inventory-section {
   margin-top: 20px;
@@ -967,8 +957,11 @@ div.attributes-section > div > div:nth-child(2) {
 }
 
 .ql-spoiler::before {
-  content: "⚠️";
+  content: "👁️‍🗨️";
   font-size: 16px;
+  top: -5px;
+  left: -1px;
+  position: relative;
 }
 
 .ql-spoiler {

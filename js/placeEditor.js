@@ -9,6 +9,18 @@ const btnPlaceDelete = document.getElementById("btnPlaceDelete");
 const btnNewPlace = document.getElementById("btnNewPlace");
 const divplaceListRight = document.getElementById("divplaceListRight");
 
+const placeDescriptionEditor = new Quill('#placeDescription', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link', 'blockquote'],
+        [{ 'spoiler': true }]
+      ]
+    }
+  });
+
 let currentPlace = null;
 let currentEditedPlace = null;
 
@@ -49,6 +61,7 @@ btnNewPlace.addEventListener("click", () => {
   const newPlace = {
     id: generateID(),
     name: "N/N",
+    description: "",
     background: "assets/default_place.png",
     gridSize: { rows: 10, cols: 10 }
   };
@@ -131,6 +144,7 @@ function loadPlaceIntoEditor(place) {
   document.getElementById("placeGridSizeRows").value = place.gridSize.rows || 10;
   document.getElementById("placeGridSizeCols").value = place.gridSize.cols || 10;
   document.getElementById("startPlace").checked = place.default;
+  placeDescriptionEditor.root.innerHTML = currentEditedPlace.description;
   
   if (place.background) {
     imgPlaceImagePreview.src = place.background;
@@ -150,6 +164,7 @@ function savePlaceFromEditor() {
   currentEditedPlace.gridSize.rows = parseInt(document.getElementById("placeGridSizeRows").value, 10);
   currentEditedPlace.gridSize.cols = parseInt(document.getElementById("placeGridSizeCols").value, 10);
   currentEditedPlace.default = document.getElementById("startPlace").checked;
+  currentEditedPlace.description = placeDescriptionEditor.root.innerHTML;
 
   if (currentEditedPlace.default) {
     places.forEach(place => {
@@ -191,6 +206,7 @@ function clearPlaceEditorFields() {
   document.getElementById("placeGridSizeRows").value = "";
   document.getElementById("placeGridSizeCols").value = "";
   document.getElementById("startPlace").checked = false;
+  document.getElementById("placeDescription").value = "";
 
   if (imgPlaceImagePreview) {
     imgPlaceImagePreview.src = "";

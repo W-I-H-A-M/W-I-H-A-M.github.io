@@ -51,7 +51,7 @@ function generateObjectsJSON() {
 function generatePlacesJSON() {
     const placesReturn = places.map(place => ({
         ...place,
-        image: place.background ? `images/place_${place.id}.png` : null
+        background: place.background ? `images/place_${place.id}.png` : null
     }));
     return placesReturn;
 }

@@ -284,7 +284,7 @@ function displaySelectedDetails(item) {
   charSheet.classList.add("character-sheet");
 
   const img = document.createElement("img");
-  img.src = item.image || (item.schedule ? "assets/default_npc.png" : "assets/default_object.png");
+  img.src = item.image || item.background || (item.schedule ? "assets/default_npc.png" : "assets/default_object.png");
   img.alt = item.name || "Unnamed";
   img.classList.add("character-image");
   charSheet.appendChild(img);
