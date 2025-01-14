@@ -46,6 +46,12 @@
 7. **Multilingual Support**  
    \- Easily switch between languages such as English and German.
 
+8. **Support for Rulesets**  
+   \- Show Attributes based on the Ruleset this Adventure is made for
+
+Currently Supported Rulesets are:
+- How To Be A Hero (HTBAH)
+
 ---
 
 ## 🛠 Installation
