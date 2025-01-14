@@ -64,7 +64,6 @@ function locationChanged() {
     currentPlace = selectedPlaceId;
     loadSelectedPlace(selectedPlaceId);
     updateDynamicLists();
-    console.log("Location changed to:", selectedPlaceId);
     updateAndCheckEvents();
     myPlace = places.find(p => p.id === selectedPlaceId);
     displaySelectedDetails(myPlace);
