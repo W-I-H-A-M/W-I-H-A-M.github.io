@@ -89,6 +89,35 @@ function renderItemCard(data, type) {
   nameEl.classList.add("itemName");
   card.appendChild(nameEl);
 
+  const adjustFontSize = () => {
+    const cardWidth = card.offsetWidth;
+    const maxWidth = cardWidth - 10; // Polsterung berücksichtigen
+    const maxHeight = card.offsetHeight;
+    let fontSize = 16; // Maximale Schriftgröße
+
+    // Schriftgröße anpassen, falls Text zu groß ist
+    nameEl.style.fontSize = `${fontSize}px`;
+    while ((nameEl.scrollWidth > maxWidth || nameEl.scrollHeight > maxHeight) && fontSize > 8) {
+      fontSize -= 1;
+      nameEl.style.fontSize = `${fontSize}px`;
+    }
+  };
+
+  // IntersectionObserver zur Schriftgrößenanpassung bei Sichtbarkeit
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          adjustFontSize();
+          observer.unobserve(card); // Beobachtung beenden, nachdem es einmal angepasst wurde
+        }
+      });
+    },
+    { threshold: 0.1 } // Element ist sichtbar, wenn mindestens 10% angezeigt werden
+  );
+
+  observer.observe(card);
+
   const infoButton = document.createElement("button");
   infoButton.innerHTML = "🛈";
   infoButton.classList.add("infoButton");

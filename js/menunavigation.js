@@ -145,4 +145,5 @@ function switchMenu(Container, exeptBtns) {
         btn.style.display = "inline-block";
     });
     exeptBtns[0].click();
+    adjustFontSize
 }
