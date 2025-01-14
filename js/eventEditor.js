@@ -288,11 +288,7 @@ function evaluateEventConditions(event, context) {
 function checkAndNotifyEvents(events, context) {
     events.forEach(event => {
         if (evaluateEventConditions(event, context)) {
-            showNotification({
-                type: "info",
-                content: `${event.name}<br>${event.description?.replace(/\n/g, "<br>")}`,
-                duration: 0
-            });
+            addNotification(`${event.name}<br>${event.description?.replace(/\n/g, "<br>")}`)
         }
     });
 }

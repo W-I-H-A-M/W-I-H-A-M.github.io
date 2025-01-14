@@ -1061,3 +1061,125 @@ div.attributes-section>div>div:nth-child(2) {
   height: 50px;
   /* logo height */
 }
+
+.bell {
+  position: relative;
+  cursor: pointer;
+  font-size: 1.5em;
+  margin-right: 10px;
+  padding-left: 10px;
+}
+
+.count {
+  position: absolute;
+  top: -5px;
+  right: -16px;
+  background-color: var(--negativ-color);
+  color: var(--neutral-light);
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.8em;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.swing {
+  animation: swing 0.5s ease-out;
+}
+
+@keyframes swing {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-15deg);
+  }
+
+  50% {
+    transform: rotate(15deg);
+  }
+
+  75% {
+    transform: rotate(-10deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* Keyframes for dropdown animations */
+@keyframes dropdownOpen {
+  0% {
+      opacity: 0;
+      transform: scaleY(0);
+  }
+  100% {
+      opacity: 1;
+      transform: scaleY(1);
+  }
+}
+
+@keyframes dropdownClose {
+  0% {
+      opacity: 1;
+      transform: scaleY(1);
+  }
+  100% {
+      opacity: 0;
+      transform: scaleY(0);
+  }
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--accent-dark);
+  border: 1px solid var(--neutral-dark);
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 1000px;
+  max-height: 500px;
+  overflow-y: scroll;
+  z-index: 100;
+  padding-left: 0px;
+  display: block;
+  transform-origin: top;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  animation-fill-mode: forwards;
+  animation-duration: 0.3s;
+}
+
+.dropdown.opening {
+  animation-name: dropdownOpen;
+}
+
+.dropdown.closing {
+  animation-name: dropdownClose;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin: 5px 5px;
+  border: 1px solid var(--neutral-light);
+  border-radius: 5px;
+  background-color: var(--neutral-dark);
+  font-size: 0.9em;
+}
+
+#notificationList{
+  padding-left: 0px;
+}
+
+.delete-btn {
+  margin-bottom: auto;
+}
