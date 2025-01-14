@@ -11,6 +11,7 @@ let editScenarioEnabled = false;
 function enableDragAndDropTabs() {
     const allNpcTab = document.querySelector("#divAllNPCListRight");
     const allObjectTab = document.querySelector("#divAllObjectsListRight");
+    const allPlacesTab = document.querySelector("#divAllPlacesListRight");
 
     // Clear and populate the "All NPCs" tab
     allNpcTab.innerHTML = "";
@@ -39,6 +40,20 @@ function enableDragAndDropTabs() {
 
         allObjectTab.appendChild(card);
     });
+
+    // Clear and populate the "All Places" tab
+    allPlacesTab.innerHTML = "";
+    places.forEach(pla => {
+        const card = renderItemCard(pla, 'place');
+        card.setAttribute("draggable", true);
+
+        card.addEventListener("dragstart", event => {
+            event.dataTransfer.setData("type", "place");
+            event.dataTransfer.setData("id", pla.id);
+        });
+
+        allPlacesTab.appendChild(card);
+    });
 }
 
 /**
@@ -56,27 +71,50 @@ function handleEditScenarioGridDrop(event) {
         const col = parseInt(cell.dataset.col, 10);
         const row = parseInt(cell.dataset.row, 10);
 
-        if (type === "npc") {
-            const npc = npcs.find(n => n.id === id);
-            if (npc) {
-                npc.schedule.push({
-                    timeStart: timeline[currentIndex]?.id || "0",
-                    placeId: currentPlace,
-                    row,
-                    col
-                });
+        switch (type) {
+            case "npc": {
+                const npc = npcs.find(n => n.id === id);
+                if (npc) {
+                    npc.schedule.push({
+                        timeStart: timeline[currentIndex]?.id || "0",
+                        placeId: currentPlace,
+                        row,
+                        col
+                    });
+                }
+                break;
             }
-        } else if (type === "object") {
-            const obj = objects.find(o => o.id === id);
-            if (obj) {
-                obj.position = {
-                    type: "place",
-                    targetId: currentPlace,
-                    x: col,
-                    y: row
-                };
+            case "object": {
+                const obj = objects.find(o => o.id === id);
+                if (obj) {
+                    obj.position = {
+                        type: "place",
+                        targetId: currentPlace,
+                        x: col,
+                        y: row
+                    };
+                }
+                break;
             }
+            case "place": {
+                const pla = places.find(p => p.id === id);
+                if (pla) {
+                    if (!pla.link) {pla.link = [];}
+
+                    pla.link.push({
+                        placeId: currentPlace,
+                        row,
+                        col
+                    });
+                }
+                break;
+            }
+            default:
+                // Optional: Handle unsupported types or provide a fallback
+                console.warn(`Unhandled type: ${type}`);
+                break;
         }
+        
         cell.classList.remove("highlight");
     }
 

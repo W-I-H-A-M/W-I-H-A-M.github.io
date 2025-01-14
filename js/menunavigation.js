@@ -27,6 +27,7 @@ const tabBtnAllObjects = document.querySelector('.tab-button[data-tab="tabAllObj
 const tabBtnEventEditor = document.querySelector('.tab-button[data-tab="tabEventEditor"]');
 const tabBtnMatadata = document.querySelector('.tab-button[data-tab="tabMatadata"]');
 const tabBtnInventory = document.querySelector('.tab-button[data-tab="tabInventory"]');
+const tabBtnAllPlaces = document.querySelector('.tab-button[data-tab="tabAllPlaces"]');
 
 // Collect all tab buttons and tab contents
 const allTabButtons = document.querySelectorAll("#infoTabs .tab-button");
@@ -90,7 +91,7 @@ btnEvents.addEventListener("click", () => {
  * Navigates to the scenario editing mode.
  */
 btnEditScenario.addEventListener("click", () => {
-    const exeptBtns = [tabBtnAllNPC, tabBtnAllObjects, tabBtnMatadata];
+    const exeptBtns = [tabBtnAllNPC, tabBtnAllObjects, tabBtnMatadata, tabBtnAllPlaces];
     editScenarioEnabled = true;
     switchMenu(divEditScenario, exeptBtns);
     loadSelectedPlace(locationSelect.value);

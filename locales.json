@@ -73,7 +73,9 @@
     "placeEditor": "Ort Editor",
     "startPlace": "Abenteuer hier starten",
     "explainAllNPC": "Ziehe die NPCs von hier auf das Grid um sie zur ausgewählten Zeit dort zu positionieren.",
-    "explainAllObjects": "Ziehe die Objekte von hier auf das Grid um sie dort zu positionieren."
+    "explainAllObjects": "Ziehe die Objekte von hier auf das Grid um sie dort zu positionieren.",
+    "explainAllPlaces":"Ziehe die Orte von hier auf das Grid um sie dort zu positionieren. Durch einen klick darauf kannst du den Ort wechseln.",
+    "allPlaces":"Alle Orte"
   },
   "en": {
     "languageTitel": "English",
@@ -149,6 +151,8 @@
     "placeEditor": "Place Editor",
     "startPlace": "Start adventure here",
     "explainAllNPC": "Move NPC's onto the grid to position them here at the selected Time.",
-    "explainAllObjects": "Move Object's onto the grid to position them here."
+    "explainAllObjects": "Move Object's onto the grid to position them here.",
+    "explainAllPlaces":"Move Place's onto the grid to position them here. If clicked on them, you switch to this place.",
+    "allPlaces":"All Places"
   }
 }

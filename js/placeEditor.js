@@ -207,7 +207,8 @@ function clearPlaceEditorFields() {
   document.getElementById("placeGridSizeCols").value = "";
   document.getElementById("startPlace").checked = false;
   document.getElementById("placeDescription").value = "";
-
+  placeDescriptionEditor.root.innerHTML = ""
+  
   if (imgPlaceImagePreview) {
     imgPlaceImagePreview.src = "";
     imgPlaceImagePreview.style.display = "none";

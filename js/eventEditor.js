@@ -106,6 +106,8 @@ function clearEventEditorFields() {
     document.getElementById("eventId").value = "";
     document.getElementById("eventName").value = "";
     document.getElementById("eventDescription").value = "";
+    eventDescriptionEditor.root.innerHTML = "";
+    conditionsList.innerHTML = "";
 }
 
 /**
