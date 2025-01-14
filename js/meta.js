@@ -1,7 +1,6 @@
 // References to DOM elements and a pattern to detect forbidden characters
 const txtMetaScenarioName = document.getElementById("txtMetaScenarioName");
 const txtMetaCreator = document.getElementById("txtMetaCreator");
-const txtMeatPlot = document.getElementById("txtMeatPlot");
 const MetaSelectRuleset = document.getElementById("MetaSelectRuleset");
 const forbiddenChars = /[\\/:*?"<>|]/g;
 const errorMessage = document.getElementById("errorMessage");
@@ -38,11 +37,11 @@ txtMetaScenarioName.addEventListener("input", (event) => {
 
 // Listen for changes in the creator name field to update metadata
 txtMetaCreator.addEventListener("change", () => {
-    saveMetadata();
+    
 });
 
 // Listen for changes in the plot editor to update metadata
-txtMeatPlot.addEventListener("change", () => {
+plotEditor.on('text-change', () => {
     saveMetadata();
 });
 
