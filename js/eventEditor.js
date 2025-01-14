@@ -300,6 +300,7 @@ function checkAndNotifyEvents(events, context) {
  * and evaluates events to see if they should trigger notifications.
  */
 function updateAndCheckEvents() {
+    if (!editScenarioEnabled){
     const context = {
         npcs: npcs.filter(npc =>
             npc.schedule.some(entry =>
@@ -313,6 +314,7 @@ function updateAndCheckEvents() {
     };
 
     checkAndNotifyEvents(events, context);
+}
 }
 
 // ********************************************
