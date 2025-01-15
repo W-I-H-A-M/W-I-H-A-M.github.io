@@ -1217,3 +1217,7 @@ div.attributes-section>div>div:nth-child(2) {
   left: -1px;
   position: relative;
 }
+
+span.item-link {
+  color: var(--primary-color) !important;
+}

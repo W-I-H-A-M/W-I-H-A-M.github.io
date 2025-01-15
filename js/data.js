@@ -66,7 +66,6 @@ class ItemLinkBlot extends Inline {
     node.setAttribute('data-id', value.id);
 
     // Nur Farbe/Style setzen, aber NICHT node.textContent
-    node.style.color = 'blue';
     node.style.cursor = 'pointer';
     node.style.textDecoration = 'underline';
 
