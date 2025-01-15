@@ -17,9 +17,14 @@ const eventDescriptionEditor = new Quill('#eventDescription', {
             ['bold', 'italic', 'underline'],
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['link', 'blockquote'],
-            [{ 'spoiler': true }]
+            [{ 'spoiler': true }],
+            ['itemLink']
         ]
     }
+});
+
+eventDescriptionEditor.getModule('toolbar').addHandler('itemLink', () => {
+    openItemLinkModal(eventDescriptionEditor);
 });
 
 // ********************************************
@@ -286,7 +291,7 @@ function evaluateEventConditions(event, context) {
  * if the event's conditions are satisfied.
  */
 function checkAndNotifyEvents(events, context) {
-    
+
     events.forEach(event => {
         if (evaluateEventConditions(event, context)) {
             addNotification(`${event.name}<br>${event.description?.replace(/\n/g, "<br>")}`)
@@ -300,21 +305,21 @@ function checkAndNotifyEvents(events, context) {
  */
 function updateAndCheckEvents() {
     resetNotification();
-    if (!editScenarioEnabled){
-    const context = {
-        npcs: npcs.filter(npc =>
-            npc.schedule.some(entry =>
-                entry.placeId === currentPlace &&
-                entry.timeStart === timeline[currentIndex]?.id
-            )
-        ),
-        timeOrder: timeline[currentIndex]?.order,
-        objects: objects.filter(obj => obj.position === null),
-        place: currentPlace
-    };
+    if (!editScenarioEnabled) {
+        const context = {
+            npcs: npcs.filter(npc =>
+                npc.schedule.some(entry =>
+                    entry.placeId === currentPlace &&
+                    entry.timeStart === timeline[currentIndex]?.id
+                )
+            ),
+            timeOrder: timeline[currentIndex]?.order,
+            objects: objects.filter(obj => obj.position === null),
+            place: currentPlace
+        };
 
-    checkAndNotifyEvents(events, context);
-}
+        checkAndNotifyEvents(events, context);
+    }
 }
 
 // ********************************************

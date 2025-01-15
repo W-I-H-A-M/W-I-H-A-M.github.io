@@ -14,8 +14,13 @@ const plotEditor = new Quill("#txtMeatPlot", {
             [{ list: "ordered" }, { list: "bullet" }],
             ["link", "blockquote"],
             [{ spoiler: true }],
+            ['itemLink']
         ],
     },
+});
+
+plotEditor.getModule('toolbar').addHandler('itemLink', () => {
+    openItemLinkModal(plotEditor);
 });
 
 // Listen for changes in the scenario name field to update metadata

@@ -102,7 +102,7 @@ function renderGrid(rows, cols) {
             } else if (objectsHere.length === 1) {
                 iconElement.textContent = "🔍";
             } else if (placesHere.length === 1) {
-                iconElement.textContent = "🔗";
+                iconElement.textContent = "🗺️";
             }
             symbolElement.appendChild(iconElement);
 

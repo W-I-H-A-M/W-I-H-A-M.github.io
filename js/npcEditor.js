@@ -32,8 +32,13 @@ const npcDescriptionEditor = new Quill("#txtNPCDescription", {
             [{ list: "ordered" }, { list: "bullet" }],
             ["link", "blockquote"],
             [{ spoiler: true }],
+            ['itemLink']
         ],
     },
+});
+
+npcDescriptionEditor.getModule('toolbar').addHandler('itemLink', () => {
+    openItemLinkPopup();
 });
 
 const npcAppearanceEditor = new Quill("#txtNPCAppearance", {
@@ -44,8 +49,17 @@ const npcAppearanceEditor = new Quill("#txtNPCAppearance", {
             [{ list: "ordered" }, { list: "bullet" }],
             ["link", "blockquote"],
             [{ spoiler: true }],
+            ['itemLink']
         ],
     },
+});
+
+npcDescriptionEditor.getModule('toolbar').addHandler('itemLink', () => {
+    openItemLinkModal(npcDescriptionEditor);
+});
+
+npcAppearanceEditor.getModule('toolbar').addHandler('itemLink', () => {
+    openItemLinkModal(npcAppearanceEditor);
 });
 
 // ***************************************

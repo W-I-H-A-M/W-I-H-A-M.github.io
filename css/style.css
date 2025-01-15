@@ -1184,3 +1184,36 @@ div.attributes-section>div>div:nth-child(2) {
 .delete-btn {
   margin-bottom: auto;
 }
+
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; 
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  /* halb-transparent */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* über allem anderen */
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  /* etc. */
+}
+
+.hidden {
+  display: none !important;
+}
+
+.ql-itemLink::before {
+  content: "🔗";
+  font-size: 16px;
+  top: -5px;
+  left: -1px;
+  position: relative;
+}

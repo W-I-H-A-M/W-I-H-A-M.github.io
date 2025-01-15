@@ -59,6 +59,41 @@ SpoilerBlot.tagName = "span";
 
 Quill.register(SpoilerBlot);
 
+class ItemLinkBlot extends Inline {
+  static create(value) {
+    const node = super.create();
+    node.setAttribute('data-type', value.type);
+    node.setAttribute('data-id', value.id);
+
+    // Nur Farbe/Style setzen, aber NICHT node.textContent
+    node.style.color = 'blue';
+    node.style.cursor = 'pointer';
+    node.style.textDecoration = 'underline';
+
+    node.classList.add('item-link');
+    return node;
+  }
+  
+  static formats(node) {
+    return {
+      type: node.getAttribute('data-type'),
+      id: node.getAttribute('data-id')
+    };
+  }
+  
+  format(name, value) {
+    if (name === 'itemLink' && value) {
+      this.domNode.setAttribute('data-type', value.type);
+      this.domNode.setAttribute('data-id', value.id);
+    } else {
+      super.format(name, value);
+    }
+  }
+}
+ItemLinkBlot.blotName = 'itemLink';
+ItemLinkBlot.tagName = 'span';
+Quill.register(ItemLinkBlot);
+
 /**
  * Creates a small "card" element to visually represent various data types 
  * (NPC, object, place, or event) in the UI.

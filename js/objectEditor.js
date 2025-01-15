@@ -15,9 +15,14 @@ const objectDescriptionEditor = new Quill('#objectDescription', {
       ['bold', 'italic', 'underline'],
       [{ list: 'ordered' }, { list: 'bullet' }],
       ['link', 'blockquote'],
-      [{ 'spoiler': true }]
+      [{ 'spoiler': true }],
+      ['itemLink']
     ]
   }
+});
+
+objectDescriptionEditor.getModule('toolbar').addHandler('itemLink', () => {
+  openItemLinkModal(objectDescriptionEditor);
 });
 
 let currentObject = null; // Stores the currently selected object

@@ -10,16 +10,21 @@ const btnNewPlace = document.getElementById("btnNewPlace");
 const divplaceListRight = document.getElementById("divplaceListRight");
 
 const placeDescriptionEditor = new Quill('#placeDescription', {
-    theme: 'snow',
-    modules: {
-      toolbar: [
-        ['bold', 'italic', 'underline'],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['link', 'blockquote'],
-        [{ 'spoiler': true }]
-      ]
-    }
-  });
+  theme: 'snow',
+  modules: {
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link', 'blockquote'],
+      [{ 'spoiler': true }],
+      ['itemLink']
+    ]
+  }
+});
+
+placeDescriptionEditor.getModule('toolbar').addHandler('itemLink', () => {
+  openItemLinkModal(placeDescriptionEditor);
+});
 
 let currentPlace = null;
 let currentEditedPlace = null;
@@ -145,7 +150,7 @@ function loadPlaceIntoEditor(place) {
   document.getElementById("placeGridSizeCols").value = place.gridSize.cols || 10;
   document.getElementById("startPlace").checked = place.default;
   placeDescriptionEditor.root.innerHTML = currentEditedPlace.description;
-  
+
   if (place.background) {
     imgPlaceImagePreview.src = place.background;
     imgPlaceImagePreview.style.display = "block";
@@ -208,7 +213,7 @@ function clearPlaceEditorFields() {
   document.getElementById("startPlace").checked = false;
   document.getElementById("placeDescription").value = "";
   placeDescriptionEditor.root.innerHTML = ""
-  
+
   if (imgPlaceImagePreview) {
     imgPlaceImagePreview.src = "";
     imgPlaceImagePreview.style.display = "none";
