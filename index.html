@@ -48,16 +48,11 @@
   <header>
     <div id="headerLeft">
       <img src="/assets/logo.png" id="logo" alt="Logo" />
-      <div id="timeContainer">
-        <div id="realTimeContainer">
-          <label data-i18n="realTimeLabel">Uhrzeit:</label>
-          <span id="realTime"></span>
-        </div>
-        <div id="pageTimerContainer">
-          <label data-i18n="timerLabel">Timer:</label>
-          <span id="pageTimer"></span>
-        </div>
+      <div style="padding-left: 15px;">
+        WIHAM? - What Is Happening Around Me?<br>
+        <a style="color: var(--accent-color);" href="https://github.com/W-I-H-A-M/W-I-H-A-M.github.io">Github Repo</a>
       </div>
+      
     </div>
     <div id="headerCenter">
       <div id="locationTimeBar">
@@ -78,9 +73,15 @@
       <div id="notificationDropdown" class="dropdown hidden">
         <ul id="notificationList"></ul>
       </div>
-      <div style="padding-right: 10px;">
-        WIHAM? - What Is Happening Around Me?<br>
-        <a style="color: var(--accent-color);" href="https://github.com/W-I-H-A-M/W-I-H-A-M.github.io">Github Repo</a>
+      <div id="timeContainer">
+        <div id="realTimeContainer">
+          <label data-i18n="realTimeLabel">Uhrzeit:</label>
+          <span id="realTime">00:00:00</span>
+        </div>
+        <div id="pageTimerContainer">
+          <label data-i18n="timerLabel">Timer:</label>
+          <span id="pageTimer">00h 00m 00s</span>
+        </div>
       </div>
       <select id="languageSelector"></select>
     </div>

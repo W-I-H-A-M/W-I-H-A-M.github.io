@@ -997,6 +997,8 @@ div.attributes-section>div>div:nth-child(2) {
   gap: 10px;
   font-size: 16px;
   font-weight: bold;
+  min-width: 175px;
+  margin-left: 35px;
 }
 
 #realTimeContainer,
@@ -1113,23 +1115,25 @@ div.attributes-section>div>div:nth-child(2) {
 /* Keyframes for dropdown animations */
 @keyframes dropdownOpen {
   0% {
-      opacity: 0;
-      transform: scaleY(0);
+    opacity: 0;
+    transform: scaleY(0);
   }
+
   100% {
-      opacity: 1;
-      transform: scaleY(1);
+    opacity: 1;
+    transform: scaleY(1);
   }
 }
 
 @keyframes dropdownClose {
   0% {
-      opacity: 1;
-      transform: scaleY(1);
+    opacity: 1;
+    transform: scaleY(1);
   }
+
   100% {
-      opacity: 0;
-      transform: scaleY(0);
+    opacity: 0;
+    transform: scaleY(0);
   }
 }
 
@@ -1177,7 +1181,7 @@ div.attributes-section>div>div:nth-child(2) {
   font-size: 0.9em;
 }
 
-#notificationList{
+#notificationList {
   padding-left: 0px;
 }
 
@@ -1187,15 +1191,17 @@ div.attributes-section>div>div:nth-child(2) {
 
 .modal {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; 
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   /* halb-transparent */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999; /* über allem anderen */
+  z-index: 9999;
+  /* über allem anderen */
 }
 
 .modal-content {
