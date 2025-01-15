@@ -286,6 +286,7 @@ function evaluateEventConditions(event, context) {
  * if the event's conditions are satisfied.
  */
 function checkAndNotifyEvents(events, context) {
+    
     events.forEach(event => {
         if (evaluateEventConditions(event, context)) {
             addNotification(`${event.name}<br>${event.description?.replace(/\n/g, "<br>")}`)
@@ -298,6 +299,7 @@ function checkAndNotifyEvents(events, context) {
  * and evaluates events to see if they should trigger notifications.
  */
 function updateAndCheckEvents() {
+    resetNotification();
     if (!editScenarioEnabled){
     const context = {
         npcs: npcs.filter(npc =>

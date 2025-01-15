@@ -38,14 +38,14 @@ function addNotification(content) {
 
 function startBellSwinging() {
   if (!swingInterval) {
-      swingInterval = setInterval(() => {
-          if (notificationCount > 0) {
-              bell.classList.add('swing');
-              setTimeout(() => bell.classList.remove('swing'), 500);
-          } else {
-              stopBellSwinging();
-          }
-      }, 3000); // Alle 3 Sekunden schwingen
+    swingInterval = setInterval(() => {
+      if (notificationCount > 0) {
+        bell.classList.add('swing');
+        setTimeout(() => bell.classList.remove('swing'), 500);
+      } else {
+        stopBellSwinging();
+      }
+    }, 3000); // Alle 3 Sekunden schwingen
   }
 }
 
@@ -62,29 +62,36 @@ function deleteNotification(notificationElement) {
 
   // Dropdown ausblenden, wenn keine Benachrichtigungen mehr vorhanden sind
   if (notificationCount === 0) {
-      dropdown.classList.add('hidden');
+    dropdown.classList.add('hidden');
   }
+}
+
+function resetNotification() {
+  notificationList.innerHTML = "";
+  notificationCount = 0;
+  count.textContent = notificationCount;
+  dropdown.classList.add('hidden');
 }
 
 
 // Toggle dropdown with animation
 bell.addEventListener('click', () => {
   if (dropdown.classList.contains('hidden')) {
-      dropdown.classList.remove('hidden');
-      dropdown.classList.remove('closing');
-      dropdown.classList.add('opening');
+    dropdown.classList.remove('hidden');
+    dropdown.classList.remove('closing');
+    dropdown.classList.add('opening');
 
-      dropdown.addEventListener('animationend', () => {
-          dropdown.classList.remove('opening');
-      }, { once: true });
-  } else {
+    dropdown.addEventListener('animationend', () => {
       dropdown.classList.remove('opening');
-      dropdown.classList.add('closing');
+    }, { once: true });
+  } else {
+    dropdown.classList.remove('opening');
+    dropdown.classList.add('closing');
 
-      dropdown.addEventListener('animationend', () => {
-          dropdown.classList.add('hidden');
-          dropdown.classList.remove('closing');
-      }, { once: true });
+    dropdown.addEventListener('animationend', () => {
+      dropdown.classList.add('hidden');
+      dropdown.classList.remove('closing');
+    }, { once: true });
   }
 });
 
