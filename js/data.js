@@ -10,6 +10,25 @@ let meta = {
   ruleset: "htbah"
 };
 
+let preDefinedColors = [
+  "#587239", "#4939d1", "#4226c0", "#b49e3e", "#afbc87", "#25b0b3", "#64718f", "#745495",
+  "#487354", "#419846", "#ac2fb8", "#ba58c9", "#be50b9", "#c96f53", "#cc4147", "#3caecd",
+  "#8b693e", "#6a7151", "#c55093", "#724e64", "#a4a956", "#6387b1", "#a14ba0", "#bd52a1",
+  "#6a7342", "#aa8548", "#6d70a8", "#a18d2b", "#50a98c", "#73415b", "#a65531", "#66cf46",
+  "#b19b5d", "#7f5b58", "#994671", "#906846", "#7b3c9b", "#3b828f", "#bb27ab", "#5e8452",
+  "#2d8cd3", "#8c66b9", "#be8265", "#817fc1", "#3dac5d", "#70399c", "#25be24", "#572fc2",
+  "#302d8f", "#69bcb4", "#9937b1", "#4fc128", "#306bce", "#47628b", "#324272", "#cc4d9c",
+  "#9bb62b", "#31bf92", "#507063", "#9544b1", "#5ba03b", "#9e5a29", "#9e625d", "#604770",
+  "#6c4d69", "#558576", "#99be82", "#c370b8", "#339a8f", "#a68a2a", "#904356", "#7642b9",
+  "#7f3c60", "#7aab79", "#ad5eb0", "#d15829", "#8958c0", "#b4328a", "#3b9685", "#9bba2f",
+  "#5ec485", "#4b8a6b", "#5ab577", "#3d4ba7", "#61436a", "#6a8e53", "#3a7575", "#309f68",
+  "#82864f", "#316e60", "#387c6c", "#86b73b", "#61878d", "#31abbd", "#2e9c61", "#364b7e",
+  "#d42ac6", "#738e38", "#834c93", "#9bad49", "#aaa837", "#ba7f3f", "#944593", "#3ec8c8",
+  "#ae5138", "#b879aa", "#6c7135", "#af602e", "#886c2c", "#47646a", "#b3c46a", "#70a8c6",
+  "#ae5799", "#7d8231", "#c0505c", "#3a8d5d", "#cd7b3e", "#8c5fb3", "#b45fb1", "#b37880",
+  "#7fa3bb", "#517769", "#6f92be", "#c6347e", "#377a81", "#4b5a33", "#3f8ba7", "#38cc2f"
+];
+
 let npcs = [];
 let objects = [];
 let places = [];
@@ -32,6 +51,10 @@ function generateID() {
 
   const nextID = allIDs.length > 0 ? Math.max(...allIDs) + 1 : 1;
   return nextID.toString();
+}
+
+function getRandomColor() {
+  return preDefinedColors[Math.floor(Math.random() * preDefinedColors.length)];
 }
 
 // Quill inline blot extension for "spoiler" text
@@ -72,14 +95,14 @@ class ItemLinkBlot extends Inline {
     node.classList.add('item-link');
     return node;
   }
-  
+
   static formats(node) {
     return {
       type: node.getAttribute('data-type'),
       id: node.getAttribute('data-id')
     };
   }
-  
+
   format(name, value) {
     if (name === 'itemLink' && value) {
       this.domNode.setAttribute('data-type', value.type);

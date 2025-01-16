@@ -8,6 +8,8 @@ const btnPlaceSave = document.getElementById("btnPlaceSave");
 const btnPlaceDelete = document.getElementById("btnPlaceDelete");
 const btnNewPlace = document.getElementById("btnNewPlace");
 const divplaceListRight = document.getElementById("divplaceListRight");
+const colorPlace = document.getElementById("colorPlace");
+
 
 const placeDescriptionEditor = new Quill('#placeDescription', {
   theme: 'snow',
@@ -68,7 +70,8 @@ btnNewPlace.addEventListener("click", () => {
     name: "N/N",
     description: "",
     background: "assets/default_place.png",
-    gridSize: { rows: 10, cols: 10 }
+    gridSize: { rows: 10, cols: 10 },
+    color: getRandomColor()
   };
   places.push(newPlace);
   renderdivplaceListRight();
@@ -149,6 +152,8 @@ function loadPlaceIntoEditor(place) {
   document.getElementById("placeGridSizeRows").value = place.gridSize.rows || 10;
   document.getElementById("placeGridSizeCols").value = place.gridSize.cols || 10;
   document.getElementById("startPlace").checked = place.default;
+  colorPlace.value = place.color || getRandomColor();
+  
   placeDescriptionEditor.root.innerHTML = currentEditedPlace.description;
 
   if (place.background) {
@@ -170,6 +175,7 @@ function savePlaceFromEditor() {
   currentEditedPlace.gridSize.cols = parseInt(document.getElementById("placeGridSizeCols").value, 10);
   currentEditedPlace.default = document.getElementById("startPlace").checked;
   currentEditedPlace.description = placeDescriptionEditor.root.innerHTML;
+  currentEditedPlace.color = colorPlace.value
 
   if (currentEditedPlace.default) {
     places.forEach(place => {

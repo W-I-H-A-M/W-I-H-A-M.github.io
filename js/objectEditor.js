@@ -7,6 +7,7 @@ const inputObjectImageFile = document.getElementById("inputObjectImageFile");
 const selectObjectPositionType = document.getElementById("selectObjectPositionType");
 const btnObjectSave = document.getElementById("btnObjectSave");
 const btnObjectDelete = document.getElementById("btnObjectDelete");
+const colorObject = document.getElementById("colorObject");
 
 const objectDescriptionEditor = new Quill('#objectDescription', {
   theme: 'snow',
@@ -40,7 +41,8 @@ btnNewObject.addEventListener("click", () => {
     id: generateID(),
     name: "N/N",
     image: "",
-    description: ""
+    description: "",
+    color: getRandomColor()
   };
   objects.push(newObject);
   renderdivObjectListRight();
@@ -168,6 +170,7 @@ function renderdivObjectListRight() {
 function loadObjectIntoEditor(obj) {
   document.getElementById("objectId").value = obj.id || "";
   document.getElementById("objectName").value = obj.name || "";
+  colorObject.value = obj.color || getRandomColor();
   objectDescriptionEditor.root.innerHTML = obj.description || "";
 
   const preview = document.getElementById("imgObjectImagePreview");
@@ -217,6 +220,7 @@ function saveObjectFromEditor(obj) {
   obj.name = document.getElementById("objectName").value;
   obj.description = objectDescriptionEditor.root.innerHTML;
   const preview = document.getElementById("imgObjectImagePreview");
+  obj.color = colorObject.value
 
   if (preview.src) {
     obj.image = preview.src;

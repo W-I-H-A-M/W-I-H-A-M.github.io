@@ -15,6 +15,7 @@ const numNPCCurrentHP = document.getElementById("numNPCCurrentHP");
 const numNPCMentalMaxHP = document.getElementById("numNPCMentalMaxHP");
 const numNPCMentalCurrentHP = document.getElementById("numNPCMentalCurrentHP");
 const txtNPCAppearance = document.getElementById("txtNPCAppearance");
+const colorNPC = document.getElementById("colorNPC");
 
 const btnNPCScheduleAdd = document.getElementById("btnNPCScheduleAdd");
 const btnNPCSave = document.getElementById("btnNPCSave");
@@ -89,6 +90,7 @@ btnNewNPC.addEventListener("click", () => {
         appearance: "",
         description: "",
         schedule: [],
+        color: getRandomColor()
     };
     npcs.push(newNpc);
     renderNPCListRight();
@@ -243,6 +245,7 @@ function loadNPCIntoEditor(npc) {
     numNPCCurrentHP.value = npc.currentHP || "";
     numNPCMentalMaxHP.value = npc.maxMentalHP || "";
     numNPCMentalCurrentHP.value = npc.currentMentalHP || "";
+    colorNPC.value = npc.color || getRandomColor();
 
     loadCategoryAttributes("Physical", npc.attributes?.Physical.entries || []);
     updateCategoryTotals("Physical");
@@ -283,6 +286,7 @@ function saveNPCFromEditor(npc) {
     npc.currentHP = numNPCCurrentHP.value;
     npc.maxMentalHP = numNPCMentalMaxHP.value;
     npc.currentMentalHP = numNPCMentalCurrentHP.value;
+    npc.color = colorNPC.value
 
     npc.attributes = {
         Physical: {

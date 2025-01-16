@@ -1228,3 +1228,54 @@ div.attributes-section>div>div:nth-child(2) {
 span.item-link {
   color: var(--primary-color) !important;
 }
+
+.color-picker-container {
+  display: inline-block; 
+  position: relative;
+}
+
+/* Das eigentliche Farbauswahlfeld */
+input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  position: relative;
+  top: 5px;
+  width: 1.5em;
+  height: 1.5em;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+  outline: none;
+  border-radius: 4px;
+  border: 1px solid var(--neutral-dark);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* WebKit: Farbe in der Vorschau anpassen */
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0; /* Standard-Padding entfernen */
+  border-radius: 4px;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none; /* Rahmen des Swatch entfernen */
+  border-radius: 4px;
+}
+
+/* Firefox: Farbe in der Vorschau anpassen */
+input[type="color"]::-moz-color-swatch {
+  border: none; 
+  border-radius: 4px;
+}
+
+/* Hover-Effekt: Farbfeld-Umrandung hervorheben */
+input[type="color"]:hover {
+  border-color: var(--secondary-color);
+}
+
+/* Fokus-Effekt: Box-Shadow mit Primärfarbe */
+input[type="color"]:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 4px var(--primary-color);
+  outline: none;
+}
