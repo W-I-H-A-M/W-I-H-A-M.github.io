@@ -49,6 +49,16 @@ function startBellSwinging() {
   }
 }
 
+bell.addEventListener('click', (e) => {
+  e.stopPropagation(); // Verhindert, dass der Dokument-Click das Dropdown sofort schließt
+});
+
+document.addEventListener('click', () => {
+  if (!dropdown.classList.contains('hidden')) {
+      dropdown.classList.add('hidden');
+  }
+});
+
 function stopBellSwinging() {
   clearInterval(swingInterval);
   swingInterval = null;
