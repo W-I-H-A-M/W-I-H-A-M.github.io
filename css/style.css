@@ -1298,3 +1298,7 @@ input[type="color"]:focus {
   object-fit: cover;
   aspect-ratio: 1 / 1;
 }
+
+.notification-item  a {
+  color: var(--accent-color);
+}
