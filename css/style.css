@@ -243,6 +243,8 @@ select option {
   border: none;
   cursor: pointer;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
 }
 
 /* Main content area */
@@ -582,11 +584,14 @@ header {
 
 /* Sidebar icons */
 #sidebarMenuBtnIcon {
-  font-size: 2em;
-  text-shadow: 1px 1px 0 #000,
-    -1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px -1px 0 #000;
+  font-size: 42px;
+  color: var(--neutral-light);
+  text-shadow:
+    1px 1px 0 var(--text-color),
+    -1px -1px 0 var(--text-color),
+    -1px 1px 0 var(--text-color),
+    1px -1px 0 var(--text-color);
+  padding-right: 10px;
 }
 
 /* Places */
@@ -1069,9 +1074,10 @@ div.attributes-section>div>div:nth-child(2) {
 .bell {
   position: relative;
   cursor: pointer;
-  font-size: 1.5em;
+  font-size: 30px;
   margin-right: 10px;
   padding-left: 10px;
+  color:var(--accent-color)
 }
 
 .count {
@@ -1082,7 +1088,7 @@ div.attributes-section>div>div:nth-child(2) {
   color: var(--neutral-light);
   border-radius: 50%;
   padding: 2px 6px;
-  font-size: 0.8em;
+  font-size: 13px;
   font-weight: bold;
   margin-right: 10px;
 }
@@ -1230,7 +1236,7 @@ span.item-link {
 }
 
 .color-picker-container {
-  display: inline-block; 
+  display: inline-block;
   position: relative;
 }
 
@@ -1253,18 +1259,20 @@ input[type="color"] {
 
 /* WebKit: Farbe in der Vorschau anpassen */
 input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0; /* Standard-Padding entfernen */
+  padding: 0;
+  /* Standard-Padding entfernen */
   border-radius: 4px;
 }
 
 input[type="color"]::-webkit-color-swatch {
-  border: none; /* Rahmen des Swatch entfernen */
+  border: none;
+  /* Rahmen des Swatch entfernen */
   border-radius: 4px;
 }
 
 /* Firefox: Farbe in der Vorschau anpassen */
 input[type="color"]::-moz-color-swatch {
-  border: none; 
+  border: none;
   border-radius: 4px;
 }
 

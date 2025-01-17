@@ -68,8 +68,8 @@
       </div>
     </div>
     <div id="headerRight">
-      <span id="notificationBell" class="bell">
-        🔔<span id="notificationCount" class="count">0</span>
+      <span id="notificationBell" class="bell mdi mdi-bell">
+        <span id="notificationCount" class="count">0</span>
       </span>
       <div id="notificationDropdown" class="dropdown hidden">
         <ul id="notificationList"></ul>
@@ -93,43 +93,43 @@
     <!-- Sidebar (left navigation) -->
     <nav id="sidebar" class="collapsed">
       <!-- Toggle button for expanding/collapsing the sidebar -->
-      <button id="toggleSidebar" style="width: 100%;" aria-label="Toggle Sidebar">☰</button>
+      <button id="toggleSidebar" class="mdi mdi-menu" style="width: 100%;" aria-label="Toggle Sidebar"></button>
 
       <!-- Navigation menu -->
       <ul id="sidebarMenu">
         <li>
           <button id="btnScenario">
-            <span id="sidebarMenuBtnIcon">📜</span>
+            <span id="sidebarMenuBtnIcon" class="mdi mdi-script-text-play"></span>
             <span id="sidebarMenuBtnTxt" class="collapsed" data-i18n="scenario">Scenario</span>
           </button>
         </li>
         <li>
           <button id="btnNPCs">
-            <span id="sidebarMenuBtnIcon">👤</span>
+            <span id="sidebarMenuBtnIcon" class="mdi mdi-account"></span>
             <span id="sidebarMenuBtnTxt" class="collapsed" data-i18n="npcEditor">NPCs</span>
           </button>
         </li>
         <li>
           <button id="btnObjects">
-            <span id="sidebarMenuBtnIcon">🔎</span>
+            <span id="sidebarMenuBtnIcon" class="mdi mdi-magnify"></span>
             <span id="sidebarMenuBtnTxt" class="collapsed" data-i18n="objectsEditor">Objekte</span>
           </button>
         </li>
         <li>
           <button id="btnWorld">
-            <span id="sidebarMenuBtnIcon">🗺️</span>
+            <span id="sidebarMenuBtnIcon" class="mdi mdi-map"></span>
             <span id="sidebarMenuBtnTxt" class="collapsed" data-i18n="world">Welt</span>
           </button>
         </li>
         <li>
           <button id="btnTimeline">
-            <span id="sidebarMenuBtnIcon">🕙</span>
+            <span id="sidebarMenuBtnIcon" class="mdi mdi-timeline-clock"></span>
             <span id="sidebarMenuBtnTxt" class="collapsed" data-i18n="timeline">Zeitlinie</span>
           </button>
         </li>
         <li>
           <button id="btnEvents">
-            <span id="sidebarMenuBtnIcon">⚡</span>
+            <span id="sidebarMenuBtnIcon" class="mdi mdi-calendar-star"></span>
             <span id="sidebarMenuBtnTxt" class="collapsed" data-i18n="events">Events</span>
           </button>
         </li>
@@ -139,20 +139,20 @@
       <ul id="sidebarMenu" style="margin-top: auto;">
         <li>
           <button id="btnImportScenario">
-            <span id="sidebarMenuBtnIcon">📂</span>
+            <span id="sidebarMenuBtnIcon" class="mdi mdi-folder-open"></span>
             <span id="sidebarMenuBtnTxt" class="collapsed" data-i18n="import">Szenario importieren</span>
           </button>
         </li>
         <input type="file" id="importFileInput" style="display: none;" accept=".zip" />
         <li>
           <button id="btnExportScenario">
-            <span id="sidebarMenuBtnIcon">💾</span>
+            <span id="sidebarMenuBtnIcon" class="mdi mdi-content-save"></span>
             <span id="sidebarMenuBtnTxt" class="collapsed" data-i18n="export">Szenario exportieren</span>
           </button>
         </li>
         <li>
           <button id="btnEditScenario">
-            <span id="sidebarMenuBtnIcon">✏️</span>
+            <span id="sidebarMenuBtnIcon" class="mdi mdi-file-edit"></span>
             <span id="sidebarMenuBtnTxt" class="collapsed" data-i18n="editscenario">Scenario bearbeiten</span>
           </button>
         </li>
