@@ -1077,7 +1077,7 @@ div.attributes-section>div>div:nth-child(2) {
   font-size: 30px;
   margin-right: 10px;
   padding-left: 10px;
-  color:var(--accent-color)
+  color: var(--accent-color)
 }
 
 .count {
@@ -1286,4 +1286,15 @@ input[type="color"]:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 4px var(--primary-color);
   outline: none;
+}
+
+/* Grid Img */
+.gridIconImg {
+  border-radius: 100%;
+  border-width: 5px;
+  width: 75%;
+  border-style: solid;
+  outline: auto;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
 }

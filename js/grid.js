@@ -94,23 +94,36 @@ function renderGrid(rows, cols) {
             const iconElement = document.createElement("span");
             iconElement.className = "mapIcon";
             
-            const gridicon = document.createElement("span");
+            const gridIcon = document.createElement("span");
 
             // Determine which icon to display
             if (npcsHere.length + objectsHere.length + placesHere.length > 1) {
-                gridicon.className = "mdi mdi-hexagon-multiple";
+                gridIcon.className = "mdi mdi-hexagon-multiple";
             } else if (npcsHere.length === 1) {
-                gridicon.className = "mdi mdi-account";
-                gridicon.style.color = npcsHere[0].color || '#000'
+                if (npcsHere[0].image){
+                    const gridIconImg = document.createElement("img");
+                    gridIconImg.src = npcsHere[0].image;
+                    gridIconImg.alt = npcsHere[0].name || "N/N";
+                    gridIconImg.className = "gridIconImg";
+                    gridIconImg.style.borderColor = npcsHere[0].color || "#FFF";
+                    gridIcon.style.display = "grid";
+                    gridIcon.style.placeItems = "center";
+                    gridIcon.appendChild(gridIconImg);
+                }
+                else{
+                    gridIcon.className = "mdi mdi-account";
+                    gridIcon.style.color = npcsHere[0].color || '#000';
+                }
+                
             } else if (objectsHere.length === 1) {
-                gridicon.className = "mdi mdi-magnify";
-                gridicon.style.color = objectsHere[0].color || '#000'
+                gridIcon.className = "mdi mdi-magnify";
+                gridIcon.style.color = objectsHere[0].color || '#000';
             } else if (placesHere.length === 1) {
-                gridicon.className = "mdi mdi-map-marker";
-                gridicon.style.color = placesHere[0].color || '#000'
+                gridIcon.className = "mdi mdi-map-marker";
+                gridIcon.style.color = placesHere[0].color || '#000';
             }
 
-            iconElement.appendChild(gridicon);
+            iconElement.appendChild(gridIcon);
             symbolElement.appendChild(iconElement);
 
             // Create hover overlay (tooltip) for NPCs or objects
