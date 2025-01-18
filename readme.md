@@ -120,6 +120,49 @@ scenario.zip
 - **Timelines**: Keep events in logical order; re-arrange them as you see fit.
 - **Events**: Connect in-game actions to triggers like time, place, or NPC interactions.
 
+### ChatGPT as Assistant
+Give ChatGPT you Scenario.zip and this Prompt below. Then you will be able to ask ChatGPT questions about this Adventure. (Tested with ChatGPT 4o)
+<details>
+<summary><strong>ChatGPT Prompt</strong></summary>
+
+```
+I have uploaded a ZIP file containing JSON data that describes a story. The data includes the following elements:
+
+NPCs (Non-Player Characters):
+Properties include id, name, profession, appearance, attributes, and schedule.
+schedule specifies where (placeId) and when (timeStart) an NPC is located.
+Connections between NPCs exist, such as through relationships or references in descriptions (data-id).
+Objects:
+Contain information like id, name, description, and position.
+position links objects to locations (placeId) and coordinates within the location (x, y).
+Locations:
+Locations are defined by id, name, gridSize, description, and connections to other locations (links).
+They contain objects and NPCs present at the location.
+Timeline:
+Events are chronologically ordered by id, order, and description.
+Events:
+Events have id, name, and conditions specified by type (npc, place, time).
+Conditions define when and how an event is triggered.
+Meta Information:
+Describes the background story, central themes, and goals of the adventure.
+Images:
+NPCs, objects, and locations have associated images.
+Relationships and Story Context:
+NPCs move according to their schedule to specific locations (placeId) and interact with objects or players there.
+Objects are positioned in specific locations and can be activated through events (e.g., conditions).
+Events are triggered by combinations of time, location, and NPCs.
+The timeline connects all elements and determines the order of events.
+Task:
+Analyze the ZIP file and explain the data structure and relationships between the objects so that I can ask targeted questions about the story, such as:
+
+Where is a specific NPC at a given time?
+What objects are located in a particular place?
+What events can occur in a location or at a specific time?
+How do the meta-information elements influence the story?
+Provide me with the ability to directly focus on specific elements (e.g., an NPC or an event).
+```
+</details>
+
 ---
 
 ## 🛠 Development
