@@ -318,7 +318,7 @@ function resizeGrid(rows, cols) {
         window.innerHeight - document.querySelector("header").offsetHeight
     );
     const cellSize = Math.min(containerWidth / cols, containerHeight / rows);
-    const finalCellSize = Math.floor(cellSize);
+    const finalCellSize = cellSize;
 
     const targetGrid = editScenarioEnabled ? editMapGrid : mapGrid;
     targetGrid.style.gridTemplateColumns = `repeat(${cols}, ${finalCellSize}px)`;
