@@ -1302,3 +1302,7 @@ input[type="color"]:focus {
 .notification-item  a {
   color: var(--accent-color);
 }
+
+button.active {
+  background-color: var(--accent-color);
+}

@@ -7,6 +7,17 @@ const btnTimeline = document.getElementById("btnTimeline");
 const btnEditScenario = document.getElementById("btnEditScenario");
 const btnEvents = document.getElementById("btnEvents");
 
+// Collect all container btns for toggling active
+const allContainerBtn = [
+    btnScenario,
+    btnNPCs,
+    btnObjects,
+    btnWorld,
+    btnTimeline,
+    btnEditScenario,
+    btnEvents
+];
+
 // Main content containers
 const divNPCEditor = document.getElementById("divNPCEditor");
 const divObjectEditor = document.getElementById("divObjectEditor");
@@ -14,6 +25,17 @@ const divPlaceEditor = document.getElementById("divPlaceEditor");
 const divTimelineEditor = document.getElementById("divTimelineEditor");
 const divEditScenario = document.getElementById("divEditScenario");
 const divEventEditor = document.getElementById("divEventEditor");
+
+// Collect all containers for toggling visibility
+const allContainer = [
+    divNPCEditor,
+    divObjectEditor,
+    divPlaceEditor,
+    mapContainer,
+    divTimelineEditor,
+    divEditScenario,
+    divEventEditor
+];
 
 // Tab button references
 const tabBtnNPCEditor = document.querySelector('.tab-button[data-tab="tabNPCEditor"]');
@@ -33,23 +55,14 @@ const tabBtnAllPlaces = document.querySelector('.tab-button[data-tab="tabAllPlac
 const allTabButtons = document.querySelectorAll("#infoTabs .tab-button");
 const tabContents = document.querySelectorAll("#tabContents .tab-content");
 
-// Collect all containers for toggling visibility
-const allContainer = [
-    divNPCEditor,
-    divObjectEditor,
-    divPlaceEditor,
-    mapContainer,
-    divTimelineEditor,
-    divEditScenario,
-    divEventEditor
-];
+
 
 /**
  * Navigates to the Timeline Editor and re-renders the timeline.
  */
 btnTimeline.addEventListener("click", () => {
     const exeptBtns = [tabBtnSelected];
-    switchMenu(divTimelineEditor, exeptBtns);
+    switchMenu(divTimelineEditor, btnTimeline, exeptBtns);
     unsavedTimeline = [...timeline];
     renderTimeline();
 });
@@ -59,7 +72,7 @@ btnTimeline.addEventListener("click", () => {
  */
 btnWorld.addEventListener("click", () => {
     const exeptBtns = [tabBtnPlaceEditor];
-    switchMenu(divPlaceEditor, exeptBtns);
+    switchMenu(divPlaceEditor, btnWorld, exeptBtns);
 });
 
 /**
@@ -67,7 +80,7 @@ btnWorld.addEventListener("click", () => {
  */
 btnNPCs.addEventListener("click", () => {
     const exeptBtns = [tabBtnNPCEditor];
-    switchMenu(divNPCEditor, exeptBtns);
+    switchMenu(divNPCEditor, btnNPCs, exeptBtns);
 });
 
 /**
@@ -75,7 +88,7 @@ btnNPCs.addEventListener("click", () => {
  */
 btnObjects.addEventListener("click", () => {
     const exeptBtns = [tabBtnObjectEditor];
-    switchMenu(divObjectEditor, exeptBtns);
+    switchMenu(divObjectEditor, btnObjects, exeptBtns);
 });
 
 /**
@@ -83,7 +96,7 @@ btnObjects.addEventListener("click", () => {
  */
 btnEvents.addEventListener("click", () => {
     const exeptBtns = [tabBtnEventEditor];
-    switchMenu(divEventEditor, exeptBtns);
+    switchMenu(divEventEditor, btnEvents, exeptBtns);
     renderdivEventListRight();
 });
 
@@ -93,7 +106,7 @@ btnEvents.addEventListener("click", () => {
 btnEditScenario.addEventListener("click", () => {
     const exeptBtns = [tabBtnAllNPC, tabBtnAllObjects, tabBtnMatadata, tabBtnAllPlaces];
     editScenarioEnabled = true;
-    switchMenu(divEditScenario, exeptBtns);
+    switchMenu(divEditScenario, btnEditScenario, exeptBtns);
     loadSelectedPlace(locationSelect.value);
     enableDragAndDropTabs();
 });
@@ -104,7 +117,7 @@ btnEditScenario.addEventListener("click", () => {
 btnScenario.addEventListener("click", () => {
     const exeptBtns = [tabBtnSelected, tabBtnNPCs, tabBtnObjects, tabBtnInventory];
     editScenarioEnabled = false;
-    switchMenu(mapContainer, exeptBtns);
+    switchMenu(mapContainer, btnScenario, exeptBtns);
     loadSelectedPlace(locationSelect.value);
     renderdivInventoryListRight();
 });
@@ -132,11 +145,16 @@ allTabButtons.forEach((button) => {
  * @param {HTMLElement} Container - The main container to display.
  * @param {HTMLElement[]} exeptBtns - The list of tab buttons to show.
  */
-function switchMenu(Container, exeptBtns) {
+function switchMenu(Container, ContainerBtn, exeptBtns) {
     allContainer.forEach((con) => {
         con.style.display = "none";
     });
     Container.style.display = "block";
+
+    allContainerBtn.forEach((btn) => {
+        btn.classList = "";
+    });
+    ContainerBtn.classList = "active";
 
     allTabButtons.forEach((btn) => {
         btn.style.display = "none";
