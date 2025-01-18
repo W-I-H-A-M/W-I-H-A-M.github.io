@@ -159,7 +159,7 @@ function renderGrid(rows, cols) {
                         deleteItem.addEventListener("click", (e) => {
                             e.stopPropagation();
                             npc.schedule = npc.schedule.filter(entry =>
-                                !(entry.placeId === currentPlace && entry.row === r && entry.col === c)
+                                !(entry.placeId === currentPlace && entry.timeStart === timeline[currentIndex]?.id && entry.row === r && entry.col === c)
                             );
                             loadSelectedPlace(locationSelect.value);
                         });
