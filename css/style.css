@@ -494,7 +494,7 @@ header {
   border-radius: 5px;
   font-family: Arial, sans-serif;
   color: black;
-  min-height: 2em;
+  min-height: 50px;
 }
 
 .time-element {
@@ -508,13 +508,9 @@ header {
   /* prevent overflow */
   text-overflow: ellipsis;
   /* show "..." for overflow */
-  cursor: pointer;
+  
   transition: background-color 0.2s ease, color 0.2s ease;
   border-radius: 5px;
-}
-
-.time-element:hover {
-  background-color: var(--secondary-color);
 }
 
 .current-time {
@@ -523,10 +519,6 @@ header {
   background-color: transparent;
   min-width: 100px;
   text-align: center;
-}
-
-.current-time:hover {
-  background-color: transparent;
 }
 
 /* Map elements & tooltip overlays */
@@ -1305,4 +1297,8 @@ input[type="color"]:focus {
 
 button.active {
   background-color: var(--accent-color);
+}
+
+#nextTime, #prevTime {
+  height: 40px;
 }
