@@ -510,10 +510,23 @@ function displaySelectedDetails(item) {
             const ownerDiv = document.createElement("div");
             ownerDiv.classList.add("owner-details");
 
+            const collectBtn = document.createElement("button"); 
+            collectBtn.dataset.i18n = "collect";
+
+            collectBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const obj = objects.find(o => o.id === item.id);
+                obj.position = null;
+                renderdivInventoryListRight();
+                updateObjectList(locationSelect.value);
+                displaySelectedDetails(item);
+              });
+              ownerDiv.appendChild(collectBtn);
+
             if (item.position.type === "npc") {
                 const owner = npcs.find(npc => npc.id === item.position.targetId);
                 if (owner) {
-                    const positionTitle = document.createElement("span");
+                    const positionTitle = document.createElement("p");
                     positionTitle.dataset.i18n = "located_with";
                     const card = renderItemCard(owner, "npc");
                     ownerDiv.appendChild(positionTitle);
@@ -522,7 +535,7 @@ function displaySelectedDetails(item) {
             } else if (item.position.type === "place") {
                 const place = places.find(p => p.id === item.position.targetId);
                 if (place) {
-                    const positionTitle = document.createElement("span");
+                    const positionTitle = document.createElement("p");
                     positionTitle.dataset.i18n = "located_with";
                     const card = renderItemCard(place, "place");
                     ownerDiv.appendChild(positionTitle);
@@ -530,8 +543,9 @@ function displaySelectedDetails(item) {
                 }
             }
             objectDetails.appendChild(ownerDiv);
+            
         }
-
+        
         charSheet.appendChild(objectDetails);
     }
 
