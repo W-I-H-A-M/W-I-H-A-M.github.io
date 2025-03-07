@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Item Card Generator</title>
+  <!-- Google Fonts for handwritten look -->
+  <link href="https://fonts.googleapis.com/css2?family=Delicious+Handrawn&family=Just+Another+Hand&display=swap" rel="stylesheet">
+  <!-- html2canvas for exporting the card as an image -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body {
+      font-family: 'Gloria Hallelujah', cursive;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+    }
+    .form-container {
+      max-width: 600px;
+      margin: 0 auto 20px auto;
+      background: #fff;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    input[type="file"] {
+      padding: 5px 0;
+    }
+    button {
+      padding: 8px 12px;
+      background-color: #008cba;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1em;
+      border-radius: 4px;
+      margin-right: 5px;
+      margin-top: 5px;
+    }
+    #card-preview-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* Card size: 50mm x 80mm with rounded corners */
+    .card {
+      width: 50mm;
+      height: 80mm;
+      border: 1px solid #000;
+      background-color: #fff;
+      padding: 5mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      border-radius: 5mm;
+    }
+    /* Header (title) with dynamic font size */
+    .card h1 {
+      font-size: 1.5em;
+      text-align: center;
+      margin: 0 0 3mm 0;
+      width: 100%;
+    }
+    /* Card image */
+    .card img.card-image {
+      max-height: 30mm;
+      max-width: 100%;
+      margin-bottom: 3mm;
+    }
+    /* Description (centered) */
+    .card p {
+      font-size: 1.4em;
+      text-align: center;
+      width: 100%;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      margin: 0;
+    }
+    /* Dice images always 38px high */
+    .dice-img {
+      height: 38px;
+      vertical-align: middle;
+    }
+    .license {
+      font-size: 0.7em;
+      margin-top: 5px;
+      text-align: center;
+      color: #666;
+    }
+    /* Container for saved cards */
+    #saved-cards {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .saved-card {
+      border: 1px solid #ccc;
+      padding: 5px;
+      text-align: center;
+      width: 120px;
+      border-radius: 4px;
+    }
+    .saved-card img {
+      max-width: 100%;
+      height: auto;
+    }
+    /* Footer styles */
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.8em;
+    }
+    footer a {
+      color: #008cba;
+      text-decoration: none;
+      margin: 0 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Item Card Generator</h2>
+  
+  <!-- Form Container -->
+  <div class="form-container">
+    <form id="card-form">
+      <!-- Title Field -->
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" required placeholder="Enter card title">
+      </div>
+      <!-- File Upload for Image -->
+      <div class="form-group">
+        <label for="imageFile">Upload Image</label>
+        <input type="file" id="imageFile" accept="image/*">
+      </div>
+      <!-- Description Field with Dice Buttons -->
+      <div class="form-group">
+        <label for="description">Description (use e.g. [d4], [d6], [d8], [d10], [d12], [d20] for dice)</label>
+        <textarea id="description" rows="4" required placeholder="Enter description"></textarea>
+        <!-- Dice Buttons (insert at cursor position) -->
+        <button type="button" onclick="insertDice('d4')">d4</button>
+        <button type="button" onclick="insertDice('d6')">d6</button>
+        <button type="button" onclick="insertDice('d8')">d8</button>
+        <button type="button" onclick="insertDice('d10')">d10</button>
+        <button type="button" onclick="insertDice('d12')">d12</button>
+        <button type="button" onclick="insertDice('d20')">d20</button>
+      </div>
+      <!-- Font Size Field -->
+      <div class="form-group">
+        <label for="descFontSize">Description Font Size (in em)</label>
+        <input type="number" id="descFontSize" value="1.4" step="0.1" min="0.5" max="3">
+      </div>
+      <!-- Save Card Button (card is generated live) -->
+      <button type="button" id="save-btn">Save Card</button>
+    </form>
+  </div>
+  
+  <!-- Card Preview Container -->
+  <div id="card-preview-container">
+    <div id="card-preview" class="card" style="display:none;"></div>
+    <br>
+    <button id="export-btn" style="display:none;">Export Card</button>
+  </div>
+  
+  <!-- Saved Cards List -->
+  <div id="saved-cards"></div>
+  <button id="print-all-btn" style="display:block; margin: 20px auto;">Print All Saved Cards</button>
+  
+  <!-- Footer with links to repository and live site -->
+  <footer>
+    <p>
+      Visit our GitHub repository: 
+      <a href="https://github.com/W-I-H-A-M/W-I-H-A-M.github.io" target="_blank">W-I-H-A-M.github.io</a>
+      | 
+      Visit our live site: 
+      <a href="https://w-i-h-a-m.github.io/" target="_blank">w-i-h-a-m.github.io</a>
+    </p>
+    <p class="license">
+      Dice graphics licensed under <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank">CC BY 3.0</a> by <a href="https://game-icons.net/" target="_blank">game-icons.net</a>
+    </p>
+  </footer>
+  
+  <script>
+    // Global object to store all cards, a counter for unique IDs, and variables for editing.
+    let allCards = {};
+    let cardCounter = 0;
+    let currentEditingId = null;
+    let currentEditingImage = null; // Stores the currently loaded image (DataURL)
+    
+    // Local dice images (PNG version)
+    const diceImages = {
+      "[d4]": "/img/d4.png",
+      "[d6]": "/img/d6.png",
+      "[d8]": "/img/d8.png",
+      "[d10]": "/img/d10.png",
+      "[d12]": "/img/d12.png",
+      "[d20]": "/img/d20.png"
+    };
+    
+    // Replaces dice placeholders (e.g. [d4]) with <img> tags.
+    function replaceDicePlaceholders(text) {
+      return text.replace(/\[(d4|d6|d8|d10|d12|d20)\]/g, function(match) {
+        const imgSrc = diceImages[match] || '';
+        return imgSrc ? '<img src="' + imgSrc + '" alt="' + match + '" class="dice-img">' : match;
+      });
+    }
+    
+    // Adjusts the description font size so that it fits within the available space in the card.
+    function adjustDescriptionFontSize() {
+      const card = document.getElementById('card-preview');
+      const titleElem = card.querySelector('h1');
+      const descriptionElem = card.querySelector('p');
+      const imageElem = card.querySelector('img.card-image');
+      let availableHeight = card.clientHeight;
+      if (titleElem) availableHeight -= titleElem.offsetHeight;
+      if (imageElem && imageElem.style.display !== 'none') availableHeight -= imageElem.offsetHeight;
+      availableHeight -= 5;
+      let style = window.getComputedStyle(descriptionElem);
+      let fontSize = parseFloat(style.fontSize);
+      while (descriptionElem.scrollHeight > availableHeight && fontSize > 8) {
+        fontSize *= 0.95;
+        descriptionElem.style.fontSize = fontSize + "px";
+      }
+    }
+    
+    // Adjusts the title font size dynamically so that it does not take up too much space.
+    function adjustTitleFontSize() {
+      const card = document.getElementById('card-preview');
+      const titleElem = card.querySelector('h1');
+      if (!titleElem) return;
+      const maxHeaderHeight = card.clientHeight * 0.2; // maximum 20% of card height
+      let style = window.getComputedStyle(titleElem);
+      let fontSize = parseFloat(style.fontSize);
+      while (titleElem.scrollHeight > maxHeaderHeight && fontSize > 8) {
+        fontSize *= 0.95;
+        titleElem.style.fontSize = fontSize + "px";
+      }
+    }
+    
+    // Creates the card preview based on the form data.
+    function createCard(title, imageSrc, description) {
+      const cardPreview = document.getElementById('card-preview');
+      cardPreview.innerHTML = '';
+      // Create title element
+      const titleElem = document.createElement('h1');
+      titleElem.textContent = title;
+      cardPreview.appendChild(titleElem);
+      // Create image element if image is provided
+      if (imageSrc) {
+        const imageElem = document.createElement('img');
+        imageElem.src = imageSrc;
+        imageElem.alt = title;
+        imageElem.className = 'card-image';
+        cardPreview.appendChild(imageElem);
+      }
+      // Create description element with replaced dice placeholders
+      const descriptionElem = document.createElement('p');
+      descriptionElem.innerHTML = replaceDicePlaceholders(description);
+      descriptionElem.style.fontSize = document.getElementById('descFontSize').value + "em";
+      cardPreview.appendChild(descriptionElem);
+      cardPreview.style.display = 'flex';
+      document.getElementById('export-btn').style.display = 'inline-block';
+      adjustTitleFontSize();
+      adjustDescriptionFontSize();
+    }
+    
+    // Inserts a dice placeholder into the description field at the cursor position.
+    function insertDice(diceType) {
+      const textarea = document.getElementById("description");
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const placeholder = '[' + diceType + ']';
+      textarea.value = text.substring(0, start) + placeholder + text.substring(end);
+      textarea.selectionStart = textarea.selectionEnd = start + placeholder.length;
+      textarea.focus();
+      updateCardPreview();
+    }
+    
+    // Updates the card preview live based on form input.
+    function updateCardPreview() {
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value;
+      // Use the uploaded image from currentEditingImage, if available.
+      const imageSrc = currentEditingImage ? currentEditingImage : '';
+      if (title || description || imageSrc) {
+        createCard(title, imageSrc, description);
+      } else {
+        document.getElementById('card-preview').style.display = 'none';
+        document.getElementById('export-btn').style.display = 'none';
+      }
+    }
+    
+    // Event listeners for live updates.
+    document.getElementById('title').addEventListener('input', updateCardPreview);
+    document.getElementById('description').addEventListener('input', updateCardPreview);
+    document.getElementById('descFontSize').addEventListener('input', updateCardPreview);
+    document.getElementById('imageFile').addEventListener('change', function() {
+      const imageFileInput = document.getElementById('imageFile');
+      if (imageFileInput.files && imageFileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          currentEditingImage = event.target.result;
+          updateCardPreview();
+        };
+        reader.readAsDataURL(imageFileInput.files[0]);
+      } else {
+        currentEditingImage = null;
+        updateCardPreview();
+      }
+    });
+    
+    // Form submit event: Create card preview.
+    document.getElementById('card-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value;
+      // When editing: if no new image is uploaded, use currentEditingImage.
+      const imageSrc = currentEditingImage ? currentEditingImage : '';
+      createCard(title, imageSrc, description);
+    });
+    
+    // Save card: Export the preview as PNG and save form data.
+    document.getElementById('save-btn').addEventListener('click', function() {
+      const cardPreview = document.getElementById('card-preview');
+      if (cardPreview.style.display === 'none') {
+        alert("Please create a card first!");
+        return;
+      }
+      html2canvas(cardPreview).then(function(canvas) {
+        const dataUrl = canvas.toDataURL();
+        let id;
+        // If editing, use the currentEditingId to overwrite
+        if (currentEditingId) {
+          id = currentEditingId;
+          currentEditingId = null;
+        } else {
+          cardCounter++;
+          id = 'card-' + cardCounter;
+        }
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const descFontSize = document.getElementById('descFontSize').value;
+        // Save (or overwrite) the card in allCards
+        allCards[id] = {
+          id: id,
+          title: title,
+          description: description,
+          descFontSize: descFontSize,
+          imageData: dataUrl,
+          savedImage: currentEditingImage
+        };
+        updateSavedCardsList();
+        document.getElementById('card-form').reset();
+        cardPreview.style.display = 'none';
+        document.getElementById('export-btn').style.display = 'none';
+        currentEditingImage = null;
+      }).catch(function(err) {
+        console.error("Saving card failed", err);
+      });
+    });
+    
+    // Updates the list of saved cards.
+    function updateSavedCardsList() {
+      const container = document.getElementById('saved-cards');
+      container.innerHTML = '';
+      for (let id in allCards) {
+        const card = allCards[id];
+        const div = document.createElement('div');
+        div.className = 'saved-card';
+        div.innerHTML = '<img src="' + card.imageData + '" alt="' + card.title + '"><br>' +
+                        '<strong>' + card.title + '</strong><br>' +
+                        '<button onclick="editCard(\'' + id + '\')">Edit</button>';
+        container.appendChild(div);
+      }
+    }
+    
+    // Loads a saved card into the form for editing.
+    // The card is removed from allCards and currentEditingId is set.
+    function editCard(id) {
+      const card = allCards[id];
+      document.getElementById('title').value = card.title;
+      document.getElementById('description').value = card.description;
+      document.getElementById('descFontSize').value = card.descFontSize;
+      // Set currentEditingImage from savedImage if available.
+      if (card.savedImage) {
+        currentEditingImage = card.savedImage;
+      }
+      createCard(card.title, currentEditingImage, card.description);
+      delete allCards[id];
+      updateSavedCardsList();
+      currentEditingId = id;
+    }
+    
+    // Export card: Exports the current card preview as PNG.
+    document.getElementById('export-btn').addEventListener('click', function() {
+      const cardElement = document.getElementById('card-preview');
+      html2canvas(cardElement).then(function(canvas) {
+        const link = document.createElement('a');
+        link.download = 'item-card.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    });
+    
+    // Print all saved cards: Opens a new window with the print container in true mm dimensions.
+    document.getElementById('print-all-btn').addEventListener('click', function() {
+      var printContainer = document.createElement('div');
+      // Create a container with exact mm dimensions for each saved card.
+      for (let id in allCards) {
+        const card = allCards[id];
+        var cardDiv = document.createElement('div');
+        cardDiv.className = 'print-card';
+        cardDiv.innerHTML = '<img src="' + card.imageData + '" alt="' + card.title + '">';
+        printContainer.appendChild(cardDiv);
+      }
+      
+      var printWindow = window.open('', '', 'width=800,height=600');
+      printWindow.document.write(
+        '<style>' +
+          '@page { size: A6; margin: 0; }' +
+          'body { margin: 0; padding: 20px; display: flex; flex-wrap: wrap; }' +
+          '.print-card { width: 50mm !important; height: 80mm !important; border: 1px solid #000; box-sizing: border-box; margin: 5mm; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 3mm !important; }' +
+          '.print-card img { width: 100%; height: 100%; object-fit: contain; }' +
+        '</style>' +
+        printContainer.innerHTML +
+        '<script>' +
+          'window.focus();' +
+          'window.print();' +
+        '<\/script>'
+      );
+      printWindow.document.close();
+    });
+  </script>
+</body>
+</html>

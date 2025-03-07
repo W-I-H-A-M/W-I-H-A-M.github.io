@@ -77,7 +77,8 @@
     "explainAllObjects": "Ziehe die Objekte von hier auf das Grid um sie dort zu positionieren.",
     "explainAllPlaces": "Ziehe die Orte von hier auf das Grid um sie dort zu positionieren. Durch einen klick darauf kannst du den Ort wechseln.",
     "allPlaces": "Alle Orte",
-    "collect": "Einsammeln"
+    "collect": "Einsammeln",
+    "cardcreator": "Karten Ersteller"
   },
   "ru": {
     "languageTitel": "Русский",
@@ -157,7 +158,8 @@
     "explainAllObjects": "Перетащите объекты сюда на сетку, чтобы разместить их здесь.",
     "explainAllPlaces": "Перетащите места сюда на сетку, чтобы разместить их здесь. При нажатии на место вы переключитесь на него.",
     "allPlaces": "Все места",
-    "collect": "Соберите"
+    "collect": "Соберите",
+    "cardcreator": "Card Creator"
   },
   "en": {
     "languageTitel": "English",
@@ -237,6 +239,7 @@
     "explainAllObjects": "Move Object's onto the grid to position them here.",
     "explainAllPlaces": "Move Place's onto the grid to position them here. If clicked on them, you switch to this place.",
     "allPlaces": "All Places",
-    "collect": "Collect"
+    "collect": "Collect",
+    "cardcreator": "Card Creator"
   }
 }
