@@ -64,13 +64,8 @@
     }
     p {
       display: block;
-      margin-block-start: 0em;
-      margin-block-end: 0em;
-      margin-inline-start: 0px;
-      margin-inline-end: 0px;
-      unicode-bidi: isolate;
+      margin: 0;
     }
-
     #card-preview-container {
       display: flex;
       flex-direction: column;
@@ -81,17 +76,20 @@
     .card {
       width: 50mm;
       height: 80mm;
-      border: 1px dashed rgba(0,0,0,0.5);
+      border: 1px dashed rgba(0,0,0,0.2);
       border-radius: 5mm;
-      padding: 2mm; /* small gap inside the cut line */
+      padding: 2px; /* gap between inner border and cut line */
       box-sizing: border-box;
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
       background-color: #fff;
     }
-    /* Inner wrapper with a solid black border */
+    /* Inner wrapper with a solid black border; overflow clipped */
     .card-inner {
+      position: relative;
+      z-index: 2;
       width: 100%;
       height: 100%;
       border: 1px solid #000;
@@ -99,6 +97,7 @@
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
     /* Title area: black background, white text, rounded top corners */
     .card-title {
@@ -111,12 +110,33 @@
       border-top-left-radius: 5mm;
       border-top-right-radius: 5mm;
     }
-    /* Card image: no border radius, not stretched */
+    /* Image container for foreground image and blurred background */
+    .card-image-container {
+      position: relative;
+      width: 100%;
+      height: auto;
+      overflow: hidden;
+    }
+    /* Blurred background using the pre-rendered image */
+    .card-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-position: center;
+      background-size: cover;
+      z-index: 1;
+    }
+    /* Foreground image */
     .card-image {
+      position: relative;
+      z-index: 2;
       max-height: 28mm;
       width: auto;
       display: block;
-      margin: 0mm auto 0;
+      margin: 0 auto;
+      border: none;
     }
     /* Solid divider between image and description */
     .divider {
@@ -124,7 +144,7 @@
       border-top: 1px solid #000;
       margin-top: 0mm;
     }
-    /* Description area: light gray background, full width, rounded bottom corners */
+    /* Description area: light gray background, rounded bottom corners */
     .card-description {
       background-color: #eee;
       width: 100%;
@@ -274,7 +294,8 @@
     let allCards = {};
     let cardCounter = 0;
     let currentEditingId = null;
-    let currentEditingImage = null; // Stores the currently loaded image (DataURL)
+    let currentEditingImage = null; // Stores the original image (DataURL)
+    let currentEditingBlurredImage = null; // Stores the pre-blurred version
     
     // Local dice images (PNG version)
     const diceImages = {
@@ -329,31 +350,66 @@
       }
     }
     
+    // Pre-blur an image using canvas.
+    function createBlurredBackground(dataURL, callback) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.filter = "blur(8px)";
+        ctx.drawImage(img, 0, 0);
+        const blurredDataURL = canvas.toDataURL();
+        callback(blurredDataURL);
+      };
+      img.src = dataURL;
+    }
+    
     // Creates the card preview based on form data.
-    // Layout: Title area at the top, then (if exists) image, then a solid divider, then description area.
+    // Layout: Title area at the top, then image container with blurred background within the inner border,
+    // then a solid divider, then the description area.
     function createCard(title, imageSrc, descriptionHTML) {
       const cardPreview = document.getElementById('card-preview');
       cardPreview.innerHTML = '';
       
-      // Create inner wrapper with black border inside the dashed cut line.
+      // Create inner wrapper.
       const inner = document.createElement('div');
       inner.className = 'card-inner';
       
-      // Title area with black background and white text.
+      // Title area.
       const titleDiv = document.createElement('div');
       titleDiv.className = 'card-title';
       titleDiv.textContent = title;
       inner.appendChild(titleDiv);
       
-      // If an image is present, add it below the title.
+      // If an image is provided, create an image container.
       if (imageSrc) {
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'card-image-container';
+        imageContainer.style.position = 'relative';
+        imageContainer.style.width = '100%';
+        imageContainer.style.height = 'auto';
+        imageContainer.style.overflow = 'hidden';
+        
+        // Use pre-blurred image if available.
+        if (currentEditingBlurredImage) {
+          const bgDiv = document.createElement('div');
+          bgDiv.className = 'card-bg';
+          bgDiv.style.backgroundImage = "url('" + currentEditingBlurredImage + "')";
+          imageContainer.appendChild(bgDiv);
+        }
+        
+        // Create the actual image element.
         const imageElem = document.createElement('img');
         imageElem.src = imageSrc;
         imageElem.alt = title;
         imageElem.className = 'card-image';
-        // Remove any border radius on the image.
         imageElem.style.borderRadius = '0';
-        inner.appendChild(imageElem);
+        imageContainer.appendChild(imageElem);
+        
+        inner.appendChild(imageContainer);
         
         // Add a solid divider between image and description.
         const divider = document.createElement('div');
@@ -361,7 +417,7 @@
         inner.appendChild(divider);
       }
       
-      // Description area with light gray background and rounded bottom corners.
+      // Description area.
       const descriptionDiv = document.createElement('div');
       descriptionDiv.className = 'card-description';
       descriptionDiv.innerHTML = replaceDicePlaceholders(descriptionHTML);
@@ -397,11 +453,16 @@
         const reader = new FileReader();
         reader.onload = function(event) {
           currentEditingImage = event.target.result;
-          updateCardPreview();
+          // Create a pre-blurred version of the image.
+          createBlurredBackground(currentEditingImage, function(blurred) {
+            currentEditingBlurredImage = blurred;
+            updateCardPreview();
+          });
         };
         reader.readAsDataURL(imageFileInput.files[0]);
       } else {
         currentEditingImage = null;
+        currentEditingBlurredImage = null;
         updateCardPreview();
       }
     });
@@ -434,19 +495,22 @@
         }
         const title = document.getElementById('title').value;
         const descriptionHTML = quill.root.innerHTML;
+        // Save both the original and the blurred image.
         allCards[id] = {
           id: id,
           title: title,
           descriptionHTML: descriptionHTML,
           imageData: dataUrl,
-          savedImage: currentEditingImage
+          savedImage: currentEditingImage,
+          blurredImage: currentEditingBlurredImage
         };
         updateSavedCardsList();
         document.getElementById('card-form').reset();
         quill.root.innerHTML = '';
-        cardPreview.style.display = 'none';
+        document.getElementById('card-preview').style.display = 'none';
         document.getElementById('export-btn').style.display = 'none';
         currentEditingImage = null;
+        currentEditingBlurredImage = null;
       }).catch(function(err) {
         console.error("Saving card failed", err);
       });
@@ -474,6 +538,9 @@
       quill.root.innerHTML = card.descriptionHTML || '';
       if (card.savedImage) {
         currentEditingImage = card.savedImage;
+      }
+      if (card.blurredImage) {
+        currentEditingBlurredImage = card.blurredImage;
       }
       createCard(card.title, currentEditingImage, card.descriptionHTML);
       delete allCards[id];
