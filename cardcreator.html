@@ -192,10 +192,37 @@
       max-width: 100%;
       height: auto;
     }
-    /* Add an input for the number of copies next to the Edit button */
+    /* Print controls row above each saved card */
+    .print-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      margin-bottom: 5px;
+    }
     .copy-input {
       width: 40px;
+    }
+    /* Print options control panel: search bar (fixed width) and clear filter button */
+    #print-options {
+      text-align: center;
+      margin-top: 10px;
+    }
+    #search-input {
+      width: 150px;
+      padding: 4px;
+      border: 1px solid #ccc;
+      border-radius: 2px;
+    }
+    #clear-search-btn {
       margin-left: 5px;
+      padding: 5px 8px;
+      background-color: #008cba;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.9em;
+      border-radius: 4px;
     }
     /* Footer styling with repository links */
     footer {
@@ -276,9 +303,17 @@
     <button id="export-btn" style="display:none;">Export Card</button>
   </div>
   
+  <!-- Print Options: Select All / Deselect All, Search and Clear Filter -->
+  <div id="print-options">
+    <button id="select-all-btn">Select All</button>
+    <button id="deselect-all-btn">Deselect All</button>
+    <input type="text" id="search-input" placeholder="Search cards...">
+    <button id="clear-search-btn">Clear Filter</button>
+  </div>
+  
   <!-- Saved Cards List -->
   <div id="saved-cards"></div>
-  <button id="print-all-btn" style="display:block; margin: 10px auto;">Print All Saved Cards</button>
+  <button id="print-all-btn" style="display:block; margin: 10px auto;">Print Saved Cards</button>
   
   <!-- JSON Export/Import Buttons and Hidden Input -->
   <div style="text-align:center; margin-top:10px;">
@@ -527,7 +562,7 @@
       });
     });
     
-    // Updates the list of saved cards and adds a copy-number input next to the Edit button.
+    // Updates the list of saved cards and adds print controls above each card.
     function updateSavedCardsList() {
       const container = document.getElementById('saved-cards');
       container.innerHTML = '';
@@ -536,10 +571,17 @@
         const div = document.createElement('div');
         div.className = 'saved-card';
         div.setAttribute("data-id", id);
-        div.innerHTML = '<img src="' + card.imageData + '" alt="' + card.title + '"><br>' +
-                        '<strong>' + card.title + '</strong><br>' +
-                        '<button onclick="editCard(\'' + id + '\')">Edit</button>' +
-                        ' Copies: <input type="number" min="1" value="1" class="copy-input">';
+        // Compute plain text for search from descriptionHTML.
+        const plainDescription = card.descriptionHTML.replace(/<[^>]+>/g, "").toLowerCase();
+        div.innerHTML = 
+          '<div class="print-controls">' +
+            '<input type="checkbox" class="print-check" checked> ' +
+            '<span class="printer-icon">🖨️</span>' +
+          '</div>' +
+          '<img src="' + card.imageData + '" alt="' + card.title + '"><br>' +
+          '<strong>' + card.title + '</strong><br>' +
+          '<button onclick="editCard(\'' + id + '\')">Edit</button>' +
+          '<span class="hidden-description" style="display:none;">' + plainDescription + '</span>';
         container.appendChild(div);
       }
     }
@@ -572,23 +614,20 @@
       });
     });
     
-    // Print all saved cards: For each saved card, read the number of copies from the copy input and add that many print cards.
+    // Print saved cards: Only print cards that are checked.
     document.getElementById('print-all-btn').addEventListener('click', function() {
       var printContainer = document.createElement('div');
       const savedCardElements = document.querySelectorAll('.saved-card');
       savedCardElements.forEach(cardElem => {
-        const copies = parseInt(cardElem.querySelector('.copy-input').value) || 1;
+        const checkbox = cardElem.querySelector('.print-check');
+        if (!checkbox || !checkbox.checked) return; // skip unchecked cards
         const id = cardElem.getAttribute("data-id");
         const card = allCards[id];
-        // If the card is not in allCards (maybe it was edited and removed), get it from data-id?
-        // For simplicity, we check if card exists. Otherwise, skip.
         if (card) {
-          for (let i = 0; i < copies; i++) {
-            var cardDiv = document.createElement('div');
-            cardDiv.className = 'print-card';
-            cardDiv.innerHTML = '<img src="' + card.imageData + '" alt="' + card.title + '">';
-            printContainer.appendChild(cardDiv);
-          }
+          var cardDiv = document.createElement('div');
+          cardDiv.className = 'print-card';
+          cardDiv.innerHTML = '<img src="' + card.imageData + '" alt="' + card.title + '">';
+          printContainer.appendChild(cardDiv);
         }
       });
       
@@ -607,6 +646,40 @@
         '<\/script>'
       );
       printWindow.document.close();
+    });
+    
+    // Select All / Deselect All buttons for saved cards.
+    document.getElementById('select-all-btn').addEventListener('click', function() {
+      const checkboxes = document.querySelectorAll('.print-check');
+      checkboxes.forEach(chk => chk.checked = true);
+    });
+    document.getElementById('deselect-all-btn').addEventListener('click', function() {
+      const checkboxes = document.querySelectorAll('.print-check');
+      checkboxes.forEach(chk => chk.checked = false);
+    });
+    
+    // Full text search: Filter saved cards by title and description.
+    document.getElementById('search-input').addEventListener('input', function() {
+      const query = this.value.toLowerCase();
+      const cards = document.querySelectorAll('.saved-card');
+      cards.forEach(card => {
+        const title = card.querySelector('strong').textContent.toLowerCase();
+        const desc = card.querySelector('.hidden-description').textContent.toLowerCase();
+        if (title.includes(query) || desc.includes(query)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+    
+    // Clear search filter button.
+    document.getElementById('clear-search-btn').addEventListener('click', function() {
+      document.getElementById('search-input').value = "";
+      const cards = document.querySelectorAll('.saved-card');
+      cards.forEach(card => {
+        card.style.display = 'block';
+      });
     });
     
     // JSON Export: Convert allCards to JSON and trigger a download.
@@ -634,7 +707,17 @@
       reader.onload = function(event) {
         try {
           const importedCards = JSON.parse(event.target.result);
-          allCards = importedCards;
+          // Merge imported cards with existing cards.
+          for (let key in importedCards) {
+            allCards[key] = importedCards[key];
+          }
+          // Update cardCounter to the maximum numeric ID among all cards.
+          let maxId = 0;
+          for (let key in allCards) {
+            const num = parseInt(key.split('-')[1]);
+            if (num > maxId) maxId = num;
+          }
+          cardCounter = maxId;
           updateSavedCardsList();
           alert("Cards imported successfully!");
         } catch (err) {
