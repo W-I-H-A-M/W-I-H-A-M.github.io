@@ -192,6 +192,11 @@
       max-width: 100%;
       height: auto;
     }
+    /* Add an input for the number of copies next to the Edit button */
+    .copy-input {
+      width: 40px;
+      margin-left: 5px;
+    }
     /* Footer styling with repository links */
     footer {
       text-align: center;
@@ -274,6 +279,13 @@
   <!-- Saved Cards List -->
   <div id="saved-cards"></div>
   <button id="print-all-btn" style="display:block; margin: 10px auto;">Print All Saved Cards</button>
+  
+  <!-- JSON Export/Import Buttons and Hidden Input -->
+  <div style="text-align:center; margin-top:10px;">
+    <button id="export-json-btn">Export JSON</button>
+    <button id="import-json-btn">Import JSON</button>
+    <input type="file" id="jsonImport" accept=".json" style="display:none;">
+  </div>
   
   <!-- Footer with repository and live site links -->
   <footer>
@@ -368,7 +380,7 @@
     }
     
     // Creates the card preview based on form data.
-    // Layout: Title area at the top, then image container with blurred background within the inner border,
+    // Layout: Title area at the top, then image container with blurred background (inside inner border),
     // then a solid divider, then the description area.
     function createCard(title, imageSrc, descriptionHTML) {
       const cardPreview = document.getElementById('card-preview');
@@ -495,7 +507,6 @@
         }
         const title = document.getElementById('title').value;
         const descriptionHTML = quill.root.innerHTML;
-        // Save both the original and the blurred image.
         allCards[id] = {
           id: id,
           title: title,
@@ -516,7 +527,7 @@
       });
     });
     
-    // Updates the list of saved cards.
+    // Updates the list of saved cards and adds a copy-number input next to the Edit button.
     function updateSavedCardsList() {
       const container = document.getElementById('saved-cards');
       container.innerHTML = '';
@@ -524,9 +535,11 @@
         const card = allCards[id];
         const div = document.createElement('div');
         div.className = 'saved-card';
+        div.setAttribute("data-id", id);
         div.innerHTML = '<img src="' + card.imageData + '" alt="' + card.title + '"><br>' +
                         '<strong>' + card.title + '</strong><br>' +
-                        '<button onclick="editCard(\'' + id + '\')">Edit</button>';
+                        '<button onclick="editCard(\'' + id + '\')">Edit</button>' +
+                        ' Copies: <input type="number" min="1" value="1" class="copy-input">';
         container.appendChild(div);
       }
     }
@@ -559,16 +572,25 @@
       });
     });
     
-    // Print all saved cards: Opens a new window with the print container in true mm dimensions.
+    // Print all saved cards: For each saved card, read the number of copies from the copy input and add that many print cards.
     document.getElementById('print-all-btn').addEventListener('click', function() {
       var printContainer = document.createElement('div');
-      for (let id in allCards) {
+      const savedCardElements = document.querySelectorAll('.saved-card');
+      savedCardElements.forEach(cardElem => {
+        const copies = parseInt(cardElem.querySelector('.copy-input').value) || 1;
+        const id = cardElem.getAttribute("data-id");
         const card = allCards[id];
-        var cardDiv = document.createElement('div');
-        cardDiv.className = 'print-card';
-        cardDiv.innerHTML = '<img src="' + card.imageData + '" alt="' + card.title + '">';
-        printContainer.appendChild(cardDiv);
-      }
+        // If the card is not in allCards (maybe it was edited and removed), get it from data-id?
+        // For simplicity, we check if card exists. Otherwise, skip.
+        if (card) {
+          for (let i = 0; i < copies; i++) {
+            var cardDiv = document.createElement('div');
+            cardDiv.className = 'print-card';
+            cardDiv.innerHTML = '<img src="' + card.imageData + '" alt="' + card.title + '">';
+            printContainer.appendChild(cardDiv);
+          }
+        }
+      });
       
       var printWindow = window.open('', '', 'width=800,height=600');
       printWindow.document.write(
@@ -585,6 +607,41 @@
         '<\/script>'
       );
       printWindow.document.close();
+    });
+    
+    // JSON Export: Convert allCards to JSON and trigger a download.
+    document.getElementById('export-json-btn').addEventListener('click', function() {
+      const jsonStr = JSON.stringify(allCards, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = "cards.json";
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+    
+    // JSON Import: Trigger the hidden file input.
+    document.getElementById('import-json-btn').addEventListener('click', function() {
+      document.getElementById('jsonImport').click();
+    });
+    
+    // Handle JSON file import.
+    document.getElementById('jsonImport').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const importedCards = JSON.parse(event.target.result);
+          allCards = importedCards;
+          updateSavedCardsList();
+          alert("Cards imported successfully!");
+        } catch (err) {
+          alert("Error importing JSON: " + err);
+        }
+      };
+      reader.readAsText(file);
     });
   </script>
 </body>
