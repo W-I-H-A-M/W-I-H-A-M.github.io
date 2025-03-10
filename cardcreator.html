@@ -200,9 +200,6 @@
       gap: 5px;
       margin-bottom: 5px;
     }
-    .copy-input {
-      width: 40px;
-    }
     /* Print options control panel: search bar (fixed width) and clear filter button */
     #print-options {
       text-align: center;
@@ -315,9 +312,10 @@
   <div id="saved-cards"></div>
   <button id="print-all-btn" style="display:block; margin: 10px auto;">Print Saved Cards</button>
   
-  <!-- JSON Export/Import Buttons and Hidden Input -->
+  <!-- JSON Export/Import and Export Selected Buttons -->
   <div style="text-align:center; margin-top:10px;">
     <button id="export-json-btn">Export JSON</button>
+    <button id="export-selected-json-btn">Export Selected</button>
     <button id="import-json-btn">Import JSON</button>
     <input type="file" id="jsonImport" accept=".json" style="display:none;">
   </div>
@@ -694,6 +692,29 @@
       URL.revokeObjectURL(url);
     });
     
+    // Export Selected: Convert only the checked cards to JSON and trigger a download.
+    document.getElementById('export-selected-json-btn').addEventListener('click', function() {
+      const selected = {};
+      const savedCardElements = document.querySelectorAll('.saved-card');
+      savedCardElements.forEach(cardElem => {
+        const checkbox = cardElem.querySelector('.print-check');
+        if (checkbox && checkbox.checked) {
+          const id = cardElem.getAttribute("data-id");
+          if (allCards[id]) {
+            selected[id] = allCards[id];
+          }
+        }
+      });
+      const jsonStr = JSON.stringify(selected, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = "selected_cards.json";
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+    
     // JSON Import: Trigger the hidden file input.
     document.getElementById('import-json-btn').addEventListener('click', function() {
       document.getElementById('jsonImport').click();
@@ -707,22 +728,19 @@
       reader.onload = function(event) {
         try {
           const importedCards = JSON.parse(event.target.result);
-          // Merge imported cards with existing cards.
+          // Add each imported card with a new unique ID.
           for (let key in importedCards) {
-            allCards[key] = importedCards[key];
+            cardCounter++;
+            const newId = 'card-' + cardCounter;
+            allCards[newId] = importedCards[key];
           }
-          // Update cardCounter to the maximum numeric ID among all cards.
-          let maxId = 0;
-          for (let key in allCards) {
-            const num = parseInt(key.split('-')[1]);
-            if (num > maxId) maxId = num;
-          }
-          cardCounter = maxId;
           updateSavedCardsList();
           alert("Cards imported successfully!");
         } catch (err) {
           alert("Error importing JSON: " + err);
         }
+        // Reset file input so the same file can be imported again.
+        document.getElementById('jsonImport').value = "";
       };
       reader.readAsText(file);
     });
