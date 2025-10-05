@@ -1167,13 +1167,40 @@
       }
 
       function insertDiceToken(targetEl, diceKey){
+        if(!targetEl) return;
         const token = createDiceSpan(diceKey);
         if(!token) return;
-        const temp = document.createElement('div');
-        temp.appendChild(document.createTextNode(ZWSP));
-        temp.appendChild(token);
-        temp.appendChild(document.createTextNode(ZWSP));
-        document.execCommand('insertHTML', false, temp.innerHTML);
+
+        const selection = window.getSelection();
+        if(!selection) return;
+
+        if(!selection.rangeCount || !targetEl.contains(selection.getRangeAt(0).commonAncestorContainer)){
+          targetEl.focus();
+          const range = document.createRange();
+          range.selectNodeContents(targetEl);
+          range.collapse(false);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+
+        const before = document.createTextNode(ZWSP);
+        const after = document.createTextNode(ZWSP);
+        const fragment = document.createDocumentFragment();
+        fragment.appendChild(before);
+        fragment.appendChild(token);
+        fragment.appendChild(after);
+        range.insertNode(fragment);
+
+        const caretRange = document.createRange();
+        caretRange.setStart(after, after.length);
+        caretRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(caretRange);
+
+        targetEl.normalize();
         ensureDiceBoundaries(targetEl);
       }
 
@@ -1403,6 +1430,145 @@
         sel.addRange(range);
       }
 
+      function getCaretIndex(root, range){
+        if(!root || !range) return 0;
+        const preRange = range.cloneRange();
+        preRange.selectNodeContents(root);
+        preRange.setEnd(range.startContainer, range.startOffset);
+        return preRange.toString().length;
+      }
+
+      function setCaretByIndex(root, index){
+        if(!root) return false;
+        let remaining = Math.max(0, index || 0);
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        let node = walker.nextNode();
+        while(node){
+          const len = node.textContent.length;
+          if(remaining <= len){
+            setCaretPosition(node, remaining);
+            return true;
+          }
+          remaining -= len;
+          node = walker.nextNode();
+        }
+        setCaretPosition(root, root.childNodes.length);
+        return false;
+      }
+
+      function captureSelectionSnapshot(root){
+        if(!root) return null;
+        const sel = window.getSelection();
+        if(!sel || !sel.rangeCount) return null;
+        const range = sel.getRangeAt(0);
+        if(!root.contains(range.startContainer)) return null;
+        return {
+          range: range.cloneRange(),
+          index: getCaretIndex(root, range)
+        };
+      }
+
+      function restoreSelectionSnapshot(snapshot){
+        if(!snapshot || !snapshot.range) return false;
+        const sel = window.getSelection();
+        if(!sel) return false;
+        sel.removeAllRanges();
+        try{
+          sel.addRange(snapshot.range);
+          return true;
+        }catch(err){
+          console.warn('Selection restore failed:', err);
+          return false;
+        }
+      }
+
+      function moveCaretAfter(node){
+        if(!node) return;
+        const sel = window.getSelection();
+        if(!sel) return;
+        const range = document.createRange();
+        if(node.nodeType === Node.TEXT_NODE){
+          range.setStart(node, node.textContent.length);
+        } else {
+          range.setStartAfter(node);
+        }
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+
+      function moveCaretBefore(node){
+        if(!node) return;
+        const sel = window.getSelection();
+        if(!sel) return;
+        const range = document.createRange();
+        if(node.nodeType === Node.TEXT_NODE){
+          range.setStart(node, 0);
+        } else {
+          range.setStartBefore(node);
+        }
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+
+      function positionCaretAfterDiceRemoval(removal, direction){
+        if(!removal) return false;
+        const parent = removal.parent;
+        if(!parent || !parent.isConnected) return false;
+        const siblings = parent.childNodes;
+        const pickNode = (index, fallback)=>{
+          if(index < 0 || index >= siblings.length) return fallback || null;
+          return siblings[index] || fallback || null;
+        };
+        const index = removal.index;
+        if(direction === 'backward'){
+          let candidate = pickNode(index - 1, null);
+          if(candidate){
+            if(candidate.nodeType === Node.TEXT_NODE){
+              setCaretPosition(candidate, candidate.textContent.length);
+              return true;
+            }
+            moveCaretAfter(candidate);
+            return true;
+          }
+          candidate = pickNode(index, null);
+          if(candidate){
+            if(candidate.nodeType === Node.TEXT_NODE){
+              setCaretPosition(candidate, 0);
+              return true;
+            }
+            moveCaretBefore(candidate);
+            return true;
+          }
+          setCaretPosition(parent, 0);
+          return true;
+        }
+        if(direction === 'forward'){
+          let candidate = pickNode(index, null);
+          if(candidate){
+            if(candidate.nodeType === Node.TEXT_NODE){
+              setCaretPosition(candidate, 0);
+              return true;
+            }
+            moveCaretBefore(candidate);
+            return true;
+          }
+          candidate = pickNode(siblings.length - 1, null);
+          if(candidate){
+            if(candidate.nodeType === Node.TEXT_NODE){
+              setCaretPosition(candidate, candidate.textContent.length);
+              return true;
+            }
+            moveCaretAfter(candidate);
+            return true;
+          }
+          setCaretPosition(parent, parent.childNodes.length);
+          return true;
+        }
+        return false;
+      }
+
       function removeDiceToken(token){
         if(!isDiceToken(token)) return null;
         const parent = token.parentNode;
@@ -1462,20 +1628,24 @@
             }
             if(targetToken){
               e.preventDefault();
+              const snapshot = captureSelectionSnapshot(editor);
               const removal = removeDiceToken(targetToken);
               if(removal){
-                let targetNode = container;
-                let targetOffset = offset;
-                if(container.nodeType !== Node.TEXT_NODE){
-                  targetOffset = Math.max(offset - 1, 0);
-                } else {
-                  targetOffset = Math.min(offset, container.textContent.length);
+                const caretIndex = snapshot ? snapshot.index : 0;
+                if(!restoreSelectionSnapshot(snapshot) && !setCaretByIndex(editor, caretIndex) && !positionCaretAfterDiceRemoval(removal, 'backward')){
+                  let targetNode = container;
+                  let targetOffset = offset;
+                  if(container.nodeType !== Node.TEXT_NODE){
+                    targetOffset = Math.max(offset - 1, 0);
+                  } else {
+                    targetOffset = Math.min(offset, container.textContent.length);
+                  }
+                  if(!targetNode.isConnected){
+                    targetNode = removal.parent;
+                    targetOffset = Math.max(Math.min(removal.index - 1, targetNode.childNodes.length), 0);
+                  }
+                  setCaretPosition(targetNode, targetOffset);
                 }
-                if(!targetNode.isConnected){
-                  targetNode = removal.parent;
-                  targetOffset = Math.max(Math.min(removal.index - 1, targetNode.childNodes.length), 0);
-                }
-                setCaretPosition(targetNode, targetOffset);
                 if(mirror === functionText){ renderFunctionPreview(); }
                 else if(mirror === descriptionText){ mirror.innerHTML = editor.innerHTML; updateDescriptionVisibility(); }
                 else if(mirror){ mirror.innerHTML = editor.innerHTML; }
@@ -1494,20 +1664,24 @@
             }
             if(targetToken){
               e.preventDefault();
+              const snapshot = captureSelectionSnapshot(editor);
               const removal = removeDiceToken(targetToken);
               if(removal){
-                let targetNode = container;
-                let targetOffset = offset;
-                if(container.nodeType !== Node.TEXT_NODE){
-                  targetOffset = Math.min(offset, container.childNodes.length);
-                } else {
-                  targetOffset = Math.min(offset, container.textContent.length);
+                const caretIndex = snapshot ? snapshot.index : 0;
+                if(!restoreSelectionSnapshot(snapshot) && !setCaretByIndex(editor, caretIndex) && !positionCaretAfterDiceRemoval(removal, 'forward')){
+                  let targetNode = container;
+                  let targetOffset = offset;
+                  if(container.nodeType !== Node.TEXT_NODE){
+                    targetOffset = Math.min(offset, container.childNodes.length);
+                  } else {
+                    targetOffset = Math.min(offset, container.textContent.length);
+                  }
+                  if(!targetNode.isConnected){
+                    targetNode = removal.parent;
+                    targetOffset = Math.min(removal.index, targetNode.childNodes.length);
+                  }
+                  setCaretPosition(targetNode, targetOffset);
                 }
-                if(!targetNode.isConnected){
-                  targetNode = removal.parent;
-                  targetOffset = Math.min(removal.index, targetNode.childNodes.length);
-                }
-                setCaretPosition(targetNode, targetOffset);
                 if(mirror === functionText){ renderFunctionPreview(); }
                 else if(mirror === descriptionText){ mirror.innerHTML = editor.innerHTML; updateDescriptionVisibility(); }
                 else if(mirror){ mirror.innerHTML = editor.innerHTML; }
