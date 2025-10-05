@@ -65,6 +65,11 @@
     .panel .toolbar{ display:flex; gap:6px; margin:6px 0 8px; }
     .panel .toolbar button{ padding:6px 8px; font-size:12px; border:1px solid var(--ui-border); background:var(--ui-surface-alt); color:var(--ui-text); border-radius:6px; cursor:pointer; transition:background .15s ease, border .15s ease; }
     .panel .toolbar button:hover{ background:var(--ui-border-strong); }
+    .misc-icon-control{ display:flex; align-items:center; gap:8px; }
+    .misc-icon-control input{ flex:1; }
+    .misc-icon-preview{ margin-top:8px; display:flex; align-items:center; gap:8px; color:var(--ui-text); font-size:13px; }
+    .misc-icon-preview svg{ width:24px; height:24px; fill:currentColor; display:block; }
+    .misc-icon-preview .misc-icon-name{ font-family:"Libre Franklin", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size:12px; color:var(--ui-text-muted); }
     .dice-toolbar{ display:flex; gap:6px; margin:4px 0 8px; flex-wrap:wrap; }
     .dice-toolbar button{ padding:6px 8px; font-size:12px; border:1px solid var(--ui-border); background:var(--ui-surface-alt); border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; color:var(--ui-text); transition:background .15s ease; }
     .dice-toolbar button:hover{ background:var(--ui-border-strong); }
@@ -118,7 +123,7 @@
 
     .type-icon{ position:absolute; top:2mm; left:2mm; width:10mm; height:10mm; border-radius:50%; background: var(--rules); border:0.6mm solid #000; display:grid; place-items:center; z-index:3; }
     .type-icon-hex{ width:7mm; height:7mm; background:#000; clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%); display:grid; place-items:center; }
-    .type-icon-hex svg{ width:72%; height:72%; fill:#fff; display:block; transform:translateX(-0.1mm); }
+    .type-icon-hex svg{ width:72%; height:72%; fill:#fff; color:#fff; display:block; transform:translateX(-0.1mm); }
 
 
     .media{ position:absolute; left:3mm; right:3mm; top:3mm; height:var(--media-height); background:#2b3731; border-radius: 3mm 0 0 0; overflow:hidden; outline:0.3mm solid #0a0a0a; z-index:1; }
@@ -224,8 +229,25 @@
           <option value="WEAPON">WEAPON</option>
           <option value="EQUIPMENT">EQUIPMENT</option>
           <option value="HINT">HINT</option>
+          <option value="MISC">MISC</option>
         </select>
         <div class="help">Changes top-left icon and the type text below the title.</div>
+      </div>
+      <div class="group" id="miscIconGroup" hidden>
+        <label for="miscIconInput">Custom icon</label>
+        <div class="misc-icon-control">
+          <input type="text" id="miscIconInput" placeholder="Icon name, e.g. sword" autocomplete="off" />
+          <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener" class="btn" style="flex:0 0 auto; white-space:nowrap;">Browse</a>
+        </div>
+        <div class="misc-icon-preview" aria-live="polite">
+          <svg id="miscIconPreviewSvg" viewBox="0 0 24 24" role="img" aria-hidden="true"></svg>
+          <span id="miscIconPreviewName" class="misc-icon-name">mdi-shape-outline</span>
+        </div>
+        <div class="help">Icon names come from the Material Design Icons library. Prefix is optional.</div>
+      </div>
+      <div class="group" id="miscLabelGroup" hidden>
+        <label for="miscTypeTextInput">Custom category</label>
+        <input type="text" id="miscTypeTextInput" placeholder="Category text, e.g. Relic" />
       </div>
       <div class="group">
         <label for="titleInput">Title</label>
@@ -371,7 +393,13 @@
       const typeSelect = document.getElementById('typeSelect');
       const typeText = document.getElementById('typeText');
       const typeIcon = document.getElementById('typeIcon');
-      const typeIconPath = document.getElementById('typeIconPath');
+      let typeIconPath = document.getElementById('typeIconPath');
+      const miscIconGroup = document.getElementById('miscIconGroup');
+      const miscLabelGroup = document.getElementById('miscLabelGroup');
+      const miscIconInput = document.getElementById('miscIconInput');
+      const miscIconPreviewSvg = document.getElementById('miscIconPreviewSvg');
+      const miscIconPreviewName = document.getElementById('miscIconPreviewName');
+      const miscTypeTextInput = document.getElementById('miscTypeTextInput');
 
       const titleInput = document.getElementById('titleInput');
       const titleSpan = document.getElementById('titleText');
@@ -458,8 +486,181 @@
         ITEM: 'M2,10.96C1.5,10.68 1.35,10.07 1.63,9.59L3.13,7C3.24,6.8 3.41,6.66 3.6,6.58L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.66,6.72 20.82,6.88 20.91,7.08L22.36,9.6C22.64,10.08 22.47,10.69 22,10.96L21,11.54V16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V10.96C2.7,11.13 2.32,11.14 2,10.96M12,4.15V4.15L12,10.85V10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.21V15.91M19,15.91V12.69L14,15.59C13.67,15.77 13.3,15.76 13,15.6V19.29L19,15.91M13.85,13.36L20.13,9.73L19.55,8.72L13.27,12.35L13.85,13.36Z',
         WEAPON: 'M6.92,5H5L14,14L15,13.06M19.96,19.12L19.12,19.96C18.73,20.35 18.1,20.35 17.71,19.96L14.59,16.84L11.91,19.5L10.5,18.09L11.92,16.67L3,7.75V3H7.75L16.67,11.92L18.09,10.5L19.5,11.91L16.83,14.58L19.95,17.7C20.35,18.1 20.35,18.73 19.96,19.12Z',
         EQUIPMENT: 'M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z',
-        HINT: 'M20,11H23V13H20V11M1,11H4V13H1V11M13,1V4H11V1H13M4.92,3.5L7.05,5.64L5.63,7.05L3.5,4.93L4.92,3.5M16.95,5.63L19.07,3.5L20.5,4.93L18.37,7.05L16.95,5.63M12,6A6,6 0 0,1 18,12C18,14.22 16.79,16.16 15,17.2V19A1,1 0 0,1 14,20H10A1,1 0 0,1 9,19V17.2C7.21,16.16 6,14.22 6,12A6,6 0 0,1 12,6M14,21V22A1,1 0 0,1 13,23H11A1,1 0 0,1 10,22V21H14M11,18H13V15.87C14.73,15.43 16,13.86 16,12A4,4 0 0,0 12,8A4,4 0 0,0 8,12C8,13.86 9.27,15.43 11,15.87V18Z'
+        HINT: 'M20,11H23V13H20V11M1,11H4V13H1V11M13,1V4H11V1H13M4.92,3.5L7.05,5.64L5.63,7.05L3.5,4.93L4.92,3.5M16.95,5.63L19.07,3.5L20.5,4.93L18.37,7.05L16.95,5.63M12,6A6,6 0 0,1 18,12C18,14.22 16.79,16.16 15,17.2V19A1,1 0 0,1 14,20H10A1,1 0 0,1 9,19V17.2C7.21,16.16 6,14.22 6,12A6,6 0 0,1 12,6M14,21V22A1,1 0 0,1 13,23H11A1,1 0 0,1 10,22V21H14M11,18H13V15.87C14.73,15.43 16,13.86 16,12A4,4 0 0,0 12,8A4,4 0 0,0 8,12C8,13.86 9.27,15.43 11,15.87V18Z',
+        MISC: 'M2,10.96C1.5,10.68 1.35,10.07 1.63,9.59L3.13,7C3.24,6.8 3.41,6.66 3.6,6.58L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.66,6.72 20.82,6.88 20.91,7.08L22.36,9.6C22.64,10.08 22.47,10.69 22,10.96L21,11.54V16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V10.96C2.7,11.13 2.32,11.14 2,10.96M12,4.15V4.15L12,10.85V10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.21V15.91M19,15.91V12.69L14,15.59C13.67,15.77 13.3,15.76 13,15.6V19.29L19,15.91M13.85,13.36L20.13,9.73L19.55,8.72L13.27,12.35L13.85,13.36Z'
       };
+
+      const DEFAULT_MISC_ICON = 'shape-outline';
+      const DEFAULT_SVG_VIEWBOX = '0 0 24 24';
+      const MDI_SVG_BASE_URL = 'https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/';
+
+      function normalizeIconName(raw){
+        if(!raw) return '';
+        return raw.trim().toLowerCase().replace(/^mdi-/, '').replace(/[\s_]+/g, '-');
+      }
+
+      function resolveMiscLabel(raw){
+        const trimmed = (raw || '').trim();
+        return trimmed || 'MISC';
+      }
+
+      const DEFAULT_MISC_ICON_DATA = {
+        name: DEFAULT_MISC_ICON,
+        viewBox: DEFAULT_SVG_VIEWBOX,
+        svg: `<path d="${TYPE_ICON_PATH.MISC}" fill="currentColor"></path>`
+      };
+
+      let currentMiscIconData = { ...DEFAULT_MISC_ICON_DATA };
+      let miscIconLoadPromise = Promise.resolve();
+      const miscIconCache = new Map();
+      miscIconCache.set(DEFAULT_MISC_ICON, DEFAULT_MISC_ICON_DATA);
+      let miscIconRequestId = 0;
+      const typeIconDefaultViewBox = typeIcon?.getAttribute('viewBox') || DEFAULT_SVG_VIEWBOX;
+      const typeIconDefaultMarkup = typeIcon?.innerHTML || '';
+
+      function sanitizeSvgElement(svgEl){
+        const clone = svgEl.cloneNode(true);
+        clone.removeAttribute('width');
+        clone.removeAttribute('height');
+        clone.removeAttribute('xmlns');
+        clone.removeAttribute('xmlns:xlink');
+        clone.removeAttribute('version');
+        clone.removeAttribute('class');
+        clone.removeAttribute('fill');
+        clone.removeAttribute('stroke');
+        clone.removeAttribute('style');
+        const allowedTags = new Set(['g', 'path', 'rect', 'circle', 'polygon', 'polyline', 'line', 'ellipse']);
+        const paintTargets = new Set(['path', 'rect', 'circle', 'polygon', 'polyline', 'line', 'ellipse']);
+        clone.querySelectorAll('*').forEach(node => {
+          const tag = node.tagName?.toLowerCase();
+          if(tag && !allowedTags.has(tag)){
+            node.remove();
+            return;
+          }
+          node.removeAttribute('class');
+          node.removeAttribute('style');
+          node.removeAttribute('id');
+          if(tag && paintTargets.has(tag)){
+            const fill = node.getAttribute('fill');
+            if(fill === null || fill === '' || fill === 'black' || fill === '#000' || fill === '#000000'){
+              node.setAttribute('fill', 'currentColor');
+            } else if(fill && fill !== 'none'){
+              node.setAttribute('fill', 'currentColor');
+            }
+            const stroke = node.getAttribute('stroke');
+            if(stroke && stroke !== 'none'){
+              node.setAttribute('stroke', 'currentColor');
+            }
+          }
+        });
+        const viewBox = clone.getAttribute('viewBox') || DEFAULT_SVG_VIEWBOX;
+        const svg = (clone.innerHTML || '').trim();
+        return { viewBox, svg };
+      }
+
+      async function loadMiscIconData(iconName){
+        const name = iconName || DEFAULT_MISC_ICON;
+        if(miscIconCache.has(name)) return miscIconCache.get(name);
+        try{
+          const resp = await fetch(`${MDI_SVG_BASE_URL}${name}.svg`, { cache: 'force-cache' });
+          if(!resp.ok) throw new Error(`mdi svg ${resp.status}`);
+          const text = await resp.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(text, 'image/svg+xml');
+          const svgEl = doc.querySelector('svg');
+          if(!svgEl) throw new Error('Invalid SVG');
+          const sanitized = sanitizeSvgElement(svgEl);
+          const data = {
+            name,
+            viewBox: sanitized.viewBox,
+            svg: sanitized.svg || DEFAULT_MISC_ICON_DATA.svg
+          };
+          miscIconCache.set(name, data);
+          return data;
+        }catch(err){
+          console.warn('Failed to load MDI icon', name, err);
+          return {
+            name,
+            viewBox: DEFAULT_MISC_ICON_DATA.viewBox,
+            svg: DEFAULT_MISC_ICON_DATA.svg
+          };
+        }
+      }
+
+      function updateMiscIconPreviewDisplay(data){
+        const hasSvg = data && typeof data.svg === 'string' && data.svg.trim().length > 0;
+        const info = hasSvg ? data : DEFAULT_MISC_ICON_DATA;
+        if(miscIconPreviewSvg){
+          miscIconPreviewSvg.setAttribute('viewBox', info.viewBox || DEFAULT_SVG_VIEWBOX);
+          miscIconPreviewSvg.innerHTML = info.svg;
+        }
+        if(miscIconPreviewName){
+          miscIconPreviewName.textContent = `mdi-${info.name || DEFAULT_MISC_ICON}`;
+        }
+      }
+
+      function restoreTypeIconDefaultMarkup(){
+        if(!typeIcon) return;
+        if(typeIcon.innerHTML !== typeIconDefaultMarkup){
+          typeIcon.innerHTML = typeIconDefaultMarkup;
+        }
+        typeIcon.setAttribute('viewBox', typeIconDefaultViewBox);
+        typeIcon.setAttribute('aria-label', `${typeSelect.value} icon`);
+        typeIconPath = typeIcon.querySelector('#typeIconPath');
+      }
+
+      function applyMiscIconToCard(iconData){
+        if(!typeIcon) return;
+        const hasSvg = iconData && typeof iconData.svg === 'string' && iconData.svg.trim().length > 0;
+        const info = hasSvg ? iconData : DEFAULT_MISC_ICON_DATA;
+        typeIcon.innerHTML = info.svg;
+        typeIcon.setAttribute('viewBox', info.viewBox || DEFAULT_SVG_VIEWBOX);
+        typeIcon.setAttribute('aria-label', `MISC icon (mdi-${info.name || DEFAULT_MISC_ICON})`);
+        typeIconPath = null;
+      }
+
+      async function applyMiscIconByName(rawName){
+        const normalized = normalizeIconName(rawName) || DEFAULT_MISC_ICON;
+        const requestId = ++miscIconRequestId;
+        const data = await loadMiscIconData(normalized);
+        if(requestId !== miscIconRequestId) return;
+        currentMiscIconData = {
+          name: normalized,
+          viewBox: data.viewBox || DEFAULT_SVG_VIEWBOX,
+          svg: data.svg || DEFAULT_MISC_ICON_DATA.svg
+        };
+        updateMiscIconPreviewDisplay(currentMiscIconData);
+        if(typeSelect.value === 'MISC'){
+          applyMiscIconToCard(currentMiscIconData);
+        }
+      }
+
+      function getMiscIconDataFromState(state){
+        if(!state) return { ...DEFAULT_MISC_ICON_DATA };
+        const name = normalizeIconName(state.miscIcon) || DEFAULT_MISC_ICON;
+        const svg = (typeof state.miscIconSvg === 'string' && state.miscIconSvg.trim().length > 0)
+          ? state.miscIconSvg
+          : null;
+        const viewBox = state.miscIconViewBox || DEFAULT_SVG_VIEWBOX;
+        if(svg){
+          return {
+            name,
+            viewBox,
+            svg
+          };
+        }
+        return {
+          name,
+          viewBox,
+          svg: null
+        };
+      }
+
+      function getTypeLabelFromState(state){
+        if(!state) return 'ITEM';
+        if(state.type === 'MISC'){ return resolveMiscLabel(state.miscTypeLabel); }
+        return state.type || 'ITEM';
+      }
 
       const DICE_SVG_PATH = {
         d4: 'M10.25 15.15L11.92 12.47V15.15H10.25M21.92 21H2.08C1.24 21 .72 20.08 1.16 19.36L11.08 3.13C11.5 2.44 12.5 2.44 12.92 3.13L22.84 19.36C23.28 20.08 22.76 21 21.92 21M14.29 15.15H13.43V10.42H11.91L8.75 15.41L8.82 16.36H11.92V18H13.43V16.36H14.29V15.15Z',
@@ -471,6 +672,7 @@
       };
 
       function updateTypeIconGlyph(type){
+        restoreTypeIconDefaultMarkup();
         if(!typeIconPath) return;
         const d = TYPE_ICON_PATH[type] || TYPE_ICON_PATH.ITEM;
         typeIconPath.setAttribute('d', d);
@@ -479,13 +681,63 @@
         }
       }
 
-      function createTypeIconSvg(type){
+      function refreshTypeLabel(){
+        if(typeSelect.value === 'MISC'){
+          typeText.textContent = resolveMiscLabel(miscTypeTextInput?.value);
+        } else {
+          typeText.textContent = typeSelect.value;
+        }
+      }
+
+      function applyTypeSelection(type){
+        const isMisc = type === 'MISC';
+        if(miscIconGroup){ miscIconGroup.hidden = !isMisc; }
+        if(miscLabelGroup){ miscLabelGroup.hidden = !isMisc; }
+        if(isMisc){
+          applyMiscIconToCard(currentMiscIconData);
+        } else {
+          updateTypeIconGlyph(type);
+        }
+        refreshTypeLabel();
+      }
+
+      function createTypeIconNode(state){
+        const type = state?.type || 'ITEM';
+        if(type === 'MISC'){
+          const data = state ? {
+            name: normalizeIconName(state.miscIcon) || DEFAULT_MISC_ICON,
+            viewBox: state.miscIconViewBox || DEFAULT_SVG_VIEWBOX,
+            svg: state.miscIconSvg
+          } : null;
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', (data && data.viewBox) || DEFAULT_SVG_VIEWBOX);
+          svg.setAttribute('aria-hidden', 'true');
+          svg.classList.add('lib-icon');
+          if(data && data.svg){
+            svg.innerHTML = data.svg;
+          } else {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', TYPE_ICON_PATH.MISC);
+            path.setAttribute('fill', 'currentColor');
+            svg.appendChild(path);
+          }
+          svg.querySelectorAll('*').forEach(node => {
+            if(node.hasAttribute('fill') && node.getAttribute('fill') !== 'none'){
+              node.setAttribute('fill', 'currentColor');
+            }
+            if(node.hasAttribute('stroke') && node.getAttribute('stroke') !== 'none'){
+              node.setAttribute('stroke', 'currentColor');
+            }
+          });
+          return svg;
+        }
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('viewBox', '0 0 24 24');
         svg.setAttribute('aria-hidden', 'true');
         svg.classList.add('lib-icon');
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('d', TYPE_ICON_PATH[type] || TYPE_ICON_PATH.ITEM);
+        path.setAttribute('fill', 'currentColor');
         svg.appendChild(path);
         return svg;
       }
@@ -1313,9 +1565,14 @@
 
       // ===== Library helpers =====
       function getState(){
+        const miscName = normalizeIconName(miscIconInput?.value) || currentMiscIconData?.name || DEFAULT_MISC_ICON;
         return {
           title: titleInput.value || '',
           type: typeSelect.value,
+          miscIcon: miscName,
+          miscIconSvg: currentMiscIconData?.svg || null,
+          miscIconViewBox: currentMiscIconData?.viewBox || DEFAULT_SVG_VIEWBOX,
+          miscTypeLabel: (miscTypeTextInput?.value || '').trim(),
           functionHTML: functionEditor.innerHTML,
           descriptionHTML: descriptionEditor.innerHTML,
           // store art as dataURL (for portability & html2canvas CORS safety)
@@ -1331,8 +1588,18 @@
         titleInput.value = state.title || '';
         titleSpan.textContent = state.title || '';
         typeSelect.value = state.type || 'ITEM';
-        typeText.textContent = typeSelect.value;
-        updateTypeIconGlyph(typeSelect.value);
+        if(miscIconInput){
+          miscIconInput.value = state.miscIcon || '';
+        }
+        currentMiscIconData = getMiscIconDataFromState(state);
+        updateMiscIconPreviewDisplay(currentMiscIconData);
+        if(!currentMiscIconData.svg){
+          miscIconLoadPromise = applyMiscIconByName(currentMiscIconData.name);
+        } else {
+          miscIconLoadPromise = Promise.resolve();
+        }
+        if(miscTypeTextInput){ miscTypeTextInput.value = state.miscTypeLabel || ''; }
+        applyTypeSelection(typeSelect.value);
         const mergedFunctionHTML = mergeLegacyTagIntoFunction(state.tag, state.functionHTML || '');
         functionEditor.innerHTML = mergedFunctionHTML;
         if(!functionEditor.querySelector('[data-function-heading="true"]')){
@@ -1415,6 +1682,11 @@
 
       async function loadStateForRender(state){
         applyState(state || {});
+        try{
+          await miscIconLoadPromise;
+        }catch(err){
+          console.warn('Misc icon load skipped:', err);
+        }
         if(state?.artDataURL){
           if(!(artImg.complete && artImg.naturalWidth > 0 && artImg.src === state.artDataURL)){
             await new Promise(resolve=>{
@@ -1442,6 +1714,8 @@
           item?.id,
           state.title,
           state.type,
+          state.miscIcon,
+          state.miscTypeLabel,
           state.tag,
           stripHTML(state.functionHTML),
           stripHTML(state.descriptionHTML)
@@ -1489,9 +1763,9 @@
           const meta = document.createElement('div'); meta.className='lib-meta';
           const title = document.createElement('div'); title.className='lib-title'; title.textContent = item.state?.title || '(untitled)';
           const sub = document.createElement('div'); sub.className='lib-sub';
-          sub.appendChild(createTypeIconSvg(item.state?.type || 'ITEM'));
+          sub.appendChild(createTypeIconNode(item.state));
           const subText = document.createElement('span');
-          subText.textContent = (item.state?.type || 'ITEM');
+          subText.textContent = getTypeLabelFromState(item.state);
           sub.appendChild(subText);
           meta.appendChild(title); meta.appendChild(sub);
           const qtyWrap = document.createElement('div'); qtyWrap.className='lib-qty';
@@ -1620,6 +1894,44 @@
         const theme = typeof stateRaw.theme === 'object'
           ? { ...DEFAULT_THEME, ...stateRaw.theme }
           : { ...DEFAULT_THEME };
+        const rawMiscIcon = typeof stateRaw.miscIcon === 'string' ? stateRaw.miscIcon : '';
+        let miscIcon = normalizeIconName(rawMiscIcon);
+        let miscIconSvg = null;
+        let miscIconViewBox = typeof stateRaw.miscIconViewBox === 'string' && stateRaw.miscIconViewBox.trim()
+          ? stateRaw.miscIconViewBox.trim()
+          : DEFAULT_SVG_VIEWBOX;
+        let miscTypeLabel = typeof stateRaw.miscTypeLabel === 'string' ? stateRaw.miscTypeLabel.trim() : '';
+
+        if(typeof stateRaw.miscIconSvg === 'string' && stateRaw.miscIconSvg.trim()){
+          try{
+            const parser = new DOMParser();
+            const scaffold = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${miscIconViewBox}">${stateRaw.miscIconSvg}</svg>`;
+            const doc = parser.parseFromString(scaffold, 'image/svg+xml');
+            const svgEl = doc.querySelector('svg');
+            if(svgEl){
+              const sanitized = sanitizeSvgElement(svgEl);
+              if(sanitized){
+                const svgMarkup = (sanitized.svg || '').trim();
+                miscIconSvg = svgMarkup.length ? svgMarkup : null;
+                miscIconViewBox = sanitized.viewBox || miscIconViewBox;
+              }
+            }
+          }catch(err){
+            console.warn('Import icon sanitise failed:', err);
+            miscIconSvg = null;
+          }
+        }
+
+        if(type === 'MISC'){
+          miscIcon = miscIcon || DEFAULT_MISC_ICON;
+          miscTypeLabel = resolveMiscLabel(miscTypeLabel);
+        } else {
+          miscIcon = miscIcon || '';
+          miscTypeLabel = miscTypeLabel || '';
+        }
+
+        if(miscTypeLabel.length > 80){ miscTypeLabel = miscTypeLabel.slice(0, 80); }
+
         return {
           id,
           createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : new Date().toISOString(),
@@ -1627,6 +1939,10 @@
           state: {
             title: typeof stateRaw.title === 'string' ? stateRaw.title : '',
             type,
+            miscIcon,
+            miscIconSvg,
+            miscIconViewBox,
+            miscTypeLabel,
             tag: typeof stateRaw.tag === 'string' ? stateRaw.tag : '',
             functionHTML: typeof stateRaw.functionHTML === 'string' ? stateRaw.functionHTML : '',
             descriptionHTML: typeof stateRaw.descriptionHTML === 'string' ? stateRaw.descriptionHTML : '',
@@ -1848,10 +2164,22 @@
       });
 
       typeSelect.addEventListener('change', ()=>{
-        const t=typeSelect.value;
-        typeText.textContent=t;
-        updateTypeIconGlyph(t);
+        applyTypeSelection(typeSelect.value);
       });
+
+      if(miscIconInput){
+        miscIconInput.addEventListener('input', ()=>{
+          miscIconLoadPromise = applyMiscIconByName(miscIconInput.value);
+        });
+      }
+
+      if(miscTypeTextInput){
+        miscTypeTextInput.addEventListener('input', ()=>{
+          if(typeSelect.value === 'MISC'){
+            refreshTypeLabel();
+          }
+        });
+      }
 
       titleInput.addEventListener('input', ()=>{ titleSpan.textContent=titleInput.value||''; fitTitleToWidth(); });
 
@@ -1891,7 +2219,13 @@
       refreshLibrary();
       titleSpan.textContent = titleInput.value || '';
       fitTitleToWidth();
-      updateTypeIconGlyph(typeSelect.value);
+      updateMiscIconPreviewDisplay(currentMiscIconData);
+      if(miscIconInput && miscIconInput.value){
+        miscIconLoadPromise = applyMiscIconByName(miscIconInput.value);
+      } else {
+        miscIconLoadPromise = Promise.resolve();
+      }
+      applyTypeSelection(typeSelect.value);
       fitContentPanel();
       updateDescriptionVisibility();
       if(bwModeToggle) bwModeToggle.checked = bwPrintMode;
