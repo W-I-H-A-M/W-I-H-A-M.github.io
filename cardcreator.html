@@ -74,7 +74,7 @@
     .dice-toolbar button{ padding:6px 8px; font-size:12px; border:1px solid var(--ui-border); background:var(--ui-surface-alt); border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; color:var(--ui-text); transition:background .15s ease; }
     .dice-toolbar button:hover{ background:var(--ui-border-strong); }
     .dice-toolbar i.mdi{ font-size:14px; }
-    .dice-inline{ display:inline-flex; width:1.25em; height:1.25em; line-height:1; vertical-align:middle; align-items:center; justify-content:center; }
+    .dice-inline{ display:inline-flex; width:1.25em; height:1.25em; line-height:1; vertical-align:text-bottom; align-items:center; justify-content:center; }
     .dice-inline svg{ width:100%; height:100%; fill:currentColor; display:block; }
     .toggle-group{ display:flex; flex-direction:column; gap:6px; }
     .toggle-label{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--ui-text); }
@@ -148,7 +148,7 @@
       font-weight:900;
       font-size:var(--heading-font-size, 2.8mm);
       padding:1mm 2.5mm;
-      padding-right:1mm;
+      padding-right:2.8mm;
       margin-left:-2.5mm;
       margin-right:0;
       border-radius:0;
@@ -169,8 +169,8 @@
       content:"";
       position:absolute;
       top:0;
-      right:-1mm;
-      width:2mm;
+      right:-1.4mm;
+      width:3mm;
       height:100%;
       background:var(--type);
       transform:skewX(-20deg);
@@ -1119,6 +1119,11 @@
 
       function ensureDiceBoundaries(root){
         if(!root) return;
+        let caretIndex = null;
+        const sel = window.getSelection();
+        if(sel && sel.rangeCount && sel.isCollapsed && typeof root.contains === 'function' && root.contains(sel.anchorNode)){
+          caretIndex = getCaretIndex(root, sel.getRangeAt(0));
+        }
         const diceTokens = root.querySelectorAll('.dice-inline');
         diceTokens.forEach(token => {
           if(!token.getAttribute('data-dice')){
@@ -1156,6 +1161,9 @@
           next.textContent = ZWSP + next.textContent.replace(/^\u200B+/g, '');
         });
         root.normalize();
+        if(caretIndex !== null){
+          setCaretByIndex(root, caretIndex);
+        }
       }
 
       function isHTMLContentEmpty(html){
