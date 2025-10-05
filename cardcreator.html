@@ -1,756 +1,1901 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Item Card Generator</title>
-  <!-- Google Fonts for a handwritten look -->
-  <link href="https://fonts.googleapis.com/css2?family=Delicious+Handrawn&family=Just+Another+Hand&display=swap" rel="stylesheet">
-  
-  <!-- Quill CSS from CDN -->
-  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-  
-  <!-- html2canvas for exporting the card as an image -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  
-  <!-- Quill JS from CDN -->
-  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pen &amp; Paper Card — live editor + library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800&family=Libre+Franklin:wght@300;400;600;700&family=Merriweather:ital,wght@1,300;1,400&display=swap" rel="stylesheet" id="fontCdnLink">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css">
+  <!-- MDI Icon Font -->
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
   <style>
-    /* General page styling in grayscale */
-    body {
-      font-family: 'Gloria Hallelujah', cursive;
-      background-color: #f5f5f5;
-      padding: 20px;
-      color: #000;
+    :root{
+      --card-w: 50mm;
+      --card-h: 80mm;
+      --frame:#0a0a0a;
+      --frame-line:#d5b773;
+      --panel:#0b0b0b;
+      --title:#b9721b;
+      --title-dark:#8a5413;
+      --title-text:#fff;
+      --type:#c5cbd6;
+      --type-dark:#9aa3b1;
+      --type-text:#000;
+      --rules:#ead7b6;
+      --rules-2:#e2cda4;
+      --ink:#0c0c0c;
+      --ui-bg:#161d29;
+      --ui-surface:#1d2636;
+      --ui-surface-alt:#232f44;
+      --ui-border:#2f3d55;
+      --ui-border-strong:#3b4b66;
+      --ui-text:#e5ecff;
+      --ui-text-muted:#98a6c8;
+      --ui-accent:#528bff;
+      --media-height:41.25%;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 10px;
+    body.bw-mode{
+      --frame-line:#ffffff;
     }
-    .form-container {
-      max-width: 600px;
-      margin: 0 auto 10px auto;
-      background: #fff;
-      padding: 10px;
-      border: 1px solid #aaa;
-      border-radius: 4px;
+    *{box-sizing:border-box; margin:0; padding:0;}
+    body{ margin:0; padding:20px; background:#0b111b; color:var(--ui-text); font-family:"Libre Franklin", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+    .layout{ display:grid; grid-template-columns: 360px auto minmax(320px, 1fr); gap:20px; align-items:start; }
+    .preview-column{ display:flex; justify-content:center; }
+    .preview-column .cutline{ margin:0 auto; }
+    .library-panel{ background:var(--ui-surface); border:1px solid var(--ui-border); border-radius:10px; padding:14px; display:flex; flex-direction:column; color:var(--ui-text); }
+
+    .panel{ background:var(--ui-surface); border:1px solid var(--ui-border); border-radius:10px; padding:14px; color:var(--ui-text); }
+    .panel h2{ font-size:16px; margin-bottom:8px; font-weight:700; }
+    .panel .group{ margin-bottom:12px; }
+    .panel label{ display:block; font-size:12px; font-weight:700; margin-bottom:6px; text-transform:uppercase; letter-spacing:.06em; color:var(--ui-text-muted); }
+    .panel input[type="text"], .panel select { width:100%; padding:8px 10px; font-size:14px; border:1px solid var(--ui-border); border-radius:8px; background:var(--ui-surface-alt); color:var(--ui-text); }
+    .panel input[type="text"]::placeholder{ color:var(--ui-text-muted); }
+    .panel select option{ background:#0f1724; color:var(--ui-text); }
+    .panel input[type="file"]{ font-size:14px; color:var(--ui-text); }
+    input[type="checkbox"], input[type="radio"]{ accent-color:var(--ui-accent); }
+    input[type="number"]{ color:var(--ui-text); }
+    .panel input[type="text"]:focus,
+    .panel select:focus,
+    .library-tools input[type="search"]:focus,
+    .lib-qty input:focus,
+    .rich:focus{ outline:2px solid var(--ui-accent); outline-offset:1px; }
+    .panel .toolbar{ display:flex; gap:6px; margin:6px 0 8px; }
+    .panel .toolbar button{ padding:6px 8px; font-size:12px; border:1px solid var(--ui-border); background:var(--ui-surface-alt); color:var(--ui-text); border-radius:6px; cursor:pointer; transition:background .15s ease, border .15s ease; }
+    .panel .toolbar button:hover{ background:var(--ui-border-strong); }
+    .dice-toolbar{ display:flex; gap:6px; margin:4px 0 8px; flex-wrap:wrap; }
+    .dice-toolbar button{ padding:6px 8px; font-size:12px; border:1px solid var(--ui-border); background:var(--ui-surface-alt); border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; color:var(--ui-text); transition:background .15s ease; }
+    .dice-toolbar button:hover{ background:var(--ui-border-strong); }
+    .dice-toolbar i.mdi{ font-size:14px; }
+    .dice-inline{ display:inline-flex; width:1.25em; height:1.25em; line-height:1; vertical-align:middle; align-items:center; justify-content:center; }
+    .dice-inline svg{ width:100%; height:100%; fill:currentColor; display:block; }
+    .toggle-group{ display:flex; flex-direction:column; gap:6px; }
+    .toggle-label{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--ui-text); }
+    .toggle-label input{ width:18px; height:18px; }
+    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    .rich{ min-height:84px; padding:10px; border:1px solid var(--ui-border); border-radius:8px; background:var(--ui-surface-alt); color:var(--ui-text); overflow:auto; }
+    .help{ font-size:12px; color:var(--ui-text-muted); margin-top:4px; }
+
+    .btn-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+    .btn{ display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border:1px solid var(--ui-border); background:var(--ui-surface-alt); border-radius:8px; font-size:13px; cursor:pointer; color:var(--ui-text); transition:background .15s ease, border .15s ease; }
+    .btn:hover{ background:var(--ui-border-strong); }
+    .btn.primary{ background:var(--ui-accent); color:#fff; border-color:var(--ui-accent); }
+    .btn.primary:hover{ border-color:#3f73ef; }
+    .btn.danger{ border-color:#ff6b6b; color:#ff9d9d; }
+    .btn.danger:hover{ background:#4d1f2b; }
+
+    /* Library */
+    .library-heading-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin:0 0 8px; }
+    .library-heading-actions{ display:flex; gap:6px; flex-wrap:wrap; }
+    .library-tools{ margin:0 0 10px; }
+    .library-tools input[type="search"]{ width:100%; padding:6px 8px; border:1px solid var(--ui-border); border-radius:6px; font-size:13px; background:var(--ui-surface-alt); color:var(--ui-text); }
+    .library-tools input[type="search"]::placeholder{ color:var(--ui-text-muted); }
+    .library-subactions{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:0 0 12px; }
+    .library-subactions .btn{ padding:6px 10px; font-size:12px; display:inline-flex; align-items:center; gap:4px; }
+    .icon-credit{ margin-top:12px; font-size:11px; color:var(--ui-text-muted); text-align:center; }
+    .icon-credit a{ color:var(--ui-text-muted); text-decoration:underline; }
+    .lib-select{ position:absolute; top:8px; left:8px; width:16px; height:16px; z-index:5; }
+    .library{ margin-top:10px; display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:34px; }
+    .lib-card{ position:relative; border:1px solid var(--ui-border); border-radius:0 0 10px 10px; background:var(--ui-surface-alt); color:var(--ui-text); overflow:hidden; display:flex; flex-direction:column; width: fit-content; padding-top:4px; box-shadow:0 6px 18px rgba(6,12,20,0.35); }
+    .lib-thumb{ width:100%; object-fit:cover; background:#151f2e; display:block; }
+    body.bw-mode .lib-thumb{ filter:grayscale(100%); }
+    .lib-meta{ padding:8px; display:flex; flex-direction:column; gap:4px; }
+    .lib-title{ font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ui-text); }
+    .lib-sub{ font-size:11px; color:var(--ui-text-muted); display:flex; align-items:center; gap:6px; text-transform:uppercase; letter-spacing:.05em; }
+    .lib-sub .lib-icon{ width:14px; height:14px; fill:currentColor; display:block; }
+    .lib-qty{ display:flex; align-items:center; gap:6px; padding:0 8px 6px; font-size:12px; color:var(--ui-text-muted); }
+    .lib-qty input{ width:48px; padding:4px; border:1px solid var(--ui-border); border-radius:6px; font-size:12px; text-align:center; background:var(--ui-surface); color:var(--ui-text); }
+    .lib-actions{ display:flex; gap:6px; padding:8px; border-top:1px solid var(--ui-border); background:rgba(15,21,33,0.6); }
+
+    /* Preview with dashed cut line */
+    .cutline{ position:relative; width:calc(var(--card-w) + 2mm); height:calc(var(--card-h) + 2mm); background:#fff; border:0.3mm dashed #000; border-radius:3mm; display:flex; align-items:center; justify-content:center; }
+
+    /* Card frame */
+    .card{ width: var(--card-w); height: var(--card-h); background:linear-gradient(180deg, var(--panel), #0a0a0a 25%, #0a0a0a 75%, var(--panel)); border-radius:2mm; position:relative; overflow:hidden; isolation:isolate; border:1mm solid var(--frame); }
+    .card::after{ content:""; position:absolute; inset:1.5mm; border-radius:1.5mm; border:0.3mm solid var(--frame-line); pointer-events:none; }
+
+    .type-icon{ position:absolute; top:2mm; left:2mm; width:10mm; height:10mm; border-radius:50%; background: var(--rules); border:0.6mm solid #000; display:grid; place-items:center; z-index:3; }
+    .type-icon-hex{ width:7mm; height:7mm; background:#000; clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%); display:grid; place-items:center; }
+    .type-icon-hex svg{ width:72%; height:72%; fill:#fff; display:block; transform:translateX(-0.1mm); }
+
+
+    .media{ position:absolute; left:3mm; right:3mm; top:3mm; height:var(--media-height); background:#2b3731; border-radius: 3mm 0 0 0; overflow:hidden; outline:0.3mm solid #0a0a0a; z-index:1; }
+    .media .placeholder{ width:100%; height:100%; display:grid; place-items:center; background: repeating-linear-gradient(45deg, #33413b 0 2mm, #3a4942 2mm 4mm ); color:#e8efe9; font-weight:800; letter-spacing:.08em; font-family:"Kanit"; font-size:3mm; }
+    .media img.media-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
+    body.bw-mode .media img.media-img{ filter:grayscale(100%); }
+
+    .title-bar{ position:absolute; left:3mm; right:3mm; top: calc(3mm + var(--media-height) - 2mm); height:10mm; background: linear-gradient(180deg, var(--title), var(--title-dark)); color: var(--title-text); display:flex; justify-content:center; align-items:center; text-transform:uppercase; letter-spacing:.12em; font-family:"Kanit"; font-weight:900; font-size:4mm; z-index:4; clip-path: polygon(0% 12%,10% 6%,20% 10%,30% 5%,40% 11%,50% 7%,60% 10%,70% 6%,80% 11%,90% 7%,100% 12%,100% 100%,0% 100%); overflow:hidden; }
+    .title-bar span { display:inline-block; white-space:nowrap; }
+
+    .type-text{ position:absolute; left:3mm; right:3mm; top: calc(3mm + var(--media-height) + 10mm - 2mm); height:2.6mm; border-radius:0; background: var(--type); color: var(--type-text); display:grid; place-items:center; font-size:1.8mm; letter-spacing:.16em; text-transform:uppercase; font-weight:800; }
+
+    .content-panel{ position:absolute; left:3mm; right:3mm; bottom:3mm; top: calc(3mm + var(--media-height) + 10mm - 2mm + 2.6mm); border-radius:0; background: linear-gradient(180deg, var(--rules), var(--rules-2)); padding:1mm; color:var(--ink); display:flex; flex-direction:column; gap:var(--content-gap, 2mm); line-height:1.35; overflow:hidden; }
+
+    .function-text{ display:flex; flex-direction:column; gap:var(--content-gap, 2mm); margin-top:var(--function-margin-top, 1mm); font-size:var(--function-font-size, 2.6mm); line-height:var(--function-line-height, 1.35); }
+    .function-heading,
+    .rich[data-role="function"] [data-function-heading="true"],
+    .rich[data-role="function"] .function-heading-block{
+      position:relative;
+      background: var(--type);
+      color: var(--type-text);
+      font-weight:900;
+      font-size:var(--heading-font-size, 2.8mm);
+      padding:1mm 2.5mm;
+      padding-right:1mm;
+      margin-left:-2.5mm;
+      margin-right:0;
+      border-radius:0;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      display:flex;
+      align-items:center;
+      gap:1mm;
+      width:max-content;
+      max-width:calc(100% + 1mm);
     }
-    .form-group {
-      margin-bottom: 6px;
+    .function-heading > * { margin:0; }
+    .rich[data-role="function"] [data-function-heading="true"] > *,
+    .rich[data-role="function"] .function-heading-block > *{ margin:0; }
+    .function-heading::after,
+    .rich[data-role="function"] [data-function-heading="true"]::after,
+    .rich[data-role="function"] .function-heading-block::after{
+      content:"";
+      position:absolute;
+      top:0;
+      right:-1mm;
+      width:2mm;
+      height:100%;
+      background:var(--type);
+      transform:skewX(-20deg);
+      transform-origin:left center;
+      border-radius:0;
+      pointer-events:none;
     }
-    label {
-      display: block;
-      margin-bottom: 3px;
-      font-weight: bold;
+    .function-body{ font-size:var(--function-font-size, 2.6mm); line-height:var(--function-line-height, 1.35); }
+    .function-body > *:first-child{ margin-top:0; }
+    .content-panel ul,
+    .content-panel ol{
+      padding-left:4mm;
+      margin-left:1mm;
     }
-    input[type="text"],
-    input[type="file"] {
-      width: 100%;
-      padding: 4px;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 2px;
+
+    .description{ margin-top:var(--description-margin-top, 1.5mm); font-family:"Merriweather", Georgia, serif; font-style:italic; font-size:var(--description-font-size, 2.4mm); line-height:var(--description-line-height, 1.35); color:var(--ink); opacity:.9; border-top:0.2mm solid rgba(0,0,0,.08); padding-top:1mm; }
+
+    @media (max-width: 1100px){
+      .layout{ grid-template-columns: 1fr; }
+      .preview-column{ justify-content:flex-start; }
+      .preview-column .cutline{ margin:20px 0; }
+      .library-panel{ margin-top:20px; }
     }
-    button {
-      padding: 5px 8px;
-      background-color: #008cba;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      font-size: 0.9em;
-      border-radius: 4px;
-      margin-right: 3px;
-      margin-top: 5px;
-    }
-    p {
-      display: block;
-      margin: 0;
-    }
-    #card-preview-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 10px;
-    }
-    /* Outer card (cut line): 50mm x 80mm, dashed border */
-    .card {
-      width: 50mm;
-      height: 80mm;
-      border: 1px dashed rgba(0,0,0,0.2);
-      border-radius: 5mm;
-      padding: 2px; /* gap between inner border and cut line */
-      box-sizing: border-box;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-    }
-    /* Inner wrapper with a solid black border; overflow clipped */
-    .card-inner {
-      position: relative;
-      z-index: 2;
-      width: 100%;
-      height: 100%;
-      border: 1px solid #000;
-      border-radius: 5mm;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    /* Title area: black background, white text, rounded top corners */
-    .card-title {
-      background-color: #000;
-      color: #fff;
-      width: 100%;
-      padding: 2mm;
-      box-sizing: border-box;
-      text-align: center;
-      border-top-left-radius: 5mm;
-      border-top-right-radius: 5mm;
-    }
-    /* Image container for foreground image and blurred background */
-    .card-image-container {
-      position: relative;
-      width: 100%;
-      height: auto;
-      overflow: hidden;
-    }
-    /* Blurred background using the pre-rendered image */
-    .card-bg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-position: center;
-      background-size: cover;
-      z-index: 1;
-    }
-    /* Foreground image */
-    .card-image {
-      position: relative;
-      z-index: 2;
-      max-height: 28mm;
-      width: auto;
-      display: block;
-      margin: 0 auto;
-      border: none;
-    }
-    /* Solid divider between image and description */
-    .divider {
-      width: 100%;
-      border-top: 1px solid #000;
-      margin-top: 0mm;
-    }
-    /* Description area: light gray background, rounded bottom corners */
-    .card-description {
-      background-color: #eee;
-      width: 100%;
-      padding: 2mm;
-      box-sizing: border-box;
-      text-align: center;
-      flex: 1;
-      overflow-wrap: break-word;
-      border-bottom-left-radius: 5mm;
-      border-bottom-right-radius: 5mm;
-    }
-    /* Ensure Quill size classes work in the description */
-    .card-description .ql-size-small { font-size: 0.75em !important; }
-    .card-description .ql-size-large { font-size: 1.5em !important; }
-    .card-description .ql-size-huge { font-size: 2.5em !important; }
-    
-    /* Dice images always 38px high */
-    .dice-img {
-      height: 38px;
-      vertical-align: middle;
-    }
-    .license {
-      font-size: 0.7em;
-      margin-top: 5px;
-      text-align: center;
-      color: #666;
-    }
-    /* Container for saved cards */
-    #saved-cards {
-      margin-top: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-    .saved-card {
-      border: 1px solid #ccc;
-      padding: 5px;
-      text-align: center;
-      width: 120px;
-      border-radius: 4px;
-      background-color: #fff;
-    }
-    .saved-card img {
-      max-width: 100%;
-      height: auto;
-    }
-    /* Print controls row above each saved card */
-    .print-controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      margin-bottom: 5px;
-    }
-    .copy-input {
-      width: 40px;
-    }
-    /* Print options control panel: search bar (fixed width) and clear filter button */
-    #print-options {
-      text-align: center;
-      margin-top: 10px;
-    }
-    #search-input {
-      width: 150px;
-      padding: 4px;
-      border: 1px solid #ccc;
-      border-radius: 2px;
-    }
-    #clear-search-btn {
-      margin-left: 5px;
-      padding: 5px 8px;
-      background-color: #008cba;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      font-size: 0.9em;
-      border-radius: 4px;
-    }
-    /* Footer styling with repository links */
-    footer {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 0.8em;
-    }
-    footer a {
-      color: #008cba;
-      text-decoration: none;
-      margin: 0 5px;
-    }
-    /* Print card styling for the print window */
-    .print-card {
-      width: 50mm !important;
-      height: 80mm !important;
-      border: 1px dashed rgba(0,0,0,0.5) !important;
-      box-sizing: border-box;
-      margin: 5mm;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border-radius: 3mm !important;
-    }
-    .print-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-    /* Quill editor container styling */
-    #editor-container {
-      height: 100px;
-      border: 1px solid #ccc;
-      border-radius: 2px;
-      margin-bottom: 5px;
-      background-color: #fff;
-    }
+
+    .cropper-overlay{ position:fixed; inset:0; background:rgba(15,18,24,0.82); display:none; align-items:center; justify-content:center; z-index:999; padding:20px; }
+    .cropper-overlay.active{ display:flex; }
+    .cropper-dialog{ background:var(--ui-surface); color:var(--ui-text); border-radius:14px; width:min(90vw, 920px); max-width:920px; padding:18px; display:flex; flex-direction:column; gap:16px; box-shadow:0 24px 60px rgba(0,0,0,0.65); }
+    .cropper-header{ display:flex; justify-content:space-between; align-items:center; }
+    .cropper-header h3{ margin:0; font-size:18px; font-weight:700; color:var(--ui-text); }
+    .cropper-header .subtitle{ font-size:12px; color:var(--ui-text-muted); }
+    .cropper-body{ position:relative; width:100%; height:460px; background:#0f1724; border:1px solid var(--ui-border); border-radius:10px; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    .cropper-body img{ max-width:100%; max-height:100%; display:block; }
+    .cropper-body .cropper-container{ max-width:100% !important; max-height:100% !important; }
+    .cropper-footer{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .cropper-footer .hint{ font-size:12px; color:var(--ui-text-muted); }
+    .cropper-footer .actions{ display:flex; gap:8px; }
+    .cropper-footer button{ padding:8px 14px; border-radius:8px; border:1px solid var(--ui-border); background:var(--ui-surface-alt); cursor:pointer; font-size:13px; color:var(--ui-text); }
+    .cropper-footer button:hover{ background:var(--ui-border-strong); }
+    .cropper-footer button.primary{ background:var(--ui-accent); color:#fff; border-color:var(--ui-accent); }
+    .cropper-footer button.primary:hover{ border-color:#3f73ef; }
   </style>
 </head>
 <body>
-  <h2>Item Card Generator</h2>
-  
-  <!-- Form Container -->
-  <div class="form-container">
-    <form id="card-form">
-      <!-- Title Field -->
-      <div class="form-group">
-        <label for="title">Title</label>
-        <input type="text" id="title" required placeholder="Enter card title">
+  <div class="layout">
+    <aside class="panel" id="editor">
+      <h2>Card Editor</h2>
+      <div class="group">
+        <label for="artUpload">Artwork upload</label>
+        <input type="file" id="artUpload" accept="image/*" />
+        <div class="help">Choose an image from your device. Colors adapt automatically.</div>
       </div>
-      <!-- File Upload for Image -->
-      <div class="form-group">
-        <label for="imageFile">Upload Image</label>
-        <input type="file" id="imageFile" accept="image/*">
+      <div class="group">
+        <label for="typeSelect">Type</label>
+        <select id="typeSelect">
+          <option value="ITEM" selected>ITEM</option>
+          <option value="WEAPON">WEAPON</option>
+          <option value="EQUIPMENT">EQUIPMENT</option>
+          <option value="HINT">HINT</option>
+        </select>
+        <div class="help">Changes top-left icon and the type text below the title.</div>
       </div>
-      <!-- Quill Editor for Description -->
-      <div class="form-group">
-        <label for="editor-container">Description (format freely, e.g. bold, font size, etc.)</label>
-        <div id="editor-container"></div>
-        <!-- Dice Buttons (insert placeholders at current cursor) -->
-        <button type="button" onclick="insertDice('d4')">d4</button>
-        <button type="button" onclick="insertDice('d6')">d6</button>
-        <button type="button" onclick="insertDice('d8')">d8</button>
-        <button type="button" onclick="insertDice('d10')">d10</button>
-        <button type="button" onclick="insertDice('d12')">d12</button>
-        <button type="button" onclick="insertDice('d20')">d20</button>
+      <div class="group">
+        <label for="titleInput">Title</label>
+        <input type="text" id="titleInput" value="Sample Item" placeholder="Item title" />
       </div>
-      <!-- Save Card Button -->
-      <button type="button" id="save-btn">Save Card</button>
-    </form>
+      <div class="group">
+        <label>Function text</label>
+        <div class="toolbar" data-for="function">
+          <button type="button" data-cmd="bold"><i class="mdi mdi-format-bold"></i></button>
+          <button type="button" data-cmd="italic"><i class="mdi mdi-format-italic"></i></button>
+          <button type="button" data-cmd="underline"><i class="mdi mdi-format-underline"></i></button>
+          <button type="button" data-cmd="insertUnorderedList"><i class="mdi mdi-format-list-bulleted"></i></button>
+          <button type="button" data-cmd="insertOrderedList"><i class="mdi mdi-format-list-numbered"></i></button>
+          <button type="button" data-action="toggleHeading" title="Toggle heading"><i class="mdi mdi-format-title"></i></button>
+        </div>
+        <div class="dice-toolbar" data-target="function">
+          <button type="button" data-dice="d4"><i class="mdi mdi-dice-d4"></i> D4</button>
+          <button type="button" data-dice="d6"><i class="mdi mdi-dice-d6"></i> D6</button>
+          <button type="button" data-dice="d8"><i class="mdi mdi-dice-d8"></i> D8</button>
+          <button type="button" data-dice="d10"><i class="mdi mdi-dice-d10"></i> D10</button>
+          <button type="button" data-dice="d12"><i class="mdi mdi-dice-d12"></i> D12</button>
+          <button type="button" data-dice="d20"><i class="mdi mdi-dice-d20"></i> D20</button>
+        </div>
+        <div class="rich" id="functionEditor" data-role="function" contenteditable="true"><p data-function-heading="true" class="function-heading-block"><strong>Heading</strong></p><p>Describe the card effect or ability here.</p></div>
+      </div>
+
+      <div class="group">
+        <label>Description</label>
+        <div class="toolbar" data-for="description">
+          <button type="button" data-cmd="bold"><i class="mdi mdi-format-bold"></i></button>
+          <button type="button" data-cmd="italic"><i class="mdi mdi-format-italic"></i></button>
+          <button type="button" data-cmd="underline"><i class="mdi mdi-format-underline"></i></button>
+          <button type="button" data-cmd="insertUnorderedList"><i class="mdi mdi-format-list-bulleted"></i></button>
+          <button type="button" data-cmd="insertOrderedList"><i class="mdi mdi-format-list-numbered"></i></button>
+        </div>
+        <div class="dice-toolbar" data-target="description">
+          <button type="button" data-dice="d4"><i class="mdi mdi-dice-d4"></i> D4</button>
+          <button type="button" data-dice="d6"><i class="mdi mdi-dice-d6"></i> D6</button>
+          <button type="button" data-dice="d8"><i class="mdi mdi-dice-d8"></i> D8</button>
+          <button type="button" data-dice="d10"><i class="mdi mdi-dice-d10"></i> D10</button>
+          <button type="button" data-dice="d12"><i class="mdi mdi-dice-d12"></i> D12</button>
+          <button type="button" data-dice="d20"><i class="mdi mdi-dice-d20"></i> D20</button>
+        </div>
+        <div class="rich" id="descriptionEditor" contenteditable="true"><em>Add narrative flavor text or additional notes here.</em></div>
+      </div>
+
+      <div class="group btn-row">
+        <button class="btn primary" id="saveBtn"><i class="mdi mdi-content-save"></i> Save to Library</button>
+        <button class="btn" id="exportBtn"><i class="mdi mdi-image-multiple"></i> Export PNG</button>
+        <button class="btn danger" id="clearBtn"><i class="mdi mdi-delete"></i> Clear Library</button>
+      </div>
+
+    </aside>
+
+    <div class="preview-column">
+      <div class="cutline">
+        <article class="card" id="preview">
+        <div class="type-icon">
+          <div class="type-icon-hex">
+            <svg id="typeIcon" viewBox="0 0 24 24" role="img" aria-label="type icon">
+              <path id="typeIconPath" d="M2,10.96C1.5,10.68 1.35,10.07 1.63,9.59L3.13,7C3.24,6.8 3.41,6.66 3.6,6.58L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.66,6.72 20.82,6.88 20.91,7.08L22.36,9.6C22.64,10.08 22.47,10.69 22,10.96L21,11.54V16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V10.96C2.7,11.13 2.32,11.14 2,10.96M12,4.15V4.15L12,10.85V10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.21V15.91M19,15.91V12.69L14,15.59C13.67,15.77 13.3,15.76 13,15.6V19.29L19,15.91M13.85,13.36L20.13,9.73L19.55,8.72L13.27,12.35L13.85,13.36Z" />
+            </svg>
+          </div>
+        </div>
+
+        <section class="media">
+          <img class="media-img" id="artImg" alt="Artwork" />
+          <div class="placeholder">IMAGE PLACEHOLDER</div>
+        </section>
+
+        <div class="title-bar"><span id="titleText">Sample Item</span></div>
+        <div class="type-text" id="typeText">ITEM</div>
+
+        <section class="content-panel">
+          <div class="feature">
+          <div class="function-text" id="functionText"><div class="function-heading"><p><strong>Ability Heading</strong></p></div><div class="function-body"><p>Describe the card effect or ability here.</p></div></div>
+          </div>
+          <div class="description" id="descriptionText"><em>Add narrative flavor text or additional notes here.</em></div>
+        </section>
+      </article>
+      </div>
+    </div>
+
+    <section class="library-panel" aria-labelledby="libraryHeading">
+      <div class="library-heading-row">
+        <h2 id="libraryHeading">Your Library</h2>
+        <div class="library-heading-actions">
+          <button class="btn" id="libraryImportBtn" type="button" title="Import cards"><i class="mdi mdi-database-import"></i> Import</button>
+          <button class="btn" id="libraryExportBtn" type="button" title="Export entire library"><i class="mdi mdi-database-export"></i> Export All</button>
+          <button class="btn" id="libraryExportSelectedBtn" type="button" title="Export selected cards"><i class="mdi mdi-content-save-move"></i> Export Selected</button>
+        </div>
+      </div>
+      <div class="library-tools">
+        <input type="search" id="librarySearch" placeholder="Search cards..." aria-label="Search saved cards">
+        <input type="file" id="libraryImportInput" accept="application/json" hidden>
+      </div>
+      <div class="library-subactions">
+        <button class="btn" id="librarySelectAllBtn" type="button" title="Select all cards"><i class="mdi mdi-checkbox-multiple-marked-outline"></i></button>
+        <button class="btn" id="librarySelectNoneBtn" type="button" title="Clear selection"><i class="mdi mdi-checkbox-multiple-blank-outline"></i></button>
+        <label class="toggle-label" for="bwModeToggle" title="Optimise output for monochrome printers" style="font-size:12px; font-weight:500;">
+          <input type="checkbox" id="bwModeToggle" />
+          <span>Optimize for B/W print</span>
+        </label>
+        <button class="btn" id="libraryPrintSelectedBtn" type="button" title="Print selected cards"><i class="mdi mdi-printer"></i> Print</button>
+      </div>
+      <div id="libraryList" class="library"></div>
+      <p class="icon-credit">Icons provided by <a href="https://pictogrammers.com" target="_blank" rel="noopener">Pictogrammers</a> under the <a href="https://pictogrammers.com/docs/general/license/" target="_blank" rel="noopener">Pictogrammers Free License</a>.</p>
+    </section>
   </div>
-  
-  <!-- Card Preview Container -->
-  <div id="card-preview-container">
-    <div id="card-preview" class="card" style="display:none;"></div>
-    <br>
-    <button id="export-btn" style="display:none;">Export Card</button>
+
+  <!-- html-to-image bevorzugt, html2canvas als Fallback -->
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
+
+  <div class="cropper-overlay" id="cropperModal" role="dialog" aria-modal="true" aria-labelledby="cropperTitle">
+    <div class="cropper-dialog">
+      <div class="cropper-header">
+        <h3 id="cropperTitle">Crop Artwork</h3>
+        <span class="subtitle">Adjust the selection and confirm to continue.</span>
+      </div>
+      <div class="cropper-body">
+        <img id="cropperImage" alt="Artwork crop preview" />
+      </div>
+      <div class="cropper-footer">
+        <div class="hint">Aspect ratio locked to card art area.</div>
+        <div class="actions">
+          <button type="button" id="cropperCancelBtn">Cancel</button>
+          <button type="button" class="primary" id="cropperApplyBtn">Apply Crop</button>
+        </div>
+      </div>
+    </div>
   </div>
-  
-  <!-- Print Options: Select All / Deselect All, Search and Clear Filter -->
-  <div id="print-options">
-    <button id="select-all-btn">Select All</button>
-    <button id="deselect-all-btn">Deselect All</button>
-    <input type="text" id="search-input" placeholder="Search cards...">
-    <button id="clear-search-btn">Clear Filter</button>
-  </div>
-  
-  <!-- Saved Cards List -->
-  <div id="saved-cards"></div>
-  <button id="print-all-btn" style="display:block; margin: 10px auto;">Print Saved Cards</button>
-  
-  <!-- JSON Export/Import and Export Selected Buttons -->
-  <div style="text-align:center; margin-top:10px;">
-    <button id="export-json-btn">Export JSON</button>
-    <button id="export-selected-json-btn">Export Selected</button>
-    <button id="import-json-btn">Import JSON</button>
-    <input type="file" id="jsonImport" accept=".json" style="display:none;">
-  </div>
-  
-  <!-- Footer with repository and live site links -->
-  <footer>
-    <p>
-      Visit our GitHub repository: 
-      <a href="https://github.com/W-I-H-A-M/W-I-H-A-M.github.io" target="_blank">W-I-H-A-M.github.io</a>
-      | 
-      Visit our live site: 
-      <a href="https://w-i-h-a-m.github.io/" target="_blank">w-i-h-a-m.github.io</a>
-    </p>
-    <p class="license">
-      Dice graphics licensed under <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank">CC BY 3.0</a> by <a href="https://game-icons.net/" target="_blank">game-icons.net</a>
-    </p>
-  </footer>
-  
+
   <script>
-    // Global object to store all cards, a counter for unique IDs, and variables for editing.
-    let allCards = {};
-    let cardCounter = 0;
-    let currentEditingId = null;
-    let currentEditingImage = null; // Stores the original image (DataURL)
-    let currentEditingBlurredImage = null; // Stores the pre-blurred version
-    
-    // Local dice images (PNG version)
-    const diceImages = {
-      "[d4]": "/img/d4.png",
-      "[d6]": "/img/d6.png",
-      "[d8]": "/img/d8.png",
-      "[d10]": "/img/d10.png",
-      "[d12]": "/img/d12.png",
-      "[d20]": "/img/d20.png"
-    };
-    
-    // Initialize Quill editor without alignment options.
-    const quill = new Quill('#editor-container', {
-      theme: 'snow',
-      modules: {
-        toolbar: [
-          ['bold', 'italic', 'underline', 'strike'],
-          [{ 'size': ['small', false, 'large', 'huge'] }],
-          [{ 'color': [] }, { 'background': [] }],
-          ['clean']
-        ]
-      }
-    });
-    
-    // Inserts dice placeholders at the current cursor in the Quill editor.
-    function insertDice(diceType) {
-      const range = quill.getSelection();
-      if (range) {
-        quill.insertText(range.index, '[' + diceType + ']');
-      }
-    }
-    
-    // Replaces dice placeholders in the HTML with corresponding dice images.
-    function replaceDicePlaceholders(html) {
-      return html.replace(/\[(d4|d6|d8|d10|d12|d20)\]/g, function(match) {
-        const imgSrc = diceImages[match] || '';
-        return imgSrc ? '<img src="' + imgSrc + '" alt="' + match + '" class="dice-img">' : match;
-      });
-    }
-    
-    // Dynamically adjusts the title font size (only for the title area).
-    function adjustTitleFontSize() {
-      const card = document.getElementById('card-preview');
-      const titleElem = card.querySelector('.card-title');
-      if (!titleElem) return;
-      const maxHeaderHeight = card.clientHeight * 0.2; // max 20% of card height
-      let style = window.getComputedStyle(titleElem);
-      let fontSize = parseFloat(style.fontSize);
-      while (titleElem.scrollHeight > maxHeaderHeight && fontSize > 8) {
-        fontSize *= 0.95;
-        titleElem.style.fontSize = fontSize + "px";
-      }
-    }
-    
-    // Pre-blur an image using canvas.
-    function createBlurredBackground(dataURL, callback) {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = function() {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.filter = "blur(8px)";
-        ctx.drawImage(img, 0, 0);
-        const blurredDataURL = canvas.toDataURL();
-        callback(blurredDataURL);
+    (function(){
+      'use strict';
+      // ===== Grab elements =====
+      const artUpload = document.getElementById('artUpload');
+      const artImg = document.getElementById('artImg');
+      const mediaPlaceholder = document.querySelector('.media .placeholder');
+
+      const typeSelect = document.getElementById('typeSelect');
+      const typeText = document.getElementById('typeText');
+      const typeIcon = document.getElementById('typeIcon');
+      const typeIconPath = document.getElementById('typeIconPath');
+
+      const titleInput = document.getElementById('titleInput');
+      const titleSpan = document.getElementById('titleText');
+      const titleBar = document.querySelector('.title-bar');
+
+      const functionEditor = document.getElementById('functionEditor');
+      const functionText = document.getElementById('functionText');
+
+      const descriptionEditor = document.getElementById('descriptionEditor');
+      const descriptionText = document.getElementById('descriptionText');
+      const contentPanel = document.querySelector('.content-panel');
+
+      const saveBtn = document.getElementById('saveBtn');
+      const exportBtn = document.getElementById('exportBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const libraryList = document.getElementById('libraryList');
+      const librarySearch = document.getElementById('librarySearch');
+      const libraryImportBtn = document.getElementById('libraryImportBtn');
+      const libraryExportBtn = document.getElementById('libraryExportBtn');
+      const libraryExportSelectedBtn = document.getElementById('libraryExportSelectedBtn');
+      const libraryPrintSelectedBtn = document.getElementById('libraryPrintSelectedBtn');
+      const librarySelectAllBtn = document.getElementById('librarySelectAllBtn');
+      const librarySelectNoneBtn = document.getElementById('librarySelectNoneBtn');
+      const libraryImportInput = document.getElementById('libraryImportInput');
+      const bwModeToggle = document.getElementById('bwModeToggle');
+      const cropperModal = document.getElementById('cropperModal');
+      const cropperImage = document.getElementById('cropperImage');
+      const cropperCancelBtn = document.getElementById('cropperCancelBtn');
+      const cropperApplyBtn = document.getElementById('cropperApplyBtn');
+
+      let libraryData = [];
+      const FONT_CSS_URL = document.getElementById('fontCdnLink')?.href || '';
+      const fontEmbedCSSPromise = prepareFontEmbedding();
+      const EXPORT_PIXEL_RATIO = 6; // ~600 DPI bei CSS-96DPI Basis
+      const LIB_THUMB_PIXEL_RATIO = 2;
+      const ART_CROP_WIDTH = 800;
+      const ART_CROP_HEIGHT = 600;
+      const ART_ASPECT_RATIO = ART_CROP_WIDTH / ART_CROP_HEIGHT;
+      let cropperInstance = null;
+      let bwPrintMode = false;
+      const DEFAULT_THEME = {
+        title: '#b9721b',
+        titleDark: '#8a5413',
+        titleText: '#ffffff',
+        type: '#c5cbd6',
+        typeDark: '#9aa3b1',
+        typeText: '#000000',
+        rules: '#ead7b6',
+        rules2: '#e2cda4',
+        ink: '#0c0c0c'
       };
-      img.src = dataURL;
-    }
-    
-    // Creates the card preview based on form data.
-    // Layout: Title area at the top, then image container with blurred background (inside inner border),
-    // then a solid divider, then the description area.
-    function createCard(title, imageSrc, descriptionHTML) {
-      const cardPreview = document.getElementById('card-preview');
-      cardPreview.innerHTML = '';
-      
-      // Create inner wrapper.
-      const inner = document.createElement('div');
-      inner.className = 'card-inner';
-      
-      // Title area.
-      const titleDiv = document.createElement('div');
-      titleDiv.className = 'card-title';
-      titleDiv.textContent = title;
-      inner.appendChild(titleDiv);
-      
-      // If an image is provided, create an image container.
-      if (imageSrc) {
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'card-image-container';
-        imageContainer.style.position = 'relative';
-        imageContainer.style.width = '100%';
-        imageContainer.style.height = 'auto';
-        imageContainer.style.overflow = 'hidden';
-        
-        // Use pre-blurred image if available.
-        if (currentEditingBlurredImage) {
-          const bgDiv = document.createElement('div');
-          bgDiv.className = 'card-bg';
-          bgDiv.style.backgroundImage = "url('" + currentEditingBlurredImage + "')";
-          imageContainer.appendChild(bgDiv);
+      let baseTheme = { ...DEFAULT_THEME };
+      let currentTheme = { ...DEFAULT_THEME };
+      let currentAppliedState = null;
+
+      const FUNCTION_FONT_BASE_MM = 2.6;
+      const FUNCTION_FONT_MIN_MM = 1.4;
+      const FUNCTION_FONT_MAX_MM = 4.0;
+      const DESCRIPTION_FONT_BASE_MM = 2.4;
+      const DESCRIPTION_FONT_MIN_MM = 1.2;
+      const DESCRIPTION_FONT_MAX_MM = 3.6;
+      const HEADING_FONT_BASE_MM = 2.8;
+      const HEADING_FONT_MIN_MM = 1.6;
+      const HEADING_FONT_MAX_MM = 4.4;
+      const CONTENT_GAP_BASE_MM = 2;
+      const CONTENT_GAP_MIN_MM = 0.6;
+      const CONTENT_GAP_MAX_MM = 3.2;
+      const FUNCTION_MARGIN_BASE_MM = 1;
+      const FUNCTION_MARGIN_MIN_MM = 0.2;
+      const FUNCTION_MARGIN_MAX_MM = 2.1;
+      const DESCRIPTION_MARGIN_BASE_MM = 1.5;
+      const DESCRIPTION_MARGIN_MIN_MM = 0.4;
+      const DESCRIPTION_MARGIN_MAX_MM = 2.6;
+      const CONTENT_LINE_HEIGHT_BASE = 1.35;
+      const CONTENT_LINE_HEIGHT_MIN = 1.18;
+      const CONTENT_LINE_HEIGHT_MAX = 1.52;
+
+      function makeCardId(){
+        return 'card_' + Date.now() + '_' + Math.random().toString(16).slice(2,8);
+      }
+
+      // Icon mapping
+      const TYPE_ICON_PATH = {
+        ITEM: 'M2,10.96C1.5,10.68 1.35,10.07 1.63,9.59L3.13,7C3.24,6.8 3.41,6.66 3.6,6.58L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.66,6.72 20.82,6.88 20.91,7.08L22.36,9.6C22.64,10.08 22.47,10.69 22,10.96L21,11.54V16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V10.96C2.7,11.13 2.32,11.14 2,10.96M12,4.15V4.15L12,10.85V10.85L17.96,7.5L12,4.15M5,15.91L11,19.29V12.58L5,9.21V15.91M19,15.91V12.69L14,15.59C13.67,15.77 13.3,15.76 13,15.6V19.29L19,15.91M13.85,13.36L20.13,9.73L19.55,8.72L13.27,12.35L13.85,13.36Z',
+        WEAPON: 'M6.92,5H5L14,14L15,13.06M19.96,19.12L19.12,19.96C18.73,20.35 18.1,20.35 17.71,19.96L14.59,16.84L11.91,19.5L10.5,18.09L11.92,16.67L3,7.75V3H7.75L16.67,11.92L18.09,10.5L19.5,11.91L16.83,14.58L19.95,17.7C20.35,18.1 20.35,18.73 19.96,19.12Z',
+        EQUIPMENT: 'M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z',
+        HINT: 'M20,11H23V13H20V11M1,11H4V13H1V11M13,1V4H11V1H13M4.92,3.5L7.05,5.64L5.63,7.05L3.5,4.93L4.92,3.5M16.95,5.63L19.07,3.5L20.5,4.93L18.37,7.05L16.95,5.63M12,6A6,6 0 0,1 18,12C18,14.22 16.79,16.16 15,17.2V19A1,1 0 0,1 14,20H10A1,1 0 0,1 9,19V17.2C7.21,16.16 6,14.22 6,12A6,6 0 0,1 12,6M14,21V22A1,1 0 0,1 13,23H11A1,1 0 0,1 10,22V21H14M11,18H13V15.87C14.73,15.43 16,13.86 16,12A4,4 0 0,0 12,8A4,4 0 0,0 8,12C8,13.86 9.27,15.43 11,15.87V18Z'
+      };
+
+      const DICE_SVG_PATH = {
+        d4: 'M10.25 15.15L11.92 12.47V15.15H10.25M21.92 21H2.08C1.24 21 .72 20.08 1.16 19.36L11.08 3.13C11.5 2.44 12.5 2.44 12.92 3.13L22.84 19.36C23.28 20.08 22.76 21 21.92 21M14.29 15.15H13.43V10.42H11.91L8.75 15.41L8.82 16.36H11.92V18H13.43V16.36H14.29V15.15Z',
+        d6: 'M13.05 13.5C13.05 14.27 12.61 14.83 12 14.83S10.85 14.27 10.85 13.5L10.83 12.78C10.83 12.78 11.21 12 11.95 12.1C12.56 12.1 13.05 12.73 13.05 13.5M21 5V19C21 20.11 20.11 21 19 21H5C3.9 21 3 20.11 3 19V5C3 3.9 3.9 3 5 3H19C20.11 3 21 3.9 21 5M14.55 13.41C14.5 11.45 13.19 10.87 12.53 10.87C11.41 10.87 10.86 11.53 10.86 11.53S10.89 9.5 13.39 9.53V8.33C13.39 8.33 9.33 7.94 9.3 12.66C9.27 16.86 12.77 16 12.77 16S14.61 15.47 14.55 13.41Z',
+        d8: 'M12 2C11.5 2 11 2.19 10.59 2.59L2.59 10.59C1.8 11.37 1.8 12.63 2.59 13.41L10.59 21.41C11.37 22.2 12.63 22.2 13.41 21.41L21.41 13.41C22.2 12.63 22.2 11.37 21.41 10.59L13.41 2.59C13 2.19 12.5 2 12 2M12 8.25C13.31 8.25 14.38 9.2 14.38 10.38C14.38 11.07 14 11.68 13.44 12.07C14.14 12.46 14.6 13.13 14.6 13.9C14.6 15.12 13.44 16.1 12 16.1C10.56 16.1 9.4 15.12 9.4 13.9C9.4 13.13 9.86 12.46 10.56 12.07C10 11.68 9.63 11.07 9.63 10.38C9.63 9.2 10.69 8.25 12 8.25M12 9.5C11.5 9.5 11.1 9.95 11.1 10.5C11.1 11.05 11.5 11.5 12 11.5C12.5 11.5 12.9 11.05 12.9 10.5C12.9 9.95 12.5 9.5 12 9.5M12 12.65C11.39 12.65 10.9 13.14 10.9 13.75C10.9 14.36 11.39 14.85 12 14.85C12.61 14.85 13.1 14.36 13.1 13.75C13.1 13.14 12.61 12.65 12 12.65Z',
+        d10: 'M12 2C11.5 2 11 2.19 10.59 2.59L2.59 10.59C1.8 11.37 1.8 12.63 2.59 13.41L10.59 21.41C11.37 22.2 12.63 22.2 13.41 21.41L21.41 13.41C22.2 12.63 22.2 11.37 21.41 10.59L13.41 2.59C13 2.19 12.5 2 12 2M14.07 8.21C15.5 8.21 16.64 9.36 16.64 10.78V13.42C16.64 14.84 15.5 16 14.07 16C12.64 16 11.5 14.84 11.5 13.42V10.78C11.5 9.36 12.65 8.21 14.07 8.21M10.36 8.41H10.5V16H9V10.21L7.22 10.76V9.53L10.36 8.41M14.06 9.65C13.47 9.65 13 10.13 13 10.71V13.5C13 14.07 13.47 14.54 14.06 14.54C14.64 14.54 15.14 14.06 15.14 13.5V10.71C15.14 10.12 14.64 9.65 14.06 9.65Z',
+        d12: 'M12 2L1.5 9.64L5.5 22H18.5L22.5 9.64L12 2M10.5 17H8.89V10.89L7 11.47V10.19L10.31 9H10.5V17M17 17H11.66V15.91C11.66 15.91 15.23 12.45 15.23 11.4C15.23 10.12 14.18 10.25 14.18 10.25C13.5 10.3 13 10.87 13 11.55H11.44C11.5 10.09 12.72 8.94 14.27 9C16.74 9 16.77 10.85 16.77 11.3C16.77 13.07 13.58 15.77 13.58 15.77L17 15.75V17Z',
+        d20: 'M20.47 6.62L12.57 2.18C12.41 2.06 12.21 2 12 2S11.59 2.06 11.43 2.18L3.53 6.62C3.21 6.79 3 7.12 3 7.5V16.5C3 16.88 3.21 17.21 3.53 17.38L11.43 21.82C11.59 21.94 11.79 22 12 22S12.41 21.94 12.57 21.82L20.47 17.38C20.79 17.21 21 16.88 21 16.5V7.5C21 7.12 20.79 6.79 20.47 6.62M11.45 15.96L6.31 15.93V14.91C6.31 14.91 9.74 11.58 9.75 10.57C9.75 9.33 8.73 9.46 8.73 9.46S7.75 9.5 7.64 10.71L6.14 10.76C6.14 10.76 6.18 8.26 8.83 8.26C11.2 8.26 11.23 10.04 11.23 10.5C11.23 12.18 8.15 14.77 8.15 14.77L11.45 14.76V15.96M17.5 13.5C17.5 14.9 16.35 16.05 14.93 16.05C13.5 16.05 12.36 14.9 12.36 13.5V10.84C12.36 9.42 13.5 8.27 14.93 8.27S17.5 9.42 17.5 10.84V13.5M16 10.77V13.53C16 14.12 15.5 14.6 14.92 14.6C14.34 14.6 13.86 14.12 13.86 13.53V10.77C13.86 10.18 14.34 9.71 14.92 9.71C15.5 9.71 16 10.18 16 10.77Z'
+      };
+
+      function updateTypeIconGlyph(type){
+        if(!typeIconPath) return;
+        const d = TYPE_ICON_PATH[type] || TYPE_ICON_PATH.ITEM;
+        typeIconPath.setAttribute('d', d);
+        if (typeIcon) {
+          typeIcon.setAttribute('aria-label', `${type} icon`);
         }
-        
-        // Create the actual image element.
-        const imageElem = document.createElement('img');
-        imageElem.src = imageSrc;
-        imageElem.alt = title;
-        imageElem.className = 'card-image';
-        imageElem.style.borderRadius = '0';
-        imageContainer.appendChild(imageElem);
-        
-        inner.appendChild(imageContainer);
-        
-        // Add a solid divider between image and description.
-        const divider = document.createElement('div');
-        divider.className = 'divider';
-        inner.appendChild(divider);
       }
-      
-      // Description area.
-      const descriptionDiv = document.createElement('div');
-      descriptionDiv.className = 'card-description';
-      descriptionDiv.innerHTML = replaceDicePlaceholders(descriptionHTML);
-      inner.appendChild(descriptionDiv);
-      
-      cardPreview.appendChild(inner);
-      cardPreview.style.display = 'flex';
-      document.getElementById('export-btn').style.display = 'inline-block';
-      
-      adjustTitleFontSize();
-    }
-    
-    // Updates the card preview live based on form input.
-    function updateCardPreview() {
-      const title = document.getElementById('title').value;
-      const descriptionHTML = quill.root.innerHTML;
-      const plainText = descriptionHTML.replace(/<(.|\n)*?>/g, '').trim();
-      const imageSrc = currentEditingImage ? currentEditingImage : '';
-      if (title || plainText || imageSrc) {
-        createCard(title, imageSrc, descriptionHTML);
-      } else {
-        document.getElementById('card-preview').style.display = 'none';
-        document.getElementById('export-btn').style.display = 'none';
+
+      function createTypeIconSvg(type){
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.classList.add('lib-icon');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', TYPE_ICON_PATH[type] || TYPE_ICON_PATH.ITEM);
+        svg.appendChild(path);
+        return svg;
       }
-    }
-    
-    // Event listeners for live updates.
-    document.getElementById('title').addEventListener('input', updateCardPreview);
-    quill.on('text-change', updateCardPreview);
-    document.getElementById('imageFile').addEventListener('change', function() {
-      const imageFileInput = document.getElementById('imageFile');
-      if (imageFileInput.files && imageFileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          currentEditingImage = event.target.result;
-          // Create a pre-blurred version of the image.
-          createBlurredBackground(currentEditingImage, function(blurred) {
-            currentEditingBlurredImage = blurred;
-            updateCardPreview();
+
+      function bufferToBase64(buffer){
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        const chunk = 0x8000;
+        for(let i=0; i<bytes.length; i+=chunk){
+          binary += String.fromCharCode(...bytes.subarray(i, i+chunk));
+        }
+        return btoa(binary);
+      }
+
+      function guessFontMime(url){
+        if(url.endsWith('.woff2')) return 'font/woff2';
+        if(url.endsWith('.woff')) return 'font/woff';
+        if(url.endsWith('.ttf')) return 'font/ttf';
+        return 'application/octet-stream';
+      }
+
+      async function prepareFontEmbedding(){
+        if(!FONT_CSS_URL) return '';
+        try{
+          const cssResp = await fetch(FONT_CSS_URL, { cache: 'force-cache' });
+          if(!cssResp.ok) throw new Error(`Font CSS ${cssResp.status}`);
+          const css = await cssResp.text();
+          const matches = [...css.matchAll(/url\(([^)]+)\)/g)];
+          const replacements = await Promise.all(matches.map(async m=>{
+            const raw = m[0];
+            const urlPart = m[1].trim().replace(/^['"]|['"]$/g,'');
+            const fontUrl = urlPart.startsWith('http') ? urlPart : new URL(urlPart, FONT_CSS_URL).href;
+            const fontResp = await fetch(fontUrl, { mode:'cors', cache:'force-cache' });
+            if(!fontResp.ok) throw new Error(`Font file ${fontResp.status}`);
+            const buffer = await fontResp.arrayBuffer();
+            const mime = guessFontMime(fontUrl);
+            const dataUrl = `url(data:${mime};base64,${bufferToBase64(buffer)})`;
+            return { search: raw, replace: dataUrl };
+          }));
+          let inlined = css;
+          for(const {search, replace} of replacements){
+            inlined = inlined.split(search).join(replace);
+          }
+          return inlined;
+        }catch(err){
+          console.warn('Font embedding skipped:', err);
+          return '';
+        }
+      }
+
+      // ===== Title auto-fit =====
+      function fitTitleToWidth(){
+        let fontSizeMm = 5; // start large
+        titleSpan.style.fontSize = fontSizeMm + 'mm';
+        while(titleSpan.scrollWidth > titleBar.clientWidth - 4 && fontSizeMm > 1){
+          fontSizeMm -= 0.2;
+          titleSpan.style.fontSize = fontSizeMm + 'mm';
+        }
+      }
+
+      function clearContentSizing(){
+        if(!contentPanel) return;
+        contentPanel.style.removeProperty('--function-font-size');
+        contentPanel.style.removeProperty('--function-line-height');
+        contentPanel.style.removeProperty('--function-margin-top');
+        contentPanel.style.removeProperty('--description-font-size');
+        contentPanel.style.removeProperty('--description-line-height');
+        contentPanel.style.removeProperty('--description-margin-top');
+        contentPanel.style.removeProperty('--content-gap');
+      }
+
+      function fitContentPanel(){
+        if(!contentPanel) return;
+        clearContentSizing();
+        const descRatio = DESCRIPTION_FONT_BASE_MM / FUNCTION_FONT_BASE_MM;
+        let functionSize = FUNCTION_FONT_BASE_MM;
+        let descriptionSize = DESCRIPTION_FONT_BASE_MM;
+        let gapSize = CONTENT_GAP_BASE_MM;
+        let functionMargin = FUNCTION_MARGIN_BASE_MM;
+        let descriptionMargin = DESCRIPTION_MARGIN_BASE_MM;
+        let functionLine = CONTENT_LINE_HEIGHT_BASE;
+        let descriptionLine = CONTENT_LINE_HEIGHT_BASE;
+        let headingSize = HEADING_FONT_BASE_MM;
+        const applySizing = ()=>{
+          contentPanel.style.setProperty('--function-font-size', functionSize.toFixed(2) + 'mm');
+          contentPanel.style.setProperty('--description-font-size', descriptionSize.toFixed(2) + 'mm');
+          contentPanel.style.setProperty('--content-gap', gapSize.toFixed(2) + 'mm');
+          contentPanel.style.setProperty('--function-margin-top', functionMargin.toFixed(2) + 'mm');
+          contentPanel.style.setProperty('--description-margin-top', descriptionMargin.toFixed(2) + 'mm');
+          contentPanel.style.setProperty('--function-line-height', functionLine.toFixed(2));
+          contentPanel.style.setProperty('--description-line-height', descriptionLine.toFixed(2));
+          contentPanel.style.setProperty('--heading-font-size', headingSize.toFixed(2) + 'mm');
+        };
+        const snapshotState = ()=>({
+          functionSize,
+          descriptionSize,
+          gapSize,
+          functionMargin,
+          descriptionMargin,
+          functionLine,
+          descriptionLine,
+          headingSize
+        });
+        const restoreState = (state)=>{
+          functionSize = state.functionSize;
+          descriptionSize = state.descriptionSize;
+          gapSize = state.gapSize;
+          functionMargin = state.functionMargin;
+          descriptionMargin = state.descriptionMargin;
+          functionLine = state.functionLine;
+          descriptionLine = state.descriptionLine;
+          headingSize = state.headingSize;
+          applySizing();
+        };
+        applySizing();
+        let guard = 0;
+        const needsShrink = () => contentPanel.scrollHeight > contentPanel.clientHeight + 0.4;
+        while(needsShrink() && guard < 60){
+          guard++;
+          functionSize = clamp(functionSize - 0.1, FUNCTION_FONT_MIN_MM, FUNCTION_FONT_MAX_MM);
+          descriptionSize = clamp(functionSize * descRatio, DESCRIPTION_FONT_MIN_MM, DESCRIPTION_FONT_MAX_MM);
+          gapSize = clamp(gapSize - 0.08, CONTENT_GAP_MIN_MM, CONTENT_GAP_MAX_MM);
+          functionMargin = clamp(functionMargin - 0.05, FUNCTION_MARGIN_MIN_MM, FUNCTION_MARGIN_MAX_MM);
+          descriptionMargin = clamp(descriptionMargin - 0.08, DESCRIPTION_MARGIN_MIN_MM, DESCRIPTION_MARGIN_MAX_MM);
+          functionLine = clamp(functionLine - 0.015, CONTENT_LINE_HEIGHT_MIN, CONTENT_LINE_HEIGHT_MAX);
+          descriptionLine = clamp(descriptionLine - 0.015, CONTENT_LINE_HEIGHT_MIN, CONTENT_LINE_HEIGHT_MAX);
+          headingSize = clamp(headingSize - 0.12, HEADING_FONT_MIN_MM, HEADING_FONT_MAX_MM);
+          applySizing();
+        }
+        let growGuard = 0;
+        const hasHeadroom = () => functionSize < FUNCTION_FONT_MAX_MM - 0.01 && (contentPanel.clientHeight - contentPanel.scrollHeight) > 0.2;
+        while(hasHeadroom() && growGuard < 60){
+          growGuard++;
+          const prevState = snapshotState();
+          functionSize = clamp(functionSize + 0.12, FUNCTION_FONT_MIN_MM, FUNCTION_FONT_MAX_MM);
+          descriptionSize = clamp(functionSize * descRatio, DESCRIPTION_FONT_MIN_MM, DESCRIPTION_FONT_MAX_MM);
+          gapSize = clamp(gapSize + 0.08, CONTENT_GAP_MIN_MM, CONTENT_GAP_MAX_MM);
+          functionMargin = clamp(functionMargin + 0.05, FUNCTION_MARGIN_MIN_MM, FUNCTION_MARGIN_MAX_MM);
+          descriptionMargin = clamp(descriptionMargin + 0.08, DESCRIPTION_MARGIN_MIN_MM, DESCRIPTION_MARGIN_MAX_MM);
+          functionLine = clamp(functionLine + 0.01, CONTENT_LINE_HEIGHT_MIN, CONTENT_LINE_HEIGHT_MAX);
+          descriptionLine = clamp(descriptionLine + 0.01, CONTENT_LINE_HEIGHT_MIN, CONTENT_LINE_HEIGHT_MAX);
+          headingSize = clamp(headingSize + 0.12, HEADING_FONT_MIN_MM, HEADING_FONT_MAX_MM);
+          applySizing();
+          if(needsShrink()){
+            restoreState(prevState);
+            break;
+          }
+          if(prevState.functionSize === functionSize) break;
+        }
+        const overflow = contentPanel.scrollHeight > contentPanel.clientHeight + 0.4;
+        contentPanel.classList.toggle('content-overflow', overflow);
+      }
+
+      let fitContentPending = false;
+      function scheduleFitContentPanel(){
+        if(fitContentPending) return;
+        fitContentPending = true;
+        requestAnimationFrame(()=>{
+          fitContentPending = false;
+          fitContentPanel();
+        });
+      }
+
+      // ===== Color helpers =====
+      function toHex({r,g,b}){ const h=x=>('0'+x.toString(16)).slice(-2); return `#${h(r)}${h(g)}${h(b)}`; }
+      function clamp(v,min,max){ return v<min?min:v>max?max:v; }
+      function shade(rgb, amt){
+        return {
+          r: clamp(Math.round(rgb.r + (amt<0?rgb.r:255-rgb.r)*amt),0,255),
+          g: clamp(Math.round(rgb.g + (amt<0?rgb.g:255-rgb.g)*amt),0,255),
+          b: clamp(Math.round(rgb.b + (amt<0?rgb.b:255-rgb.b)*amt),0,255)
+        };
+      }
+      function rgb2hsl(r,g,b){
+        r/=255; g/=255; b/=255;
+        const max=Math.max(r,g,b), min=Math.min(r,g,b);
+        let h,s,l=(max+min)/2;
+        if(max===min){ h=s=0; }
+        else {
+          const d=max-min;
+          s = l>0.5 ? d/(2-max-min) : d/(max+min);
+          switch(max){
+            case r: h=(g-b)/d + (g<b?6:0); break;
+            case g: h=(b-r)/d + 2; break;
+            case b: h=(r-g)/d + 4; break;
+          }
+          h/=6;
+        }
+        return {h:h*360,s,l};
+      }
+      function hsl2rgb(h,s,l){
+        h/=360; let r,g,b;
+        if(s===0){ r=g=b=l; }
+        else {
+          const hue2rgb=(p,q,t)=>{ if(t<0) t+=1; if(t>1) t-=1; if(t<1/6) return p+(q-p)*6*t; if(t<1/2) return q; if(t<2/3) return p+(q-p)*(2/3-t)*6; return p; };
+          const q = l<0.5 ? l*(1+s) : l + s - l*s;
+          const p2 = 2*l - q;
+          r = hue2rgb(p2,q,h + 1/3);
+          g = hue2rgb(p2,q,h);
+          b = hue2rgb(p2,q,h - 1/3);
+        }
+        return { r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255) };
+      }
+      function averageColor(agg){ if(!agg||!agg.n) return {r:185,g:114,b:27}; return { r:Math.round(agg.r/agg.n), g:Math.round(agg.g/agg.n), b:Math.round(agg.b/agg.n)}; }
+      function bestTextColor({r,g,b}){ const yiq=(r*299+g*587+b*114)/1000; return yiq>=128?'#000':'#fff'; }
+
+      function hexToRgb(hex){
+        if(!hex) return { r:0, g:0, b:0 };
+        const normalized = hex.replace('#','').trim();
+        const value = normalized.length === 3
+          ? normalized.split('').map(c=>c+c).join('')
+          : normalized.padEnd(6,'0').slice(0,6);
+        const num = parseInt(value,16);
+        return { r:(num>>16)&255, g:(num>>8)&255, b:num&255 };
+      }
+
+      function setThemeVariables(theme){
+        if(!theme) return;
+        const map = {
+          '--title': theme.title,
+          '--title-dark': theme.titleDark,
+          '--title-text': theme.titleText,
+          '--type': theme.type,
+          '--type-dark': theme.typeDark,
+          '--type-text': theme.typeText,
+          '--rules': theme.rules,
+          '--rules-2': theme.rules2,
+          '--ink': theme.ink
+        };
+        for(const key in map){
+          if(map[key]) document.documentElement.style.setProperty(key, map[key]);
+        }
+      }
+
+      function applyBaseTheme(){
+        setThemeVariables(baseTheme);
+        currentTheme = { ...baseTheme };
+        if(document.body){ document.body.classList.toggle('bw-mode', false); }
+      }
+
+      function computeBWPalette(base){
+        const theme = base ? { ...base } : { ...DEFAULT_THEME };
+        const makeGray = (hex, adjust=0)=>{
+          const rgb = hexToRgb(hex);
+          let y = Math.round(0.299*rgb.r + 0.587*rgb.g + 0.114*rgb.b);
+          y = clamp(y + Math.round(255*adjust), 0, 255);
+          return toHex({ r:y, g:y, b:y });
+        };
+        const bw = {
+          title: makeGray(theme.title, 0.18),
+          titleDark: makeGray(theme.titleDark, -0.05),
+          type: makeGray(theme.type, 0.12),
+          typeDark: makeGray(theme.typeDark, -0.08),
+          rules: makeGray(theme.rules, 0.15),
+          rules2: makeGray(theme.rules2, -0.02),
+          ink: makeGray(theme.ink, -0.2)
+        };
+        bw.titleText = bestTextColor(hexToRgb(bw.title));
+        bw.typeText = bestTextColor(hexToRgb(bw.type));
+        return bw;
+      }
+
+      function applyBWTheme(){
+        const bwTheme = computeBWPalette(baseTheme);
+        setThemeVariables(bwTheme);
+        currentTheme = { ...bwTheme };
+        if(document.body){ document.body.classList.toggle('bw-mode', true); }
+      }
+
+      function applyThemeFromState(state){
+        const theme = state?.theme && typeof state.theme === 'object'
+          ? { ...DEFAULT_THEME, ...state.theme }
+          : { ...DEFAULT_THEME };
+        baseTheme = { ...theme };
+        if(state && !state.theme){ state.theme = { ...baseTheme }; }
+        if(bwPrintMode){ applyBWTheme(); }
+        else { applyBaseTheme(); }
+      }
+
+      // ===== Analyze image to derive theme colors =====
+      function analyzeImage(imgEl){
+        const cvs=document.createElement('canvas');
+        const ctx=cvs.getContext('2d');
+        const W=64,H=64; cvs.width=W;cvs.height=H;
+        try{
+          ctx.drawImage(imgEl,0,0,W,H);
+          const data=ctx.getImageData(0,0,W,H).data;
+          const sums={r:0,g:0,b:0,n:0};
+          for(let i=0;i<data.length;i+=4){ const a=data[i+3]; if(a<200) continue; sums.r+=data[i]; sums.g+=data[i+1]; sums.b+=data[i+2]; sums.n++; }
+          const primary=averageColor(sums);
+          const primaryDark=toHex(shade(primary,-0.25));
+          const comp=rgb2hsl(primary.r,primary.g,primary.b); comp.h=(comp.h+180)%360;
+          const secondary=hsl2rgb(comp.h,comp.s,comp.l);
+          const secondaryHex=toHex(secondary); const secondaryDark=toHex(shade(secondary,-0.25));
+          const titleTextColor=bestTextColor(primary);
+          const typeTextColor=bestTextColor(secondary);
+          const theme = {
+            title: toHex(primary),
+            titleDark: primaryDark,
+            titleText: titleTextColor,
+            type: secondaryHex,
+            typeDark: secondaryDark,
+            typeText: typeTextColor,
+            rules: baseTheme.rules,
+            rules2: baseTheme.rules2,
+            ink: baseTheme.ink
+          };
+          baseTheme = { ...DEFAULT_THEME, ...theme };
+          if(currentAppliedState){ currentAppliedState.theme = { ...baseTheme }; }
+          if(bwPrintMode){ applyBWTheme(); }
+          else { applyBaseTheme(); }
+        }catch(err){ console.warn('Color analysis skipped:', err); }
+        fitTitleToWidth();
+      }
+
+      // ===== Bind editors =====
+      function wireToolbar(toolbarEl, targetEl, mirror){
+        const useFunctionPreview = mirror === functionText;
+        const isDescriptionMirror = mirror === descriptionText;
+        toolbarEl.addEventListener('click', (e)=>{
+          const btn=e.target.closest('button');
+          if(!btn) return;
+          const cmd=btn.dataset.cmd;
+          const action=btn.dataset.action;
+          targetEl.focus();
+          if(action === 'toggleHeading'){
+            toggleFunctionHeading(targetEl);
+            ensureDiceBoundaries(targetEl);
+            if(useFunctionPreview){ renderFunctionPreview(); }
+            else if(isDescriptionMirror){ mirror.innerHTML=targetEl.innerHTML; updateDescriptionVisibility(); }
+            else if(mirror){ mirror.innerHTML=targetEl.innerHTML; }
+            scheduleFitContentPanel();
+            return;
+          }
+          if(cmd){
+            document.execCommand(cmd,false,null);
+            ensureDiceBoundaries(targetEl);
+            if(useFunctionPreview){ renderFunctionPreview(); }
+            else if(isDescriptionMirror){ mirror.innerHTML=targetEl.innerHTML; updateDescriptionVisibility(); }
+            else if(mirror){ mirror.innerHTML=targetEl.innerHTML; }
+            scheduleFitContentPanel();
+          }
+        });
+        targetEl.addEventListener('input', ()=>{
+          ensureDiceBoundaries(targetEl);
+          if(useFunctionPreview){ renderFunctionPreview(); }
+          else if(isDescriptionMirror){ mirror.innerHTML=targetEl.innerHTML; updateDescriptionVisibility(); }
+          else if(mirror){ mirror.innerHTML=targetEl.innerHTML; }
+          scheduleFitContentPanel();
+        });
+      }
+
+      const ZWSP = '\u200B';
+
+      function ensureDiceBoundaries(root){
+        if(!root) return;
+        const diceTokens = root.querySelectorAll('.dice-inline');
+        diceTokens.forEach(token => {
+          if(!token.getAttribute('data-dice')){
+            const parentSvg = token.tagName === 'SPAN' ? token.querySelector('svg') : token;
+            if(parentSvg){
+              const path = parentSvg.querySelector('path');
+              if(path){
+                const dAttr = path.getAttribute('d');
+                const entry = Object.entries(DICE_SVG_PATH).find(([, value]) => value === dAttr);
+                if(entry) token.setAttribute('data-dice', entry[0]);
+              }
+            }
+          }
+          if(token.tagName !== 'SPAN'){
+            const diceKey = token.getAttribute('data-dice') || 'd6';
+            const replacement = createDiceSpan(diceKey);
+            if(replacement){
+              token.replaceWith(replacement);
+              token = replacement;
+            }
+          }
+          const parent = token.parentNode;
+          if(!parent) return;
+          let prev = token.previousSibling;
+          if(!prev || prev.nodeType !== Node.TEXT_NODE){
+            prev = document.createTextNode('');
+            parent.insertBefore(prev, token);
+          }
+          prev.textContent = prev.textContent.replace(/\u200B+$/g, '') + ZWSP;
+          let next = token.nextSibling;
+          if(!next || next.nodeType !== Node.TEXT_NODE){
+            next = document.createTextNode('');
+            parent.insertBefore(next, token.nextSibling);
+          }
+          next.textContent = ZWSP + next.textContent.replace(/^\u200B+/g, '');
+        });
+        root.normalize();
+      }
+
+      function isHTMLContentEmpty(html){
+        if(!html) return true;
+        return html
+          .replace(/<br\s*\/?>/gi,'')
+          .replace(/&nbsp;/gi,' ')
+          .replace(/<[^>]*>/g,'')
+          .trim().length === 0;
+      }
+
+      function updateDescriptionVisibility(){
+        if(!descriptionEditor || !descriptionText) return;
+        const hasContent = !isHTMLContentEmpty(descriptionEditor.innerHTML || '');
+        descriptionText.style.display = hasContent ? '' : 'none';
+      }
+
+      function createDiceSpan(diceKey){
+        const svgPath = DICE_SVG_PATH[diceKey];
+        if(!svgPath) return null;
+        const span = document.createElement('span');
+        span.className = 'dice-inline';
+        span.setAttribute('data-dice', diceKey);
+        span.setAttribute('contenteditable', 'false');
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('role', 'img');
+        svg.setAttribute('aria-hidden', 'true');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', svgPath);
+        svg.appendChild(path);
+        span.appendChild(svg);
+        return span;
+      }
+
+      function insertDiceToken(targetEl, diceKey){
+        const token = createDiceSpan(diceKey);
+        if(!token) return;
+        const temp = document.createElement('div');
+        temp.appendChild(document.createTextNode(ZWSP));
+        temp.appendChild(token);
+        temp.appendChild(document.createTextNode(ZWSP));
+        document.execCommand('insertHTML', false, temp.innerHTML);
+        ensureDiceBoundaries(targetEl);
+      }
+
+      function findEditableBlock(node, root){
+        if(!node) return null;
+        if(node === root) return null;
+        let current = node;
+        while(current && current !== root){
+          if(current.nodeType === Node.ELEMENT_NODE && current.parentNode === root){
+            return current;
+          }
+          current = current.parentNode;
+        }
+        return null;
+      }
+
+      function toggleFunctionHeading(editable){
+        if(!editable) return;
+        const sel = window.getSelection();
+        if(!sel || !sel.rangeCount) return;
+        const range = sel.getRangeAt(0);
+        if(!editable.contains(range.commonAncestorContainer)) return;
+        let startBlock = findEditableBlock(range.startContainer, editable);
+        if(!startBlock){
+          document.execCommand('formatBlock', false, 'p');
+          startBlock = findEditableBlock(range.startContainer, editable);
+          if(!startBlock) return;
+        }
+        let endBlock = findEditableBlock(range.endContainer, editable) || startBlock;
+        const children = Array.from(editable.childNodes).filter(node=>{
+          if(node.nodeType === Node.TEXT_NODE) return node.textContent.trim().length > 0;
+          return node.nodeType === Node.ELEMENT_NODE;
+        });
+        const normalizeBlock = (block)=>{
+          if(!block) return null;
+          let current = block;
+          while(current && current.parentNode !== editable){
+            current = current.parentNode;
+          }
+          return current;
+        };
+        startBlock = normalizeBlock(startBlock);
+        endBlock = normalizeBlock(endBlock);
+        if(!startBlock) return;
+        if(!endBlock) endBlock = startBlock;
+        let startIndex = children.indexOf(startBlock);
+        let endIndex = children.indexOf(endBlock);
+        if(startIndex === -1){ startIndex = children.indexOf(startBlock); }
+        if(endIndex === -1){ endIndex = startIndex; }
+        if(startIndex === -1) startIndex = 0;
+        if(endIndex === -1) endIndex = startIndex;
+        if(startIndex > endIndex){ const tmp = startIndex; startIndex = endIndex; endIndex = tmp; }
+        for(let i=startIndex;i<=endIndex;i++){
+          const block = children[i];
+          if(!block || block.nodeType !== Node.ELEMENT_NODE) continue;
+          const isHeading = block.getAttribute('data-function-heading') === 'true' || block.classList.contains('function-heading-block');
+          if(isHeading){
+            block.removeAttribute('data-function-heading');
+            block.classList.remove('function-heading-block');
+          }else{
+            block.setAttribute('data-function-heading','true');
+            block.classList.add('function-heading-block');
+          }
+          ensureDiceBoundaries(block);
+      }
+        renderFunctionPreview();
+      }
+
+      function handlePlainPaste(editor, mirror){
+        if(!editor) return;
+        const useFunctionPreview = mirror === functionText;
+        const isDescriptionMirror = mirror === descriptionText;
+        editor.addEventListener('paste', (e)=>{
+          e.preventDefault();
+          const clipboard = e.clipboardData || window.clipboardData;
+          if(!clipboard) return;
+          const text = clipboard.getData('text/plain');
+          if(typeof text === 'string' && text.length){
+            document.execCommand('insertText', false, text);
+          }
+          ensureDiceBoundaries(editor);
+          if(useFunctionPreview){ renderFunctionPreview(); }
+          else if(isDescriptionMirror){ mirror.innerHTML = editor.innerHTML; updateDescriptionVisibility(); }
+          else if(mirror){ mirror.innerHTML = editor.innerHTML; }
+          scheduleFitContentPanel();
+        });
+      }
+
+      function wireDiceToolbar(toolbarEl, targetEl, mirror){
+        if(!toolbarEl) return;
+        toolbarEl.addEventListener('click', (e)=>{
+          const btn = e.target.closest('button');
+          if(!btn) return;
+          const diceKey = btn.dataset.dice;
+          const svgPath = DICE_SVG_PATH[diceKey];
+          if(!svgPath) return;
+          targetEl.focus();
+          insertDiceToken(targetEl, diceKey);
+          if(mirror === functionText){ renderFunctionPreview(); }
+          else if(mirror === descriptionText){ mirror.innerHTML = targetEl.innerHTML; updateDescriptionVisibility(); }
+          else if(mirror){ mirror.innerHTML = targetEl.innerHTML; }
+          scheduleFitContentPanel();
+        });
+      }
+
+      function upgradeLegacyDiceIcons(container, mirror){
+        if(!container) return;
+        const legacyIcons = container.querySelectorAll('i.dice-inline');
+        legacyIcons.forEach(el => {
+          const diceClass = Array.from(el.classList).find(cls => cls.startsWith('mdi-dice-'));
+          if(!diceClass) return;
+          const key = diceClass.replace('mdi-dice-', 'd');
+          const replacement = createDiceSpan(key);
+          if(replacement) el.replaceWith(replacement);
+        });
+        ensureDiceBoundaries(container);
+        if(mirror === functionText){ renderFunctionPreview(); }
+        else if(mirror === descriptionText){ mirror.innerHTML = container.innerHTML; updateDescriptionVisibility(); }
+        else if(mirror) mirror.innerHTML = container.innerHTML;
+      }
+
+      function isDiceToken(node){
+        return node && node.nodeType === Node.ELEMENT_NODE && node.classList.contains('dice-inline');
+      }
+
+      function escapeHTML(str){
+        return (str || '').replace(/[&<>"']/g, ch => ({
+          '&':'&amp;',
+          '<':'&lt;',
+          '>':'&gt;',
+          '"':'&quot;',
+          "'":'&#39;'
+        })[ch] || ch);
+      }
+
+      function renderFunctionPreview(){
+        if(!functionEditor || !functionText) return;
+        const clone = functionEditor.cloneNode(true);
+        ensureDiceBoundaries(clone);
+        const nodes = Array.from(clone.childNodes).filter(node=>{
+          if(node.nodeType === Node.TEXT_NODE){ return node.textContent.trim().length > 0; }
+          if(node.nodeType === Node.ELEMENT_NODE){
+            if(node.tagName === 'BR') return false;
+            return true;
+          }
+          return false;
+        });
+        functionText.innerHTML = '';
+        let bodyBuffer = [];
+        const flushBody = ()=>{
+          if(!bodyBuffer.length) return;
+          const wrapper = document.createElement('div');
+          wrapper.className = 'function-body';
+          wrapper.innerHTML = bodyBuffer.join('');
+          functionText.appendChild(wrapper);
+          ensureDiceBoundaries(wrapper);
+          bodyBuffer = [];
+        };
+        const appendHeading = (htmlFragment)=>{
+          const headingDiv = document.createElement('div');
+          headingDiv.className = 'function-heading';
+          headingDiv.innerHTML = htmlFragment;
+          functionText.appendChild(headingDiv);
+          ensureDiceBoundaries(headingDiv);
+        };
+        for(const node of nodes){
+          if(node.nodeType === Node.TEXT_NODE){
+            const text = node.textContent.replace(/\u200B+/g,'').trim();
+            if(text){
+              bodyBuffer.push(`<p>${escapeHTML(text)}</p>`);
+            }
+            continue;
+          }
+          if(node.nodeType === Node.ELEMENT_NODE){
+            const isHeading = node.getAttribute('data-function-heading') === 'true' || node.classList.contains('function-heading-block');
+            if(isHeading){
+              flushBody();
+              appendHeading(node.innerHTML);
+              continue;
+            }
+            const cloneNode = node.cloneNode(true);
+            cloneNode.removeAttribute('data-function-heading');
+            cloneNode.classList.remove('function-heading-block');
+            bodyBuffer.push(cloneNode.outerHTML);
+          }
+        }
+        flushBody();
+
+        if(!functionText.childNodes.length){
+          functionText.innerHTML = '<div class="function-heading"><p><strong>Ability Heading</strong></p></div><div class="function-body"><p>Describe the card effect or ability here.</p></div>';
+          ensureDiceBoundaries(functionText);
+          return;
+        }
+
+        ensureDiceBoundaries(functionText);
+      }
+
+      function mergeLegacyTagIntoFunction(tagValue, html){
+        const tag = typeof tagValue === 'string' ? tagValue.trim() : '';
+        if(!tag) return html || '';
+        const temp = document.createElement('div');
+        temp.innerHTML = html || '';
+        if(temp.querySelector('[data-function-heading="true"]') || temp.querySelector('.function-heading-block')){
+          return temp.innerHTML;
+        }
+        const heading = document.createElement('p');
+        heading.setAttribute('data-function-heading','true');
+        heading.classList.add('function-heading-block');
+        heading.innerHTML = `<strong>${escapeHTML(tag)}</strong>`;
+        temp.insertBefore(heading, temp.firstChild);
+        return temp.innerHTML;
+      }
+
+      function setCaretPosition(node, offset){
+        if(!node) return;
+        if(node.nodeType === Node.TEXT_NODE){
+          offset = Math.min(Math.max(offset, 0), node.textContent.length);
+        } else {
+          offset = Math.min(Math.max(offset, 0), node.childNodes.length);
+        }
+        const range = document.createRange();
+        range.setStart(node, offset);
+        range.collapse(true);
+        const sel = window.getSelection();
+        if(!sel) return;
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+
+      function removeDiceToken(token){
+        if(!isDiceToken(token)) return null;
+        const parent = token.parentNode;
+        if(!parent) return null;
+        const root = parent.closest('[contenteditable="true"]') || parent;
+        const index = Array.prototype.indexOf.call(parent.childNodes, token);
+        token.remove();
+        ensureDiceBoundaries(root);
+        scheduleFitContentPanel();
+        return { parent, root, index };
+      }
+
+      function handleDiceDeletion(editor, mirror){
+        if(!editor) return;
+        editor.addEventListener('keydown', (e)=>{
+          if(e.key !== 'Backspace' && e.key !== 'Delete') return;
+          const sel = window.getSelection();
+          if(!sel || !sel.rangeCount) return;
+          const range = sel.getRangeAt(0);
+          if(!range.collapsed) return;
+          const container = range.startContainer;
+          const offset = range.startOffset;
+          if(container.nodeType === Node.TEXT_NODE){
+            const text = container.textContent;
+            if(e.key === 'Backspace' && offset > 0 && text.charCodeAt(offset-1) === 8203){
+              container.deleteData(offset-1, 1);
+              setCaretPosition(container, offset-1);
+              e.preventDefault();
+              scheduleFitContentPanel();
+              if(mirror === functionText){ renderFunctionPreview(); }
+              else if(mirror) mirror.innerHTML = editor.innerHTML;
+              return;
+            }
+            if(e.key === 'Delete' && offset < text.length && text.charCodeAt(offset) === 8203){
+              container.deleteData(offset, 1);
+              setCaretPosition(container, offset);
+              e.preventDefault();
+              scheduleFitContentPanel();
+              if(mirror === functionText){ renderFunctionPreview(); }
+              else if(mirror) mirror.innerHTML = editor.innerHTML;
+              return;
+            }
+          }
+          let targetToken = null;
+          const isBackspace = e.key === 'Backspace';
+          const isDeleteKey = e.key === 'Delete';
+          if(isBackspace){
+            if(container.nodeType === Node.TEXT_NODE){
+              if(offset === 0){
+                let node = container.previousSibling;
+                while(node && node.nodeType === Node.TEXT_NODE && !node.textContent.length){ node = node.previousSibling; }
+                if(isDiceToken(node)) targetToken = node;
+              }
+            } else {
+              const node = container.childNodes[offset-1] || container.previousSibling;
+              if(isDiceToken(node)) targetToken = node;
+            }
+            if(targetToken){
+              e.preventDefault();
+              const removal = removeDiceToken(targetToken);
+              if(removal){
+                let targetNode = container;
+                let targetOffset = offset;
+                if(container.nodeType !== Node.TEXT_NODE){
+                  targetOffset = Math.max(offset - 1, 0);
+                } else {
+                  targetOffset = Math.min(offset, container.textContent.length);
+                }
+                if(!targetNode.isConnected){
+                  targetNode = removal.parent;
+                  targetOffset = Math.max(Math.min(removal.index - 1, targetNode.childNodes.length), 0);
+                }
+                setCaretPosition(targetNode, targetOffset);
+                if(mirror === functionText){ renderFunctionPreview(); }
+                else if(mirror === descriptionText){ mirror.innerHTML = editor.innerHTML; updateDescriptionVisibility(); }
+                else if(mirror){ mirror.innerHTML = editor.innerHTML; }
+              }
+            }
+          } else if(isDeleteKey){
+            if(container.nodeType === Node.TEXT_NODE){
+              if(offset === container.textContent.length){
+                let node = container.nextSibling;
+                while(node && node.nodeType === Node.TEXT_NODE && !node.textContent.length){ node = node.nextSibling; }
+                if(isDiceToken(node)) targetToken = node;
+              }
+            } else {
+              const node = container.childNodes[offset] || container.nextSibling;
+              if(isDiceToken(node)) targetToken = node;
+            }
+            if(targetToken){
+              e.preventDefault();
+              const removal = removeDiceToken(targetToken);
+              if(removal){
+                let targetNode = container;
+                let targetOffset = offset;
+                if(container.nodeType !== Node.TEXT_NODE){
+                  targetOffset = Math.min(offset, container.childNodes.length);
+                } else {
+                  targetOffset = Math.min(offset, container.textContent.length);
+                }
+                if(!targetNode.isConnected){
+                  targetNode = removal.parent;
+                  targetOffset = Math.min(removal.index, targetNode.childNodes.length);
+                }
+                setCaretPosition(targetNode, targetOffset);
+                if(mirror === functionText){ renderFunctionPreview(); }
+                else if(mirror === descriptionText){ mirror.innerHTML = editor.innerHTML; updateDescriptionVisibility(); }
+                else if(mirror){ mirror.innerHTML = editor.innerHTML; }
+              }
+            }
+          }
+        });
+      }
+
+      function openCropper(dataUrl){
+        if(!dataUrl) return;
+        cropperImage.src = dataUrl;
+        cropperModal.classList.add('active');
+        requestAnimationFrame(()=>{
+          if(cropperInstance) cropperInstance.destroy();
+          cropperInstance = new Cropper(cropperImage, {
+            aspectRatio: ART_ASPECT_RATIO,
+            viewMode: 1,
+            autoCropArea: 1,
+            background: false,
+            movable: true,
+            zoomable: true,
+            responsive: true,
+            scalable: false,
+            rotatable: false
           });
+          setTimeout(()=> cropperApplyBtn.focus(), 150);
+        });
+      }
+
+      function closeCropper(){
+        if(cropperInstance){ cropperInstance.destroy(); cropperInstance = null; }
+        cropperModal.classList.remove('active');
+        cropperImage.src = '';
+        cropperCancelBtn.blur(); cropperApplyBtn.blur();
+      }
+
+      async function applyCroppedArtwork(){
+        if(!cropperInstance) return;
+        const canvas = cropperInstance.getCroppedCanvas({
+          width: ART_CROP_WIDTH,
+          height: ART_CROP_HEIGHT,
+          imageSmoothingQuality: 'high'
+        });
+        if(!canvas) return;
+        const dataUrl = canvas.toDataURL('image/png');
+        artImg.src = dataUrl;
+        artImg.style.display='block';
+        mediaPlaceholder.style.display='none';
+        try{ await artImg.decode(); }catch{}
+        analyzeImage(artImg);
+        closeCropper();
+        artUpload.value = '';
+      }
+
+      // ===== Library helpers =====
+      function getState(){
+        return {
+          title: titleInput.value || '',
+          type: typeSelect.value,
+          functionHTML: functionEditor.innerHTML,
+          descriptionHTML: descriptionEditor.innerHTML,
+          // store art as dataURL (for portability & html2canvas CORS safety)
+          artDataURL: artImg && artImg.src ? artImg.src : null,
+          theme: { ...baseTheme }
         };
-        reader.readAsDataURL(imageFileInput.files[0]);
-      } else {
-        currentEditingImage = null;
-        currentEditingBlurredImage = null;
-        updateCardPreview();
       }
-    });
-    
-    // Form submit event: Create card preview.
-    document.getElementById('card-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const title = document.getElementById('title').value;
-      const descriptionHTML = quill.root.innerHTML;
-      const imageSrc = currentEditingImage ? currentEditingImage : '';
-      createCard(title, imageSrc, descriptionHTML);
-    });
-    
-    // Save card: Export the preview as PNG and store all form data.
-    document.getElementById('save-btn').addEventListener('click', function() {
-      const cardPreview = document.getElementById('card-preview');
-      if (cardPreview.style.display === 'none') {
-        alert("Please create a card first!");
-        return;
-      }
-      html2canvas(cardPreview).then(function(canvas) {
-        const dataUrl = canvas.toDataURL();
-        let id;
-        if (currentEditingId) {
-          id = currentEditingId;
-          currentEditingId = null;
-        } else {
-          cardCounter++;
-          id = 'card-' + cardCounter;
+
+      function applyState(state){
+        if(!state) return;
+        currentAppliedState = state;
+        applyThemeFromState(state);
+        titleInput.value = state.title || '';
+        titleSpan.textContent = state.title || '';
+        typeSelect.value = state.type || 'ITEM';
+        typeText.textContent = typeSelect.value;
+        updateTypeIconGlyph(typeSelect.value);
+        const mergedFunctionHTML = mergeLegacyTagIntoFunction(state.tag, state.functionHTML || '');
+        functionEditor.innerHTML = mergedFunctionHTML;
+        if(!functionEditor.querySelector('[data-function-heading="true"]')){
+          const firstBlockCandidate = Array.from(functionEditor.childNodes).find(node => node.nodeType === Node.ELEMENT_NODE);
+          if(firstBlockCandidate){
+            firstBlockCandidate.setAttribute('data-function-heading','true');
+            firstBlockCandidate.classList.add('function-heading-block');
+          }
         }
-        const title = document.getElementById('title').value;
-        const descriptionHTML = quill.root.innerHTML;
-        allCards[id] = {
-          id: id,
-          title: title,
-          descriptionHTML: descriptionHTML,
-          imageData: dataUrl,
-          savedImage: currentEditingImage,
-          blurredImage: currentEditingBlurredImage
-        };
-        updateSavedCardsList();
-        document.getElementById('card-form').reset();
-        quill.root.innerHTML = '';
-        document.getElementById('card-preview').style.display = 'none';
-        document.getElementById('export-btn').style.display = 'none';
-        currentEditingImage = null;
-        currentEditingBlurredImage = null;
-      }).catch(function(err) {
-        console.error("Saving card failed", err);
-      });
-    });
-    
-    // Updates the list of saved cards and adds print controls above each card.
-    function updateSavedCardsList() {
-      const container = document.getElementById('saved-cards');
-      container.innerHTML = '';
-      for (let id in allCards) {
-        const card = allCards[id];
+        upgradeLegacyDiceIcons(functionEditor);
+        ensureDiceBoundaries(functionEditor);
+        renderFunctionPreview();
+        if('tag' in state){ delete state.tag; }
+        descriptionEditor.innerHTML = state.descriptionHTML || '';
+        descriptionText.innerHTML = state.descriptionHTML || '';
+        upgradeLegacyDiceIcons(descriptionEditor, descriptionText);
+        updateDescriptionVisibility();
+        if(state.artDataURL){
+          artImg.src = state.artDataURL;
+          artImg.style.display='block';
+          mediaPlaceholder.style.display='none';
+        } else {
+          artImg.src='';
+          artImg.style.display='none';
+          mediaPlaceholder.style.display='grid';
+        }
+        fitTitleToWidth();
+        fitContentPanel();
+      }
+
+      function loadLibrary(){
+        return libraryData.slice();
+      }
+      function saveLibrary(list){ libraryData = list.slice(); }
+
+      function removeLibraryItem(id){
+        if(!id) return;
+        const remaining = libraryData.filter(item => item.id !== id);
+        saveLibrary(remaining);
+        refreshLibrary();
+      }
+
+      function setLibrarySelectionAll(value){
+        const data = loadLibrary();
+        if(!data.length) return;
+        for(const item of data){ item.selected = value; }
+        saveLibrary(data);
+        refreshLibrary();
+      }
+
+      let regenerateThumbnailsPromise = Promise.resolve();
+      function regenerateLibraryThumbnails(){
+        regenerateThumbnailsPromise = regenerateThumbnailsPromise.then(async ()=>{
+          const list = loadLibrary();
+          if(!list.length) return;
+          const originalState = getState();
+          const originalBW = bwPrintMode;
+          try{
+            for(const item of list){
+              await loadStateForRender(item.state);
+              const thumb = await captureCardPNG({ pixelRatio: LIB_THUMB_PIXEL_RATIO });
+              item.thumbnail = thumb;
+            }
+            saveLibrary(list);
+          }catch(err){
+            console.warn('Thumbnail regeneration failed:', err);
+          }finally{
+            await loadStateForRender(originalState);
+            currentAppliedState = null;
+            if(originalBW) { applyBWTheme(); } else { applyBaseTheme(); }
+            refreshLibrary();
+          }
+        });
+        return regenerateThumbnailsPromise;
+      }
+
+      function waitForNextFrame(){
+        return new Promise(resolve => requestAnimationFrame(()=> resolve()));
+      }
+
+      async function loadStateForRender(state){
+        applyState(state || {});
+        if(state?.artDataURL){
+          if(!(artImg.complete && artImg.naturalWidth > 0 && artImg.src === state.artDataURL)){
+            await new Promise(resolve=>{
+              const onDone = ()=>{ artImg.removeEventListener('load', onDone); artImg.removeEventListener('error', onDone); resolve(); };
+              artImg.addEventListener('load', onDone, { once:true });
+              artImg.addEventListener('error', onDone, { once:true });
+            });
+          }
+          try{ analyzeImage(artImg); }catch(err){ console.warn('Print analyze skipped:', err); }
+        }
+        await waitForNextFrame();
+        await waitForNextFrame();
+      }
+
+      function stripHTML(html){
+        if(!html) return '';
         const div = document.createElement('div');
-        div.className = 'saved-card';
-        div.setAttribute("data-id", id);
-        // Compute plain text for search from descriptionHTML.
-        const plainDescription = card.descriptionHTML.replace(/<[^>]+>/g, "").toLowerCase();
-        div.innerHTML = 
-          '<div class="print-controls">' +
-            '<input type="checkbox" class="print-check" checked> ' +
-            '<span class="printer-icon">🖨️</span> ' +
-            '<input type="number" min="1" value="1" class="copy-input">' +
-          '</div>' +
-          '<img src="' + card.imageData + '" alt="' + card.title + '"><br>' +
-          '<strong>' + card.title + '</strong><br>' +
-          '<button onclick="editCard(\'' + id + '\')">Edit</button>' +
-          '<span class="hidden-description" style="display:none;">' + plainDescription + '</span>';
-        container.appendChild(div);
+        div.innerHTML = html;
+        return div.textContent || div.innerText || '';
       }
-    }
-    
-    // Loads a saved card into the form for editing.
-    function editCard(id) {
-      const card = allCards[id];
-      document.getElementById('title').value = card.title;
-      quill.root.innerHTML = card.descriptionHTML || '';
-      if (card.savedImage) {
-        currentEditingImage = card.savedImage;
+
+      function buildSearchText(item){
+        const state = item?.state || {};
+        return [
+          item?.id,
+          state.title,
+          state.type,
+          state.tag,
+          stripHTML(state.functionHTML),
+          stripHTML(state.descriptionHTML)
+        ].filter(Boolean).join(' ').toLowerCase();
       }
-      if (card.blurredImage) {
-        currentEditingBlurredImage = card.blurredImage;
+
+      function refreshLibrary(){
+        const allItems = loadLibrary();
+        const query = (librarySearch?.value || '').trim().toLowerCase();
+        const filtered = query
+          ? allItems.filter(item => buildSearchText(item).includes(query))
+          : allItems;
+
+        libraryList.innerHTML = '';
+        if(!allItems.length){
+          const emptyMsg = document.createElement('div');
+          emptyMsg.style.cssText = 'color:var(--ui-text-muted);font-size:12px;';
+          emptyMsg.textContent = 'No items yet. Save your first card!';
+          libraryList.appendChild(emptyMsg);
+          return;
+        }
+        if(!filtered.length){
+          const noMatchMsg = document.createElement('div');
+          noMatchMsg.style.cssText = 'color:var(--ui-text-muted);font-size:12px;';
+          noMatchMsg.textContent = `No matches for "${query}"`;
+          libraryList.appendChild(noMatchMsg);
+          return;
+        }
+
+        for(const item of filtered){
+          const card = document.createElement('div');
+          card.className = 'lib-card';
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'lib-select';
+          checkbox.checked = !!item.selected;
+          checkbox.addEventListener('change', ()=>{
+            item.selected = checkbox.checked;
+          });
+          card.appendChild(checkbox);
+          const img = document.createElement('img');
+          img.className = 'lib-thumb';
+          img.src = item.thumbnail || '';
+          img.alt = item.state?.title || 'card thumbnail';
+          const meta = document.createElement('div'); meta.className='lib-meta';
+          const title = document.createElement('div'); title.className='lib-title'; title.textContent = item.state?.title || '(untitled)';
+          const sub = document.createElement('div'); sub.className='lib-sub';
+          sub.appendChild(createTypeIconSvg(item.state?.type || 'ITEM'));
+          const subText = document.createElement('span');
+          subText.textContent = (item.state?.type || 'ITEM');
+          sub.appendChild(subText);
+          meta.appendChild(title); meta.appendChild(sub);
+          const qtyWrap = document.createElement('div'); qtyWrap.className='lib-qty';
+          const qtyLabel = document.createElement('label');
+          const qtyInputId = `libQty-${item.id}`;
+          qtyLabel.setAttribute('for', qtyInputId);
+          qtyLabel.textContent = 'Copies';
+          const initialQty = item.printQuantity && item.printQuantity > 0 ? item.printQuantity : 1;
+          item.printQuantity = initialQty;
+          const qtyInput = document.createElement('input');
+          qtyInput.type = 'number';
+          qtyInput.min = '1';
+          qtyInput.max = '99';
+          qtyInput.id = qtyInputId;
+          qtyInput.value = initialQty;
+          qtyInput.addEventListener('change', ()=>{
+            let val = parseInt(qtyInput.value, 10);
+            if(isNaN(val) || val < 1) val = 1;
+            if(val > 99) val = 99;
+            qtyInput.value = val;
+            item.printQuantity = val;
+          });
+          qtyWrap.appendChild(qtyLabel);
+          qtyWrap.appendChild(qtyInput);
+          const actions = document.createElement('div'); actions.className='lib-actions';
+          const loadBtn = document.createElement('button'); loadBtn.className='btn'; loadBtn.innerHTML='<i class="mdi mdi-upload"></i> Load';
+          loadBtn.addEventListener('click', ()=>{
+            applyState(item.state);
+            removeLibraryItem(item.id);
+          });
+          const delBtn = document.createElement('button'); delBtn.className='btn danger'; delBtn.innerHTML='<i class="mdi mdi-delete"></i> Delete';
+          delBtn.addEventListener('click', ()=> removeLibraryItem(item.id));
+          actions.appendChild(loadBtn); actions.appendChild(delBtn);
+          card.appendChild(img); card.appendChild(meta); card.appendChild(qtyWrap); card.appendChild(actions);
+          libraryList.appendChild(card);
+        }
       }
-      createCard(card.title, currentEditingImage, card.descriptionHTML);
-      delete allCards[id];
-      updateSavedCardsList();
-      currentEditingId = id;
-    }
-    
-    // Export card: Exports the current card preview as PNG.
-    document.getElementById('export-btn').addEventListener('click', function() {
-      const cardElement = document.getElementById('card-preview');
-      html2canvas(cardElement).then(function(canvas) {
-        const link = document.createElement('a');
-        link.download = 'item-card.png';
-        link.href = canvas.toDataURL();
-        link.click();
-      });
-    });
-    
-    // Print saved cards: Only print cards that are checked; print each card as many times as specified.
-    document.getElementById('print-all-btn').addEventListener('click', function() {
-      var printContainer = document.createElement('div');
-      const savedCardElements = document.querySelectorAll('.saved-card');
-      savedCardElements.forEach(cardElem => {
-        const checkbox = cardElem.querySelector('.print-check');
-        if (!checkbox || !checkbox.checked) return; // skip unchecked cards
-        const copies = parseInt(cardElem.querySelector('.copy-input').value) || 1;
-        const id = cardElem.getAttribute("data-id");
-        const card = allCards[id];
-        if (card) {
-          for (let i = 0; i < copies; i++) {
-            var cardDiv = document.createElement('div');
-            cardDiv.className = 'print-card';
-            cardDiv.innerHTML = '<img src="' + card.imageData + '" alt="' + card.title + '">';
-            printContainer.appendChild(cardDiv);
+
+      async function captureCardPNG(arg){
+        let includeCutline = true;
+        let pixelRatio = EXPORT_PIXEL_RATIO;
+        if(typeof arg === 'object' && arg !== null){
+          includeCutline = arg.includeCutline ?? true;
+          pixelRatio = arg.pixelRatio ?? EXPORT_PIXEL_RATIO;
+        } else if(typeof arg === 'boolean'){
+          includeCutline = arg;
+        }
+        // Wähle Zielknoten: Karte pur oder mit Schnittmarkierung
+        const node = includeCutline ? document.querySelector('.cutline') : document.getElementById('preview');
+        if(!node) throw new Error('No card node available for export');
+
+        // Für Export: Bereiche außerhalb der Schnittlinie transparent halten
+        // Warten, bis Schriften/Bilder geladen sind → minimiert Abweichungen
+        if (document.fonts && document.fonts.ready) {
+          try { await document.fonts.ready; } catch(o){ console.warn('Font readiness skipped', o); }
+        }
+        if (artImg && artImg.complete && artImg.naturalWidth > 0) {
+          try { await artImg.decode(); } catch(o){ console.warn('Art decode skipped', o); }
+        }
+        // Primärer Weg: html-to-image nutzt foreignObject → 1:1 Darstellung
+        if (window.htmlToImage && typeof window.htmlToImage.toPng === 'function') {
+          try {
+            const fontEmbedCSS = await fontEmbedCSSPromise;
+            const opts = {
+              cacheBust: true,
+              pixelRatio,
+              backgroundColor: includeCutline ? null : '#ffffff'
+            };
+            if (fontEmbedCSS) opts.fontEmbedCSS = fontEmbedCSS;
+            return await window.htmlToImage.toPng(node, opts);
+          } catch(err) {
+            console.warn('html-to-image export failed, fallback to html2canvas', err);
           }
         }
-      });
-      
-      var printWindow = window.open('', '', 'width=800,height=600');
-      printWindow.document.write(
-        '<style>' +
-          '@page { size: A6; margin: 0; }' +
-          'body { margin: 0; padding: 20px; display: flex; flex-wrap: wrap; }' +
-          '.print-card { width: 50mm !important; height: 80mm !important; border: 1px dashed rgba(0,0,0,0.5) !important; box-sizing: border-box; margin: 5mm; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 3mm !important; }' +
-          '.print-card img { width: 100%; height: 100%; object-fit: contain; }' +
-        '</style>' +
-        printContainer.innerHTML +
-        '<script>' +
-          'window.focus();' +
-          'window.print();' +
-        '<\/script>'
-      );
-      printWindow.document.close();
-    });
-    
-    // Select All / Deselect All buttons for saved cards.
-    document.getElementById('select-all-btn').addEventListener('click', function() {
-      const checkboxes = document.querySelectorAll('.print-check');
-      checkboxes.forEach(chk => chk.checked = true);
-    });
-    document.getElementById('deselect-all-btn').addEventListener('click', function() {
-      const checkboxes = document.querySelectorAll('.print-check');
-      checkboxes.forEach(chk => chk.checked = false);
-    });
-    
-    // Full text search: Filter saved cards by title and description.
-    document.getElementById('search-input').addEventListener('input', function() {
-      const query = this.value.toLowerCase();
-      const cards = document.querySelectorAll('.saved-card');
-      cards.forEach(card => {
-        const title = card.querySelector('strong').textContent.toLowerCase();
-        const desc = card.querySelector('.hidden-description').textContent.toLowerCase();
-        if (title.includes(query) || desc.includes(query)) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
+
+        // Fallback: html2canvas wie zuvor
+        if (typeof html2canvas !== 'function') {
+          throw new Error('No export backend available');
         }
-      });
-    });
-    
-    // Clear search filter button.
-    document.getElementById('clear-search-btn').addEventListener('click', function() {
-      document.getElementById('search-input').value = "";
-      const cards = document.querySelectorAll('.saved-card');
-      cards.forEach(card => {
-        card.style.display = 'block';
-      });
-    });
-    
-    // JSON Export: Convert allCards to JSON and trigger a download.
-    document.getElementById('export-json-btn').addEventListener('click', function() {
-      const jsonStr = JSON.stringify(allCards, null, 2);
-      const blob = new Blob([jsonStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = "cards.json";
-      link.click();
-      URL.revokeObjectURL(url);
-    });
-    
-    // Export Selected: Convert only the checked cards to JSON and trigger a download.
-    document.getElementById('export-selected-json-btn').addEventListener('click', function() {
-      const selected = {};
-      const savedCardElements = document.querySelectorAll('.saved-card');
-      savedCardElements.forEach(cardElem => {
-        const checkbox = cardElem.querySelector('.print-check');
-        if (checkbox && checkbox.checked) {
-          const id = cardElem.getAttribute("data-id");
-          if (allCards[id]) {
-            selected[id] = allCards[id];
+        const canvas = await html2canvas(node, {
+          backgroundColor: includeCutline ? null : '#ffffff',
+          scale: pixelRatio,
+          useCORS: true,
+          logging: false,
+          removeContainer: true
+        });
+        return canvas.toDataURL('image/png');
+      }
+
+      async function normalizeArtDataURL(dataUrl){
+        if(!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image')) return dataUrl;
+        try{
+          const img = new Image();
+          img.src = dataUrl;
+          if(img.decode){ await img.decode(); }
+          else {
+            await new Promise((resolve, reject)=>{
+              img.onload = ()=> resolve();
+              img.onerror = reject;
+            });
+          }
+          const MAX_DIM = 1200;
+          const largest = Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height);
+          const scale = largest > MAX_DIM ? MAX_DIM / largest : 1;
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round((img.naturalWidth || img.width) * scale));
+          canvas.height = Math.max(1, Math.round((img.naturalHeight || img.height) * scale));
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          return canvas.toDataURL('image/webp', 0.9);
+        }catch(err){
+          console.warn('Art normalization skipped:', err);
+          return dataUrl;
+        }
+      }
+
+      function sanitizeImportedItem(raw){
+        if(!raw || typeof raw !== 'object') return null;
+        const stateRaw = (typeof raw.state === 'object' && raw.state) ? raw.state : {};
+        const id = makeCardId();
+        let type = typeof stateRaw.type === 'string' ? stateRaw.type.toUpperCase() : 'ITEM';
+        if(!TYPE_ICON_PATH[type]) type = 'ITEM';
+        let printQuantity = parseInt(raw.printQuantity, 10);
+        if(isNaN(printQuantity) || printQuantity < 1) printQuantity = 1;
+        if(printQuantity > 99) printQuantity = 99;
+        const theme = typeof stateRaw.theme === 'object'
+          ? { ...DEFAULT_THEME, ...stateRaw.theme }
+          : { ...DEFAULT_THEME };
+        return {
+          id,
+          createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : new Date().toISOString(),
+          thumbnail: typeof raw.thumbnail === 'string' ? raw.thumbnail : '',
+          state: {
+            title: typeof stateRaw.title === 'string' ? stateRaw.title : '',
+            type,
+            tag: typeof stateRaw.tag === 'string' ? stateRaw.tag : '',
+            functionHTML: typeof stateRaw.functionHTML === 'string' ? stateRaw.functionHTML : '',
+            descriptionHTML: typeof stateRaw.descriptionHTML === 'string' ? stateRaw.descriptionHTML : '',
+            artDataURL: typeof stateRaw.artDataURL === 'string' ? stateRaw.artDataURL : null,
+            theme
+          },
+          selected: false,
+          printQuantity
+        };
+      }
+
+      async function importLibraryFromFile(file){
+        if(!file) return;
+        try{
+          const text = await file.text();
+          const parsed = JSON.parse(text);
+          if(!Array.isArray(parsed)) throw new Error('File does not contain an array of cards.');
+          const sanitized = [];
+          for(const raw of parsed){
+            const item = sanitizeImportedItem(raw);
+            if(item) sanitized.push(item);
+          }
+          if(!sanitized.length) throw new Error('No usable cards found in file.');
+          for(const item of sanitized){
+            item.state.artDataURL = await normalizeArtDataURL(item.state.artDataURL);
+          }
+          const merged = sanitized.concat(loadLibrary());
+          saveLibrary(merged);
+          if(bwPrintMode){ await regenerateLibraryThumbnails(); }
+          else { refreshLibrary(); }
+        }catch(err){
+          alert(`Import failed: ${err.message || err}`);
+        }finally{
+          if(libraryImportInput) libraryImportInput.value = '';
+        }
+      }
+
+      function exportLibraryJSON(){
+        const data = loadLibrary().map(item => ({
+          createdAt: item.createdAt,
+          thumbnail: item.thumbnail,
+          state: { ...item.state },
+          printQuantity: item.printQuantity || 1
+        }));
+        if(!data.length){
+          alert('Library is empty. Save a card before exporting.');
+          return;
+        }
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pen-and-paper-card-library.json';
+        a.click();
+        setTimeout(()=> URL.revokeObjectURL(url), 500);
+      }
+
+      function exportSelectedLibraryJSON(){
+        const selected = loadLibrary().filter(item => item.selected);
+        if(!selected.length){
+          alert('No cards selected. Tick the checkboxes in the library first.');
+          return;
+        }
+        const payload = selected.map(item => ({
+          createdAt: item.createdAt,
+          thumbnail: item.thumbnail,
+          state: { ...item.state },
+          printQuantity: item.printQuantity || 1
+        }));
+        const json = JSON.stringify(payload, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pen-and-paper-card-library-selected.json';
+        a.click();
+        setTimeout(()=> URL.revokeObjectURL(url), 500);
+      }
+
+      async function printSelectedCards(){
+        const selected = loadLibrary().filter(item => item.selected);
+        if(!selected.length){
+          alert('No cards selected. Tick the checkboxes in the library first.');
+          return;
+        }
+        const originalState = getState();
+        const rendered = [];
+        for(const item of selected){
+          await loadStateForRender(item.state);
+          const dataUrl = await captureCardPNG({ pixelRatio: EXPORT_PIXEL_RATIO });
+          const copies = Math.max(1, item.printQuantity || 1);
+          for(let i=0;i<copies;i++){
+            rendered.push({ title: item.state?.title || 'card', dataUrl });
           }
         }
-      });
-      const jsonStr = JSON.stringify(selected, null, 2);
-      const blob = new Blob([jsonStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = "selected_cards.json";
-      link.click();
-      URL.revokeObjectURL(url);
-    });
-    
-    // JSON Import: Trigger the hidden file input.
-    document.getElementById('import-json-btn').addEventListener('click', function() {
-      document.getElementById('jsonImport').click();
-    });
-    
-    // Handle JSON file import.
-    document.getElementById('jsonImport').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        try {
-          const importedCards = JSON.parse(event.target.result);
-          // Add each imported card with a new unique ID.
-          for (let key in importedCards) {
-            cardCounter++;
-            const newId = 'card-' + cardCounter;
-            allCards[newId] = importedCards[key];
-          }
-          updateSavedCardsList();
-          alert("Cards imported successfully!");
-        } catch (err) {
-          alert("Error importing JSON: " + err);
+        await loadStateForRender(originalState);
+        if(bwPrintMode){ applyBWTheme(); }
+        else { applyBaseTheme(); }
+        if(!rendered.length){
+          alert('Unable to prepare cards for printing.');
+          return;
         }
-        // Reset file input so the same file can be imported again.
-        document.getElementById('jsonImport').value = "";
-      };
-      reader.readAsText(file);
-    });
+        const printWindow = window.open('', '_blank');
+        if(!printWindow){
+          alert('Popup blocked. Allow pop-ups for this site and try again.');
+          return;
+        }
+        const cardsHtml = rendered.map((item, idx)=>
+          `<div class="print-card"><img src="${item.dataUrl}" alt="Card ${idx+1}"></div>`
+        ).join('');
+        const printHtml = `<!DOCTYPE html><html><head><meta charset="utf-8" />
+          <title>Print Cards</title>
+          <style>
+            :root{ --card-w: 50mm; --card-h: 80mm; }
+            @page{ margin:5mm; }
+            body{ margin:0; padding:0; background:#fff; display:flex; flex-wrap:wrap; gap:6mm; justify-content:flex-start; }
+            .print-card{ width:calc(var(--card-w) + 4mm); height:calc(var(--card-h) + 4mm); display:flex; align-items:center; justify-content:center; page-break-inside:avoid; }
+            .print-card img{ width:100%; height:100%; object-fit:contain; }
+          </style>
+        </head><body>${cardsHtml}
+          <script>window.addEventListener('load', function(){ setTimeout(function(){ window.focus(); window.print(); }, 150); });<\/script>
+        </body></html>`;
+        printWindow.document.write(printHtml);
+        printWindow.document.close();
+      }
+
+      async function saveToLibrary(){
+        // render image (smaller thumbnail for storage)
+        const pngDataURL = await captureCardPNG({ pixelRatio: LIB_THUMB_PIXEL_RATIO });
+        // build record
+        const state = getState();
+        state.theme = { ...baseTheme };
+        state.artDataURL = await normalizeArtDataURL(state.artDataURL);
+        const record = {
+          id: makeCardId(),
+          createdAt: new Date().toISOString(),
+          thumbnail: pngDataURL,
+          state,
+          selected: false,
+          printQuantity: 1
+        };
+        const list = loadLibrary();
+        list.unshift(record);
+        saveLibrary(list);
+        refreshLibrary();
+      }
+
+      async function exportPNG(){
+        const dataUrl = await captureCardPNG();
+        const a = document.createElement('a');
+        const safeTitle = (titleInput.value || 'card').replace(/[^a-z0-9\-_]+/gi,'_');
+        a.download = `${safeTitle}.png`;
+        a.href = dataUrl;
+        a.click();
+      }
+
+      function clearLibrary(){
+        if(confirm('Delete all saved cards?')){
+          saveLibrary([]);
+          refreshLibrary();
+        }
+      }
+
+      // ===== Event listeners =====
+      document.getElementById('saveBtn').addEventListener('click', ()=>{ saveToLibrary(); });
+      document.getElementById('exportBtn').addEventListener('click', ()=>{ exportPNG(); });
+      document.getElementById('clearBtn').addEventListener('click', ()=>{ clearLibrary(); });
+      librarySearch?.addEventListener('input', ()=> refreshLibrary());
+      libraryImportBtn?.addEventListener('click', ()=>{ libraryImportInput?.click(); });
+      libraryExportBtn?.addEventListener('click', ()=>{ exportLibraryJSON(); });
+      libraryExportSelectedBtn?.addEventListener('click', ()=>{ exportSelectedLibraryJSON(); });
+      libraryPrintSelectedBtn?.addEventListener('click', ()=>{ printSelectedCards(); });
+      librarySelectAllBtn?.addEventListener('click', ()=>{ setLibrarySelectionAll(true); });
+      librarySelectNoneBtn?.addEventListener('click', ()=>{ setLibrarySelectionAll(false); });
+      libraryImportInput?.addEventListener('change', (e)=>{
+        const file = e.target.files && e.target.files[0];
+        if(file) importLibraryFromFile(file);
+      });
+      bwModeToggle?.addEventListener('change', async ()=>{
+        bwPrintMode = bwModeToggle.checked;
+        if(bwModeToggle) bwModeToggle.disabled = true;
+        try{
+          const currentState = getState();
+          applyThemeFromState(currentState);
+          await regenerateLibraryThumbnails();
+        }finally{
+          if(bwModeToggle) bwModeToggle.disabled = false;
+        }
+      });
+
+      artUpload.addEventListener('change', (e)=>{
+        const file = e.target.files && e.target.files[0];
+        if(!file) return;
+        const reader=new FileReader();
+        reader.onload=()=>{ openCropper(reader.result); };
+        reader.readAsDataURL(file);
+      });
+
+      cropperCancelBtn.addEventListener('click', ()=>{
+        closeCropper();
+        artUpload.value='';
+      });
+
+      cropperApplyBtn.addEventListener('click', ()=>{ applyCroppedArtwork(); });
+
+      cropperModal.addEventListener('keydown', (e)=>{
+        if(e.key === 'Escape'){ closeCropper(); artUpload.value=''; }
+      });
+
+      cropperModal.addEventListener('click', (e)=>{
+        if(e.target === cropperModal){ closeCropper(); artUpload.value=''; }
+      });
+
+      artImg.addEventListener('load', ()=> analyzeImage(artImg));
+      artImg.addEventListener('error', ()=>{
+        artImg.style.display='none';
+        mediaPlaceholder.style.display='grid';
+      });
+
+      typeSelect.addEventListener('change', ()=>{
+        const t=typeSelect.value;
+        typeText.textContent=t;
+        updateTypeIconGlyph(t);
+      });
+
+      titleInput.addEventListener('input', ()=>{ titleSpan.textContent=titleInput.value||''; fitTitleToWidth(); });
+
+      wireToolbar(document.querySelector('.toolbar[data-for="function"]'), functionEditor, functionText);
+      wireToolbar(document.querySelector('.toolbar[data-for="description"]'), descriptionEditor, descriptionText);
+      wireDiceToolbar(document.querySelector('.dice-toolbar[data-target="function"]'), functionEditor, functionText);
+      wireDiceToolbar(document.querySelector('.dice-toolbar[data-target="description"]'), descriptionEditor, descriptionText);
+      handleDiceDeletion(functionEditor, functionText);
+      handleDiceDeletion(descriptionEditor, descriptionText);
+      ensureDiceBoundaries(functionEditor);
+      ensureDiceBoundaries(descriptionEditor);
+      renderFunctionPreview();
+      updateDescriptionVisibility();
+      handlePlainPaste(functionEditor, functionText);
+      handlePlainPaste(descriptionEditor, descriptionText);
+
+      functionEditor.addEventListener('keydown', (e)=>{
+        if(e.key !== 'Enter') return;
+        const sel = window.getSelection();
+        if(!sel || !sel.rangeCount) return;
+        const range = sel.getRangeAt(0);
+        const block = findEditableBlock(range.startContainer, functionEditor);
+        if(block && block.getAttribute('data-function-heading') === 'true'){
+          e.preventDefault();
+          const newPara = document.createElement('p');
+          newPara.innerHTML = '<br />';
+          block.insertAdjacentElement('afterend', newPara);
+          ensureDiceBoundaries(newPara);
+          renderFunctionPreview();
+          fitContentPanel();
+          setCaretPosition(newPara, 0);
+        }
+      });
+
+      // Init
+      applyBaseTheme();
+      refreshLibrary();
+      titleSpan.textContent = titleInput.value || '';
+      fitTitleToWidth();
+      updateTypeIconGlyph(typeSelect.value);
+      fitContentPanel();
+      updateDescriptionVisibility();
+      if(bwModeToggle) bwModeToggle.checked = bwPrintMode;
+    })();
   </script>
 </body>
 </html>
