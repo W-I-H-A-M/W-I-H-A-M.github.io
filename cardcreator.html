@@ -966,6 +966,28 @@
         }
         return { r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255) };
       }
+      function adjustTypeHslForContrast(primaryHsl, typeHsl){
+        const result = { ...typeHsl };
+        const CONTRAST_DELTA = 0.2;
+        if(primaryHsl.l <= 0.4){
+          result.l = Math.max(result.l, 0.65);
+          result.s = clamp(result.s * 0.9 + 0.1, 0.25, 0.9);
+        } else if(primaryHsl.l >= 0.7){
+          result.l = Math.min(result.l, 0.35);
+          result.s = clamp(result.s * 1.05, 0.2, 0.9);
+        }
+        if(Math.abs(result.l - primaryHsl.l) < CONTRAST_DELTA){
+          if(primaryHsl.l <= 0.5){
+            result.l = clamp(primaryHsl.l + CONTRAST_DELTA, 0.25, 0.85);
+          } else {
+            result.l = clamp(primaryHsl.l - CONTRAST_DELTA, 0.15, 0.7);
+          }
+        }
+        result.l = clamp(result.l, 0.18, 0.82);
+        result.s = clamp(result.s, 0.25, 0.9);
+        result.h = ((result.h % 360) + 360) % 360;
+        return result;
+      }
       function averageColor(agg){ if(!agg||!agg.n) return {r:185,g:114,b:27}; return { r:Math.round(agg.r/agg.n), g:Math.round(agg.g/agg.n), b:Math.round(agg.b/agg.n)}; }
       function bestTextColor({r,g,b}){ const yiq=(r*299+g*587+b*114)/1000; return yiq>=128?'#000':'#fff'; }
 
@@ -1053,14 +1075,18 @@
           const sums={r:0,g:0,b:0,n:0};
           for(let i=0;i<data.length;i+=4){ const a=data[i+3]; if(a<200) continue; sums.r+=data[i]; sums.g+=data[i+1]; sums.b+=data[i+2]; sums.n++; }
           const primary=averageColor(sums);
+          const primaryHex=toHex(primary);
           const primaryDark=toHex(shade(primary,-0.25));
-          const comp=rgb2hsl(primary.r,primary.g,primary.b); comp.h=(comp.h+180)%360;
-          const secondary=hsl2rgb(comp.h,comp.s,comp.l);
-          const secondaryHex=toHex(secondary); const secondaryDark=toHex(shade(secondary,-0.25));
+          const primaryHsl=rgb2hsl(primary.r,primary.g,primary.b);
+          const typeBaseHsl={ h:(primaryHsl.h+180)%360, s:primaryHsl.s, l:primaryHsl.l };
+          const typeAdjustedHsl=adjustTypeHslForContrast(primaryHsl, typeBaseHsl);
+          const secondary=hsl2rgb(typeAdjustedHsl.h,typeAdjustedHsl.s,typeAdjustedHsl.l);
+          const secondaryHex=toHex(secondary);
+          const secondaryDark=toHex(shade(secondary,-0.2));
           const titleTextColor=bestTextColor(primary);
           const typeTextColor=bestTextColor(secondary);
           const theme = {
-            title: toHex(primary),
+            title: primaryHex,
             titleDark: primaryDark,
             titleText: titleTextColor,
             type: secondaryHex,
