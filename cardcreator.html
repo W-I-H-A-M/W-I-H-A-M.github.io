@@ -375,6 +375,7 @@
       <div class="cropper-footer">
         <div class="hint">Aspect ratio locked to card art area.</div>
         <div class="actions">
+          <button type="button" id="cropperFlipBtn" aria-pressed="false">Flip</button>
           <button type="button" id="cropperCancelBtn">Cancel</button>
           <button type="button" class="primary" id="cropperApplyBtn">Apply Crop</button>
         </div>
@@ -427,6 +428,7 @@
       const bwModeToggle = document.getElementById('bwModeToggle');
       const cropperModal = document.getElementById('cropperModal');
       const cropperImage = document.getElementById('cropperImage');
+      const cropperFlipBtn = document.getElementById('cropperFlipBtn');
       const cropperCancelBtn = document.getElementById('cropperCancelBtn');
       const cropperApplyBtn = document.getElementById('cropperApplyBtn');
 
@@ -439,6 +441,7 @@
       const ART_CROP_HEIGHT = 600;
       const ART_ASPECT_RATIO = ART_CROP_WIDTH / ART_CROP_HEIGHT;
       let cropperInstance = null;
+      let cropperScaleX = 1;
       let bwPrintMode = false;
       const DEFAULT_THEME = {
         title: '#b9721b',
@@ -1765,6 +1768,7 @@
         cropperModal.classList.add('active');
         requestAnimationFrame(()=>{
           if(cropperInstance) cropperInstance.destroy();
+          cropperScaleX = 1;
           cropperInstance = new Cropper(cropperImage, {
             aspectRatio: ART_ASPECT_RATIO,
             viewMode: 1,
@@ -1773,9 +1777,10 @@
             movable: true,
             zoomable: true,
             responsive: true,
-            scalable: false,
+            scalable: true,
             rotatable: false
           });
+          if(cropperFlipBtn){ cropperFlipBtn.setAttribute('aria-pressed', 'false'); }
           setTimeout(()=> cropperApplyBtn.focus(), 150);
         });
       }
@@ -1785,6 +1790,8 @@
         cropperModal.classList.remove('active');
         cropperImage.src = '';
         cropperCancelBtn.blur(); cropperApplyBtn.blur();
+        cropperScaleX = 1;
+        if(cropperFlipBtn){ cropperFlipBtn.setAttribute('aria-pressed', 'false'); }
       }
 
       async function applyCroppedArtwork(){
@@ -2395,6 +2402,13 @@
         const reader=new FileReader();
         reader.onload=()=>{ openCropper(reader.result); };
         reader.readAsDataURL(file);
+      });
+
+      cropperFlipBtn?.addEventListener('click', ()=>{
+        if(!cropperInstance) return;
+        cropperScaleX = cropperScaleX === 1 ? -1 : 1;
+        cropperInstance.scaleX(cropperScaleX);
+        cropperFlipBtn.setAttribute('aria-pressed', cropperScaleX === -1 ? 'true' : 'false');
       });
 
       cropperCancelBtn.addEventListener('click', ()=>{
