@@ -1836,11 +1836,23 @@
         refreshTitleTear();
         const mergedFunctionHTML = mergeLegacyTagIntoFunction(state.tag, state.functionHTML || '');
         functionEditor.innerHTML = mergedFunctionHTML;
-        if(!functionEditor.querySelector('[data-function-heading="true"]')){
+        const hasHeadingBlock = functionEditor.querySelector('[data-function-heading="true"], .function-heading-block');
+        if(!hasHeadingBlock){
           const firstBlockCandidate = Array.from(functionEditor.childNodes).find(node => node.nodeType === Node.ELEMENT_NODE);
           if(firstBlockCandidate){
-            firstBlockCandidate.setAttribute('data-function-heading','true');
-            firstBlockCandidate.classList.add('function-heading-block');
+            const blockHasContent = Array.from(firstBlockCandidate.childNodes).some(child => {
+              if(child.nodeType === Node.TEXT_NODE){
+                return child.textContent.replace(/\u200B/g, '').trim().length > 0;
+              }
+              if(child.nodeType === Node.ELEMENT_NODE){
+                return child.tagName !== 'BR';
+              }
+              return false;
+            });
+            if(!blockHasContent){
+              firstBlockCandidate.setAttribute('data-function-heading','true');
+              firstBlockCandidate.classList.add('function-heading-block');
+            }
           }
         }
         upgradeLegacyDiceIcons(functionEditor);
