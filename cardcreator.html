@@ -1145,10 +1145,14 @@
 
       function ensureDiceBoundaries(root){
         if(!root) return;
+        let caretSnapshot = null;
         let caretIndex = null;
         const sel = window.getSelection();
         if(sel && sel.rangeCount && sel.isCollapsed && typeof root.contains === 'function' && root.contains(sel.anchorNode)){
-          caretIndex = getCaretIndex(root, sel.getRangeAt(0));
+          caretSnapshot = captureSelectionSnapshot(root);
+          if(!caretSnapshot){
+            caretIndex = getCaretIndex(root, sel.getRangeAt(0));
+          }
         }
         const diceTokens = root.querySelectorAll('.dice-inline');
         diceTokens.forEach(token => {
@@ -1187,7 +1191,12 @@
           next.textContent = ZWSP + next.textContent.replace(/^\u200B+/g, '');
         });
         root.normalize();
-        if(caretIndex !== null){
+        if(caretSnapshot){
+          const restored = restoreSelectionSnapshot(caretSnapshot);
+          if(!restored && typeof caretSnapshot.index === 'number'){
+            setCaretByIndex(root, caretSnapshot.index);
+          }
+        } else if(caretIndex !== null){
           setCaretByIndex(root, caretIndex);
         }
       }
