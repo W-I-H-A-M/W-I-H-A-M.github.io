@@ -881,6 +881,11 @@ header {
   margin: 0 auto;
 }
 
+.player-view-button {
+  display: block;
+  margin: 10px auto 0;
+}
+
 .character-name {
   text-align: center;
   margin-top: 10px;

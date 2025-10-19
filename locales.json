@@ -78,6 +78,7 @@
     "explainAllPlaces": "Ziehe die Orte von hier auf das Grid um sie dort zu positionieren. Durch einen klick darauf kannst du den Ort wechseln.",
     "allPlaces": "Alle Orte",
     "collect": "Einsammeln",
+    "showToPlayer": "In Spieleransicht anzeigen",
     "cardcreator": "Karten Ersteller"
   },
   "ru": {
@@ -159,6 +160,7 @@
     "explainAllPlaces": "Перетащите места сюда на сетку, чтобы разместить их здесь. При нажатии на место вы переключитесь на него.",
     "allPlaces": "Все места",
     "collect": "Соберите",
+    "showToPlayer": "Показать игрокам",
     "cardcreator": "Card Creator"
   },
   "en": {
@@ -240,6 +242,7 @@
     "explainAllPlaces": "Move Place's onto the grid to position them here. If clicked on them, you switch to this place.",
     "allPlaces": "All Places",
     "collect": "Collect",
+    "showToPlayer": "Show to players",
     "cardcreator": "Card Creator"
   }
 }

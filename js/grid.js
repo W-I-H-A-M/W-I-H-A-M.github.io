@@ -9,6 +9,7 @@ const mapContainer = document.getElementById("mapContainer");
 const mapGrid = document.getElementById("mapGrid");
 const editMapGrid = document.getElementById("editMapGrid");
 let resizeTimeout;
+let playerViewWindow = null;
 
 // **************************************
 // Event Listeners
@@ -351,6 +352,69 @@ function loadSelectedPlace(placeId) {
 }
 
 /**
+ * Escapes special characters for safe HTML attribute usage.
+ */
+function escapeHtmlAttribute(value) {
+    return (value ?? "")
+        .toString()
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+/**
+ * Opens (or reuses) the dedicated player-view window and displays the provided image.
+ */
+function showEntityInPlayerView(item) {
+    const imageSource = item.image || item.background || (item.schedule ? "assets/default_npc.png" : "assets/default_object.png");
+
+    const existingWindow = playerViewWindow && !playerViewWindow.closed ? playerViewWindow : null;
+    const playerWindow = existingWindow || window.open("", "WIHAM_PlayerView", "width=600,height=600");
+
+    if (!playerWindow) {
+        console.warn("Player view window could not be opened by the browser.");
+        return;
+    }
+
+    playerViewWindow = playerWindow;
+    playerViewWindow.focus();
+
+    const safeSrc = escapeHtmlAttribute(imageSource);
+    const safeAlt = escapeHtmlAttribute(item.name || "N/N");
+
+    playerViewWindow.document.open();
+    playerViewWindow.document.write(`<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spieleransicht</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    img {
+      max-width: 100vw;
+      max-height: 100vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <img src="${safeSrc}" alt="${safeAlt}">
+</body>
+</html>`);
+    playerViewWindow.document.close();
+}
+
+/**
  * Displays detailed info about the selected item (NPC or object)
  * in the "Selected" tab, including images, attributes, HP, and inventory.
  */
@@ -366,6 +430,15 @@ function displaySelectedDetails(item) {
     img.alt = item.name || "Unnamed";
     img.classList.add("character-image");
     charSheet.appendChild(img);
+
+    const showPlayerButton = document.createElement("button");
+    showPlayerButton.classList.add("player-view-button");
+    showPlayerButton.dataset.i18n = "showToPlayer";
+    showPlayerButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showEntityInPlayerView(item);
+    });
+    charSheet.appendChild(showPlayerButton);
 
     const name = document.createElement("h1");
     name.textContent = item.name || "(Unnamed)";
