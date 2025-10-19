@@ -87,6 +87,7 @@
     "fogBrushSize": "Pinselgröße",
     "fogToolInstructions": "Ziehen zum Freilegen. Nutze die Buttons, um den Modus zu wechseln.",
     "fogDisabledNotice": "Nebelfeld ist für diesen Ort deaktiviert.",
+    "showLocationDetails": "Ort-Details anzeigen",
     "showToPlayer": "In Spieleransicht anzeigen",
     "cardcreator": "Karten Ersteller"
   },
@@ -178,6 +179,7 @@
     "fogBrushSize": "Размер кисти",
     "fogToolInstructions": "Ведите мышью, чтобы открыть. Используйте кнопки для смены режима.",
     "fogDisabledNotice": "Туман войны для этого места отключён.",
+    "showLocationDetails": "Показать детали места",
     "showToPlayer": "Показать игрокам",
     "cardcreator": "Card Creator"
   },
@@ -269,6 +271,7 @@
     "fogBrushSize": "Brush size",
     "fogToolInstructions": "Drag on the map to reveal. Use the buttons to switch modes.",
     "fogDisabledNotice": "Fog of war is disabled for this place.",
+    "showLocationDetails": "Show place details",
     "showToPlayer": "Show to players",
     "cardcreator": "Card Creator"
   }

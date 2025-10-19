@@ -53,6 +53,32 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.location-info-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  padding: 4px;
+  width: 32px;
+  height: 32px;
+}
+
+.location-info-button .mdi {
+  font-size: 18px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Cards */
 .card {
   background-color: var(--neutral-light);

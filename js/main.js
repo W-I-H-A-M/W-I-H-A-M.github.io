@@ -10,6 +10,7 @@ let secondsElapsed = 0;
 
 // Dropdowns and other controls
 const locationSelect = document.getElementById("locationSelect");
+const btnShowLocationDetails = document.getElementById("btnShowLocationDetails");
 // timeSlider is declared in the original code, but not currently used
 // const timeSlider = document.getElementById("timeSlider");
 
@@ -34,6 +35,23 @@ document.addEventListener("click", (event) => {
 locationSelect.addEventListener("change", () => {
     locationChanged();
 });
+
+if (btnShowLocationDetails) {
+    btnShowLocationDetails.addEventListener("click", () => {
+        const selectedPlaceId = locationSelect.value;
+        if (!selectedPlaceId) {
+            return;
+        }
+        const selectedPlace = places.find(place => place.id === selectedPlaceId);
+        if (selectedPlace) {
+            displaySelectedDetails(selectedPlace);
+            const selectedTabButton = document.querySelector('.tab-button[data-tab="tabSelected"]');
+            if (selectedTabButton) {
+                selectedTabButton.click();
+            }
+        }
+    });
+}
 
 /**
  * Updates the clock display every second.
