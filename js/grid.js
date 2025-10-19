@@ -10,6 +10,7 @@ const mapGrid = document.getElementById("mapGrid");
 const editMapGrid = document.getElementById("editMapGrid");
 let resizeTimeout;
 let playerViewWindow = null;
+let playerViewPlaceId = null;
 
 // **************************************
 // Event Listeners
@@ -22,6 +23,121 @@ window.addEventListener("resize", () => {
     }, 300);
 });
 
+window.addEventListener("message", (event) => {
+    if (event.origin && event.origin !== window.location.origin) {
+        return;
+    }
+    const data = event.data;
+    if (!data || typeof data !== "object") {
+        return;
+    }
+    if (data.type === "fogUpdate") {
+        applyFogUpdateFromPlayerView(data);
+    } else if (data.type === "fogRequest") {
+        const place = places.find(p => p.id === data.placeId);
+        if (place) {
+            sendFogStateToPlayerView(place);
+        }
+    }
+});
+
+function ensureFogConfig(place) {
+    if (!place) {
+        return;
+    }
+    if (!place.fogOfWar) {
+        place.fogOfWar = {
+            enabled: true,
+            revealedCells: []
+        };
+    }
+    if (typeof place.fogOfWar.enabled !== "boolean") {
+        place.fogOfWar.enabled = true;
+    }
+    if (!Array.isArray(place.fogOfWar.revealedCells)) {
+        place.fogOfWar.revealedCells = [];
+    }
+    place.fogOfWar.revealedCells = normalizeFogCells(
+        place.fogOfWar.revealedCells,
+        place.gridSize?.rows,
+        place.gridSize?.cols
+    );
+}
+
+function normalizeFogCells(cells, maxRows, maxCols) {
+    const normalized = [];
+    const seen = new Set();
+    if (!Array.isArray(cells)) {
+        return normalized;
+    }
+    cells.forEach(cell => {
+        const row = Number(cell?.row);
+        const col = Number(cell?.col);
+        if (!Number.isInteger(row) || !Number.isInteger(col)) {
+            return;
+        }
+        if (Number.isInteger(maxRows) && (row < 0 || row >= maxRows)) {
+            return;
+        }
+        if (Number.isInteger(maxCols) && (col < 0 || col >= maxCols)) {
+            return;
+        }
+        const key = `${row},${col}`;
+        if (seen.has(key)) {
+            return;
+        }
+        seen.add(key);
+        normalized.push({ row, col });
+    });
+    return normalized;
+}
+
+function sendFogStateToPlayerView(place) {
+    if (!playerViewWindow || playerViewWindow.closed) {
+        playerViewWindow = null;
+        playerViewPlaceId = null;
+        return;
+    }
+    if (!place || playerViewPlaceId !== place.id) {
+        return;
+    }
+    ensureFogConfig(place);
+    const payload = {
+        type: "fogState",
+        placeId: place.id,
+        fogEnabled: !!place.fogOfWar.enabled,
+        revealedCells: place.fogOfWar.revealedCells.map(cell => ({
+            row: cell.row,
+            col: cell.col
+        }))
+    };
+    const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+    try {
+        playerViewWindow.postMessage(payload, targetOrigin);
+    } catch (error) {
+        console.warn("Could not post fog state to player view:", error);
+    }
+}
+
+function applyFogUpdateFromPlayerView(message) {
+    const placeId = message.placeId;
+    if (!placeId) {
+        return;
+    }
+    const place = places.find(p => p.id === placeId);
+    if (!place) {
+        return;
+    }
+    ensureFogConfig(place);
+    const maxRows = place.gridSize?.rows;
+    const maxCols = place.gridSize?.cols;
+    place.fogOfWar.revealedCells = normalizeFogCells(message.revealedCells, maxRows, maxCols);
+    if (currentPlace === place.id) {
+        renderPlace(place);
+    }
+    sendFogStateToPlayerView(place);
+}
+
 // **************************************
 // Functions
 // **************************************
@@ -31,6 +147,7 @@ window.addEventListener("resize", () => {
  * image and creating/resizing the grid.
  */
 function renderPlace(place) {
+    ensureFogConfig(place);
     if (!place || !place.background) {
         console.warn("No valid place or background image found:", place);
         mapContainer.style.backgroundImage = "";
@@ -41,6 +158,7 @@ function renderPlace(place) {
     divEditScenario.style.backgroundImage = `url(${place.background})`;
     renderGrid(place.gridSize.rows, place.gridSize.cols);
     resizeGrid(place.gridSize.rows, place.gridSize.cols);
+    sendFogStateToPlayerView(place);
 }
 
 /**
@@ -363,14 +481,28 @@ function escapeHtmlAttribute(value) {
         .replace(/>/g, "&gt;");
 }
 
+function escapeHtml(value) {
+    return (value ?? "")
+        .toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
 /**
  * Opens (or reuses) the dedicated player-view window and displays the provided image.
  */
 function showEntityInPlayerView(item) {
     const imageSource = item.image || item.background || (item.schedule ? "assets/default_npc.png" : "assets/default_object.png");
+    const isPlace = Boolean(item.gridSize);
+    if (isPlace) {
+        ensureFogConfig(item);
+    }
 
     const existingWindow = playerViewWindow && !playerViewWindow.closed ? playerViewWindow : null;
-    const playerWindow = existingWindow || window.open("", "WIHAM_PlayerView", "width=600,height=600");
+    const playerWindow = existingWindow || window.open("", "WIHAM_PlayerView", "width=900,height=700");
 
     if (!playerWindow) {
         console.warn("Player view window could not be opened by the browser.");
@@ -380,16 +512,50 @@ function showEntityInPlayerView(item) {
     playerViewWindow = playerWindow;
     playerViewWindow.focus();
 
-    const safeSrc = escapeHtmlAttribute(imageSource);
-    const safeAlt = escapeHtmlAttribute(item.name || "N/N");
+    const translate = typeof t === "function" ? t : (key) => key;
+    const localeCode = typeof currentLanguage === "string" ? currentLanguage : "de";
+    const strings = {
+        title: translate("playerViewTitle"),
+        reveal: translate("fogToolReveal"),
+        hide: translate("fogToolHide"),
+        reset: translate("fogToolReset"),
+        showAll: translate("fogToolShowAll"),
+        brush: translate("fogBrushSize"),
+        instructions: translate("fogToolInstructions"),
+        fogDisabled: translate("fogDisabledNotice")
+    };
 
-    playerViewWindow.document.open();
-    playerViewWindow.document.write(`<!DOCTYPE html>
-<html lang="de">
+    const fogConfig = isPlace ? item.fogOfWar : null;
+    const data = {
+        isPlace,
+        placeId: isPlace ? item.id : null,
+        placeName: item.name || "N/N",
+        fogEnabled: isPlace ? fogConfig?.enabled !== false : false,
+        rows: item.gridSize?.rows || 1,
+        cols: item.gridSize?.cols || 1,
+        revealedCells: isPlace
+            ? (fogConfig?.revealedCells || []).map(cell => ({ row: cell.row, col: cell.col }))
+            : [],
+        imageSource,
+        alt: item.name || "N/N",
+        locale: localeCode,
+        strings
+    };
+
+    const dataJson = JSON.stringify(data).replace(/</g, "\\u003C");
+    const safeLang = escapeHtmlAttribute(localeCode || "de");
+    const titleText = escapeHtml(strings.title || "Player View");
+    const placeNameText = escapeHtml(item.name || "N/N");
+
+    const html = `<!DOCTYPE html>
+<html lang="${safeLang}">
 <head>
   <meta charset="UTF-8" />
-  <title>Spieleransicht</title>
+  <title>${titleText}${placeNameText ? " - " + placeNameText : ""}</title>
   <style>
+    :root {
+      color-scheme: dark;
+    }
     body {
       margin: 0;
       background: #000;
@@ -397,21 +563,449 @@ function showEntityInPlayerView(item) {
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      color: #fff;
     }
-    img {
-      max-width: 100vw;
-      max-height: 100vh;
-      width: auto;
-      height: auto;
+    #playerViewRoot {
+      width: 100%;
+      max-width: 1200px;
+      padding: 12px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+    #playerToolbar {
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(20, 20, 20, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px;
+      box-sizing: border-box;
+      backdrop-filter: blur(4px);
+    }
+    #placeTitle {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    #toolbarButtons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    #playerToolbar button {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+    }
+    #playerToolbar button:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    #playerToolbar button:active {
+      transform: scale(0.97);
+    }
+    #playerToolbar button.active {
+      background: #fff;
+      color: #000;
+    }
+    #playerToolbar label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: #fff;
+    }
+    #brushSize {
+      accent-color: #fff;
+    }
+    #playerCanvas {
+      max-width: 100%;
+      max-height: calc(100vh - 200px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      background: #111;
+      touch-action: none;
+      cursor: crosshair;
+      display: none;
+    }
+    #playerImage {
+      max-width: 100%;
+      max-height: calc(100vh - 100px);
       object-fit: contain;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .notice {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
   </style>
 </head>
 <body>
-  <img src="${safeSrc}" alt="${safeAlt}">
+  <div id="playerViewRoot">
+    <div id="playerToolbar">
+      <div id="placeTitle"></div>
+      <div id="toolbarButtons">
+        <button type="button" id="btnReveal"></button>
+        <button type="button" id="btnHide"></button>
+        <button type="button" id="btnReset"></button>
+        <button type="button" id="btnShowAll"></button>
+        <label id="brushLabel">
+          <span id="brushText"></span>
+          <input type="range" id="brushSize" min="1" max="5" value="2" />
+          <span id="brushValue">2</span>
+        </label>
+      </div>
+      <div id="instructions"></div>
+    </div>
+    <div id="fogNotice" class="notice" hidden></div>
+    <canvas id="playerCanvas" width="1" height="1"></canvas>
+    <img id="playerImage" alt="" draggable="false" />
+  </div>
+  <script>
+    (function () {
+      const data = ${dataJson};
+      document.documentElement.lang = data.locale || 'de';
+      const strings = data.strings || {};
+      const origin = window.location.origin === 'null' ? '*' : window.location.origin;
+      const placeTitle = document.getElementById('placeTitle');
+      const toolbar = document.getElementById('playerToolbar');
+      const btnReveal = document.getElementById('btnReveal');
+      const btnHide = document.getElementById('btnHide');
+      const btnReset = document.getElementById('btnReset');
+      const btnShowAll = document.getElementById('btnShowAll');
+      const brushSizeInput = document.getElementById('brushSize');
+      const brushText = document.getElementById('brushText');
+      const brushValue = document.getElementById('brushValue');
+      const instructions = document.getElementById('instructions');
+      const notice = document.getElementById('fogNotice');
+      const canvas = document.getElementById('playerCanvas');
+      const imgEl = document.getElementById('playerImage');
+      const ctx = canvas.getContext ? canvas.getContext('2d') : null;
+
+      const initialCells = Array.isArray(data.revealedCells) ? data.revealedCells : [];
+      const revealed = new Set();
+      initialCells.forEach(cell => {
+        const row = Number(cell?.row);
+        const col = Number(cell?.col);
+        if (Number.isInteger(row) && Number.isInteger(col)) {
+          revealed.add(row + ',' + col);
+        }
+      });
+
+      const state = {
+        isPlace: !!data.isPlace,
+        fogEnabled: !!data.fogEnabled,
+        rows: data.rows || 1,
+        cols: data.cols || 1,
+        mode: 'reveal',
+        isDrawing: false,
+        brushSize: parseInt(brushSizeInput?.value ?? '2', 10) || 2,
+        revealed
+      };
+
+      const title = strings.title || 'Player View';
+      const placeName = data.placeName || data.alt || '';
+      document.title = placeName ? title + ' - ' + placeName : title;
+      if (placeTitle) {
+        placeTitle.textContent = placeName;
+      }
+      if (btnReveal) btnReveal.textContent = strings.reveal || 'Reveal';
+      if (btnHide) btnHide.textContent = strings.hide || 'Cover';
+      if (btnReset) btnReset.textContent = strings.reset || 'Cover all';
+      if (btnShowAll) btnShowAll.textContent = strings.showAll || 'Reveal all';
+      if (brushText) brushText.textContent = strings.brush || 'Brush size';
+      if (brushValue) brushValue.textContent = String(state.brushSize);
+      if (instructions) instructions.textContent = strings.instructions || '';
+
+      function setMode(mode) {
+        state.mode = mode;
+        if (btnReveal) btnReveal.classList.toggle('active', mode === 'reveal');
+        if (btnHide) btnHide.classList.toggle('active', mode === 'hide');
+      }
+      setMode('reveal');
+
+      if (btnReveal) {
+        btnReveal.addEventListener('click', () => setMode('reveal'));
+      }
+      if (btnHide) {
+        btnHide.addEventListener('click', () => setMode('hide'));
+      }
+
+      if (brushSizeInput) {
+        brushSizeInput.addEventListener('input', () => {
+          state.brushSize = Math.max(1, parseInt(brushSizeInput.value, 10) || 1);
+          if (brushValue) {
+            brushValue.textContent = String(state.brushSize);
+          }
+        });
+      }
+
+      function coverAll() {
+        state.revealed.clear();
+        renderScene();
+        scheduleSync();
+      }
+
+      function revealAll() {
+        state.revealed.clear();
+        for (let r = 0; r < state.rows; r++) {
+          for (let c = 0; c < state.cols; c++) {
+            state.revealed.add(r + ',' + c);
+          }
+        }
+        renderScene();
+        scheduleSync();
+      }
+
+      if (btnReset) {
+        btnReset.addEventListener('click', coverAll);
+      }
+      if (btnShowAll) {
+        btnShowAll.addEventListener('click', revealAll);
+      }
+
+      if (!state.isPlace || !ctx) {
+        if (toolbar) toolbar.style.display = 'none';
+        canvas.style.display = 'none';
+        imgEl.style.display = 'block';
+        imgEl.src = data.imageSource;
+        imgEl.alt = data.alt || '';
+        return;
+      }
+
+      imgEl.style.display = 'none';
+      canvas.style.display = 'block';
+      canvas.style.touchAction = 'none';
+      if (toolbar) {
+        toolbar.style.display = 'flex';
+      }
+
+      function updateNotice() {
+        if (!notice) return;
+        if (!state.fogEnabled) {
+          notice.textContent = strings.fogDisabled || '';
+          notice.hidden = false;
+        } else {
+          notice.hidden = true;
+        }
+      }
+      updateNotice();
+
+      const baseImage = new Image();
+      baseImage.onload = () => {
+        canvas.width = baseImage.width;
+        canvas.height = baseImage.height;
+        renderScene();
+      };
+      baseImage.onerror = () => {
+        canvas.style.display = 'none';
+        imgEl.style.display = 'block';
+        imgEl.src = data.imageSource;
+        imgEl.alt = data.alt || '';
+      };
+      baseImage.src = data.imageSource;
+
+      function getCellFromEvent(evt) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (evt.clientX - rect.left) * scaleX;
+        const y = (evt.clientY - rect.top) * scaleY;
+        const col = Math.floor((x / canvas.width) * state.cols);
+        const row = Math.floor((y / canvas.height) * state.rows);
+        if (row < 0 || col < 0 || row >= state.rows || col >= state.cols) {
+          return null;
+        }
+        return { row, col };
+      }
+
+      function applyBrush(row, col) {
+        const radius = Math.max(0, state.brushSize - 1);
+        for (let r = row - radius; r <= row + radius; r++) {
+          for (let c = col - radius; c <= col + radius; c++) {
+            if (r < 0 || c < 0 || r >= state.rows || c >= state.cols) {
+              continue;
+            }
+            const distance = Math.sqrt((r - row) ** 2 + (c - col) ** 2);
+            if (distance > radius + 0.01) {
+              continue;
+            }
+            const key = r + ',' + c;
+            if (state.mode === 'reveal') {
+              state.revealed.add(key);
+            } else {
+              state.revealed.delete(key);
+            }
+          }
+        }
+      }
+
+      function renderScene() {
+        if (!ctx || !baseImage.complete) {
+          return;
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+        if (state.fogEnabled) {
+          const cellWidth = canvas.width / state.cols;
+          const cellHeight = canvas.height / state.rows;
+          ctx.fillStyle = "rgba(0, 0, 0, 0.92)";
+          for (let r = 0; r < state.rows; r++) {
+            for (let c = 0; c < state.cols; c++) {
+              if (!state.revealed.has(r + ',' + c)) {
+                ctx.fillRect(c * cellWidth, r * cellHeight, cellWidth, cellHeight);
+              }
+            }
+          }
+        }
+        drawGrid();
+      }
+
+      function drawGrid() {
+        const cellWidth = canvas.width / state.cols;
+        const cellHeight = canvas.height / state.rows;
+        ctx.strokeStyle = "rgba(255,255,255,0.08)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let r = 0; r <= state.rows; r++) {
+          const y = r * cellHeight;
+          ctx.moveTo(0, Math.round(y) + 0.5);
+          ctx.lineTo(canvas.width, Math.round(y) + 0.5);
+        }
+        for (let c = 0; c <= state.cols; c++) {
+          const x = c * cellWidth;
+          ctx.moveTo(Math.round(x) + 0.5, 0);
+          ctx.lineTo(Math.round(x) + 0.5, canvas.height);
+        }
+        ctx.stroke();
+      }
+
+      let syncTimeout = null;
+      function scheduleSync() {
+        if (!data.placeId || !window.opener || window.opener.closed) {
+          return;
+        }
+        if (syncTimeout) {
+          clearTimeout(syncTimeout);
+        }
+        syncTimeout = setTimeout(() => {
+          syncTimeout = null;
+          const revealedCells = Array.from(state.revealed).map(key => {
+            const [row, col] = key.split(',').map(Number);
+            return { row, col };
+          });
+          window.opener.postMessage({
+            type: "fogUpdate",
+            placeId: data.placeId,
+            revealedCells
+          }, origin);
+        }, 120);
+      }
+
+      function handlePointer(evt) {
+        if (!state.fogEnabled) {
+          return;
+        }
+        const cell = getCellFromEvent(evt);
+        if (!cell) {
+          return;
+        }
+        applyBrush(cell.row, cell.col);
+        renderScene();
+        scheduleSync();
+      }
+
+      canvas.addEventListener('pointerdown', (evt) => {
+        if (evt.button !== 0) {
+          return;
+        }
+        evt.preventDefault();
+        state.isDrawing = true;
+        canvas.setPointerCapture(evt.pointerId);
+        handlePointer(evt);
+      });
+
+      canvas.addEventListener('pointermove', (evt) => {
+        if (!state.isDrawing) {
+          return;
+        }
+        handlePointer(evt);
+      });
+
+      function endDrawing(evt) {
+        if (state.isDrawing) {
+          state.isDrawing = false;
+          if (evt) {
+            try {
+              canvas.releasePointerCapture(evt.pointerId);
+            } catch (error) {
+              // ignore
+            }
+          }
+        }
+      }
+
+      canvas.addEventListener('pointerup', endDrawing);
+      canvas.addEventListener('pointercancel', endDrawing);
+      canvas.addEventListener('contextmenu', (evt) => evt.preventDefault());
+
+      window.addEventListener('message', (event) => {
+        if (event.origin && event.origin !== window.location.origin) {
+          return;
+        }
+        const payload = event.data;
+        if (!payload || typeof payload !== 'object') {
+          return;
+        }
+        if (payload.type === 'fogState' && payload.placeId === data.placeId) {
+          state.fogEnabled = !!payload.fogEnabled;
+          state.revealed = new Set((payload.revealedCells || []).map(cell => cell.row + ',' + cell.col));
+          updateNotice();
+          renderScene();
+        }
+      });
+
+      if (window.opener && !window.opener.closed && data.placeId) {
+        window.opener.postMessage({ type: 'fogRequest', placeId: data.placeId }, origin);
+      }
+    })();
+  </script>
 </body>
-</html>`);
+</html>`;
+
+    playerViewWindow.document.open();
+    playerViewWindow.document.write(html);
     playerViewWindow.document.close();
+
+    if (isPlace) {
+        playerViewPlaceId = item.id;
+    } else {
+        playerViewPlaceId = null;
+    }
+
+    playerViewWindow.onbeforeunload = () => {
+        playerViewWindow = null;
+        playerViewPlaceId = null;
+    };
+    try {
+        playerViewWindow.focus();
+    } catch (error) {
+        // ignore focus errors
+    }
 }
 
 /**

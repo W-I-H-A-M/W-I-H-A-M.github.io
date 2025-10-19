@@ -9,6 +9,7 @@ const btnPlaceDelete = document.getElementById("btnPlaceDelete");
 const btnNewPlace = document.getElementById("btnNewPlace");
 const divplaceListRight = document.getElementById("divplaceListRight");
 const colorPlace = document.getElementById("colorPlace");
+const placeFogEnabled = document.getElementById("placeFogEnabled");
 
 
 const placeDescriptionEditor = new Quill('#placeDescription', {
@@ -71,7 +72,11 @@ btnNewPlace.addEventListener("click", () => {
     description: "",
     background: "assets/default_place.png",
     gridSize: { rows: 10, cols: 10 },
-    color: getRandomColor()
+    color: getRandomColor(),
+    fogOfWar: {
+      enabled: true,
+      revealedCells: []
+    }
   };
   places.push(newPlace);
   renderdivplaceListRight();
@@ -79,6 +84,27 @@ btnNewPlace.addEventListener("click", () => {
   currentEditedPlace = newPlace;
   loadPlaceIntoEditor(currentEditedPlace);
 });
+
+if (placeFogEnabled) {
+  placeFogEnabled.addEventListener("change", () => {
+    if (!currentEditedPlace) {
+      return;
+    }
+    if (!currentEditedPlace.fogOfWar) {
+      currentEditedPlace.fogOfWar = {
+        enabled: true,
+        revealedCells: []
+      };
+    }
+    currentEditedPlace.fogOfWar.enabled = placeFogEnabled.checked;
+    if (typeof sendFogStateToPlayerView === "function") {
+      sendFogStateToPlayerView(currentEditedPlace);
+    }
+    if (typeof locationSelect !== "undefined" && locationSelect.value === currentEditedPlace.id) {
+      loadSelectedPlace(currentEditedPlace.id);
+    }
+  });
+}
 
 /**
  * Saves the current place being edited, updates the list and location selector,
@@ -155,6 +181,22 @@ function loadPlaceIntoEditor(place) {
   colorPlace.value = place.color || getRandomColor();
   
   placeDescriptionEditor.root.innerHTML = currentEditedPlace.description;
+  if (!place.fogOfWar) {
+    place.fogOfWar = {
+      enabled: true,
+      revealedCells: []
+    };
+  } else {
+    if (typeof place.fogOfWar.enabled !== "boolean") {
+      place.fogOfWar.enabled = true;
+    }
+    if (!Array.isArray(place.fogOfWar.revealedCells)) {
+      place.fogOfWar.revealedCells = [];
+    }
+  }
+  if (placeFogEnabled) {
+    placeFogEnabled.checked = !!place.fogOfWar.enabled;
+  }
 
   if (place.background) {
     imgPlaceImagePreview.src = place.background;
@@ -162,6 +204,9 @@ function loadPlaceIntoEditor(place) {
   } else {
     imgPlaceImagePreview.src = "";
     imgPlaceImagePreview.style.display = "none";
+  }
+  if (typeof sendFogStateToPlayerView === "function") {
+    sendFogStateToPlayerView(place);
   }
 }
 
@@ -175,7 +220,14 @@ function savePlaceFromEditor() {
   currentEditedPlace.gridSize.cols = parseInt(document.getElementById("placeGridSizeCols").value, 10);
   currentEditedPlace.default = document.getElementById("startPlace").checked;
   currentEditedPlace.description = placeDescriptionEditor.root.innerHTML;
-  currentEditedPlace.color = colorPlace.value
+  currentEditedPlace.color = colorPlace.value;
+  if (!currentEditedPlace.fogOfWar) {
+    currentEditedPlace.fogOfWar = {
+      enabled: true,
+      revealedCells: []
+    };
+  }
+  currentEditedPlace.fogOfWar.enabled = placeFogEnabled ? placeFogEnabled.checked : true;
 
   if (currentEditedPlace.default) {
     places.forEach(place => {
@@ -188,6 +240,9 @@ function savePlaceFromEditor() {
   const preview = document.getElementById("imgPlaceImagePreview");
   if (preview.src) {
     currentEditedPlace.background = preview.src;
+  }
+  if (typeof sendFogStateToPlayerView === "function") {
+    sendFogStateToPlayerView(currentEditedPlace);
   }
 }
 
@@ -223,6 +278,9 @@ function clearPlaceEditorFields() {
   if (imgPlaceImagePreview) {
     imgPlaceImagePreview.src = "";
     imgPlaceImagePreview.style.display = "none";
+  }
+  if (placeFogEnabled) {
+    placeFogEnabled.checked = false;
   }
 }
 
