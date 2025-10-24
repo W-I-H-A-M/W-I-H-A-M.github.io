@@ -7,6 +7,9 @@
   <meta charset="UTF-8" />
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@600;700&family=Libre+Franklin:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
@@ -59,10 +62,12 @@
       <div id="locationTimeBar">
         <label for="locationSelect">Ort:</label>
         <select id="locationSelect"></select>
+        <div class="location-info-wrapper">
         <button type="button" id="btnShowLocationDetails" class="location-info-button">
           <span class="mdi mdi-information"></span>
           <span class="sr-only" data-i18n="showLocationDetails">Ort-Details anzeigen</span>
         </button>
+        </div>
         <label for="timeSlider">Zeit:</label>
         <div id="timeDisplay">
           <button id="prevTime" class="time-element" title="Vorherige Zeit"></button>
