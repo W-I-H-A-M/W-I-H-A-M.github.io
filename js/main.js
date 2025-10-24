@@ -6,7 +6,7 @@ const toggleAllSidebarMenuBtnTxt = document.querySelectorAll("#sidebarMenuBtnTxt
 // Real-time and page-timer elements
 const realTimeElement = document.getElementById("realTime");
 const pageTimerElement = document.getElementById("pageTimer");
-let secondsElapsed = 0;
+const pageStartTime = Date.now();
 
 // Dropdowns and other controls
 const locationSelect = document.getElementById("locationSelect");
@@ -62,13 +62,14 @@ function updateRealTime() {
 }
 
 /**
- * Increments and displays the page timer (hours/minutes/seconds).
+ * Calculates and displays the elapsed time since page load (hours/minutes/seconds).
  */
 function updatePageTimer() {
-    secondsElapsed++;
-    const hours = Math.floor(secondsElapsed / 3600);
-    const minutes = Math.floor((secondsElapsed % 3600) / 60);
-    const seconds = secondsElapsed % 60;
+    const elapsedMilliseconds = Date.now() - pageStartTime;
+    const totalSeconds = Math.max(0, Math.floor(elapsedMilliseconds / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
     pageTimerElement.textContent = `${hours}h ${minutes}m ${seconds}s`;
 }
 
