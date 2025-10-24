@@ -89,7 +89,9 @@
     "fogDisabledNotice": "Nebelfeld ist für diesen Ort deaktiviert.",
     "showLocationDetails": "Ort-Details anzeigen",
     "showToPlayer": "In Spieleransicht anzeigen",
-    "cardcreator": "Karten Ersteller"
+    "cardcreator": "Karten Ersteller",
+    "locationLabel": "Ort:",
+    "timeLabel": "Zeit:"
   },
   "ru": {
     "languageTitel": "Русский",
@@ -181,7 +183,9 @@
     "fogDisabledNotice": "Туман войны для этого места отключён.",
     "showLocationDetails": "Показать детали места",
     "showToPlayer": "Показать игрокам",
-    "cardcreator": "Card Creator"
+    "cardcreator": "Card Creator",
+    "locationLabel": "Локация:",
+    "timeLabel": "Время:"
   },
   "en": {
     "languageTitel": "English",
@@ -273,6 +277,8 @@
     "fogDisabledNotice": "Fog of war is disabled for this place.",
     "showLocationDetails": "Show place details",
     "showToPlayer": "Show to players",
-    "cardcreator": "Card Creator"
+    "cardcreator": "Card Creator",
+    "locationLabel": "Location:",
+    "timeLabel": "Time:"
   }
 }
