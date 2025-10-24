@@ -1943,19 +1943,26 @@
 
       function normalizeLibraryItem(item){
         if(!item || typeof item !== 'object') return null;
-        const state = stripZeroWidthSpacesFromState(item.state || {});
-        return {
-          ...item,
-          state
-        };
+        item.state = stripZeroWidthSpacesFromState(item.state || {});
+        if(typeof item.printQuantity !== 'number' || item.printQuantity < 1){
+          item.printQuantity = 1;
+        }
+        return item;
+      }
+
+      function cloneLibraryItem(item){
+        if(!item || typeof item !== 'object') return null;
+        const normalized = normalizeLibraryItem({ ...item, state: { ...(item.state || {}) } });
+        return normalized;
       }
 
       function loadLibrary(){
-        return libraryData.map(record => normalizeLibraryItem(record)).filter(Boolean);
+        libraryData = libraryData.map(record => normalizeLibraryItem(record)).filter(Boolean);
+        return libraryData.slice();
       }
       function saveLibrary(list){
         libraryData = Array.isArray(list)
-          ? list.map(record => normalizeLibraryItem(record)).filter(Boolean)
+          ? list.map(record => cloneLibraryItem(record)).filter(Boolean)
           : [];
       }
 
