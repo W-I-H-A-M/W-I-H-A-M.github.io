@@ -74,7 +74,7 @@
     .dice-toolbar button{ padding:6px 8px; font-size:12px; border:1px solid var(--ui-border); background:var(--ui-surface-alt); border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; color:var(--ui-text); transition:background .15s ease; }
     .dice-toolbar button:hover{ background:var(--ui-border-strong); }
     .dice-toolbar i.mdi{ font-size:14px; }
-    .dice-inline{ display:inline-flex; width:1.25em; height:1.25em; line-height:1; vertical-align:text-bottom; align-items:center; justify-content:center; }
+    .dice-inline{ display:inline-flex; width:1.25em; height:1.25em; line-height:1; vertical-align:text-bottom; align-items:center; justify-content:center; margin:0 0.12em; }
     .dice-inline svg{ width:100%; height:100%; fill:currentColor; display:block; }
     .toggle-group{ display:flex; flex-direction:column; gap:6px; }
     .toggle-label{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--ui-text); }
@@ -1143,19 +1143,20 @@
           scheduleFitContentPanel();
         });
       }
-
-      const ZWSP = '\u200B';
-
       function ensureDiceBoundaries(root){
         if(!root) return;
         let caretSnapshot = null;
         let caretIndex = null;
+        let changed = false;
         const sel = window.getSelection();
         if(sel && sel.rangeCount && sel.isCollapsed && typeof root.contains === 'function' && root.contains(sel.anchorNode)){
           caretSnapshot = captureSelectionSnapshot(root);
           if(!caretSnapshot){
             caretIndex = getCaretIndex(root, sel.getRangeAt(0));
           }
+        }
+        if(stripZeroWidthSpacesInNode(root)){
+          changed = true;
         }
         const diceTokens = root.querySelectorAll('.dice-inline');
         diceTokens.forEach(token => {
@@ -1176,24 +1177,33 @@
             if(replacement){
               token.replaceWith(replacement);
               token = replacement;
+              changed = true;
             }
           }
           const parent = token.parentNode;
           if(!parent) return;
-          let prev = token.previousSibling;
-          if(!prev || prev.nodeType !== Node.TEXT_NODE){
-            prev = document.createTextNode('');
-            parent.insertBefore(prev, token);
-          }
-          prev.textContent = prev.textContent.replace(/\u200B+$/g, '') + ZWSP;
-          let next = token.nextSibling;
-          if(!next || next.nodeType !== Node.TEXT_NODE){
-            next = document.createTextNode('');
-            parent.insertBefore(next, token.nextSibling);
-          }
-          next.textContent = ZWSP + next.textContent.replace(/^\u200B+/g, '');
+          const cleanAdjacent = (sibling)=>{
+            if(!sibling) return;
+            if(sibling.nodeType === Node.TEXT_NODE){
+              const text = sibling.textContent || '';
+              const cleaned = text.replace(ZERO_WIDTH_SPACE_RE, '');
+              if(cleaned !== text){
+                sibling.textContent = cleaned;
+                changed = true;
+              }
+              if(sibling.textContent.length === 0){
+                sibling.remove();
+                changed = true;
+              }
+            } else if(sibling.nodeType === Node.ELEMENT_NODE && sibling.classList.contains('dice-boundary')){
+              sibling.remove();
+              changed = true;
+            }
+          };
+          cleanAdjacent(token.previousSibling);
+          cleanAdjacent(token.nextSibling);
         });
-        root.normalize();
+        if(!changed) return;
         if(caretSnapshot){
           const restored = restoreSelectionSnapshot(caretSnapshot);
           if(!restored && typeof caretSnapshot.index === 'number'){
@@ -1257,21 +1267,16 @@
         const range = selection.getRangeAt(0);
         range.deleteContents();
 
-        const before = document.createTextNode(ZWSP);
-        const after = document.createTextNode(ZWSP);
         const fragment = document.createDocumentFragment();
-        fragment.appendChild(before);
         fragment.appendChild(token);
-        fragment.appendChild(after);
         range.insertNode(fragment);
 
         const caretRange = document.createRange();
-        caretRange.setStart(after, after.length);
+        caretRange.setStartAfter(token);
         caretRange.collapse(true);
         selection.removeAllRanges();
         selection.addRange(caretRange);
 
-        targetEl.normalize();
         ensureDiceBoundaries(targetEl);
       }
 
@@ -1469,6 +1474,66 @@
         ensureDiceBoundaries(functionText);
       }
 
+      const ZERO_WIDTH_SPACE_RE = /\u200B+/g;
+      const ZERO_WIDTH_SPACE_ENTITY_RE = /&#8203;|&ZeroWidthSpace;|&zwsp;/gi;
+
+      function stripZeroWidthSpacesFromHTML(html){
+        if(typeof html !== 'string' || !html.length) return html || '';
+        const container = document.createElement('div');
+        container.innerHTML = html.replace(ZERO_WIDTH_SPACE_ENTITY_RE, '');
+        const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
+        const emptyNodes = [];
+        let node = walker.nextNode();
+        while(node){
+          const cleaned = node.textContent.replace(ZERO_WIDTH_SPACE_RE, '');
+          if(cleaned.length){
+            if(cleaned !== node.textContent){
+              node.textContent = cleaned;
+            }
+          } else {
+            emptyNodes.push(node);
+          }
+          node = walker.nextNode();
+        }
+        emptyNodes.forEach(textNode => textNode.remove());
+        return container.innerHTML.replace(ZERO_WIDTH_SPACE_ENTITY_RE, '');
+      }
+
+      function stripZeroWidthSpacesFromState(state){
+        if(!state || typeof state !== 'object') return state;
+        return {
+          ...state,
+          functionHTML: stripZeroWidthSpacesFromHTML(state.functionHTML || ''),
+          descriptionHTML: stripZeroWidthSpacesFromHTML(state.descriptionHTML || '')
+        };
+      }
+
+      function stripZeroWidthSpacesInNode(root){
+        if(!root) return false;
+        let changed = false;
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        const emptyNodes = [];
+        let node = walker.nextNode();
+        while(node){
+          const text = node.textContent || '';
+          const cleaned = text.replace(ZERO_WIDTH_SPACE_RE, '');
+          if(cleaned !== text){
+            if(cleaned.length){
+              node.textContent = cleaned;
+            } else {
+              emptyNodes.push(node);
+            }
+            changed = true;
+          }
+          node = walker.nextNode();
+        }
+        if(emptyNodes.length){
+          emptyNodes.forEach(n => n.remove());
+          changed = true;
+        }
+        return changed;
+      }
+
       function mergeLegacyTagIntoFunction(tagValue, html){
         const tag = typeof tagValue === 'string' ? tagValue.trim() : '';
         if(!tag) return html || '';
@@ -1660,29 +1725,8 @@
           if(!sel || !sel.rangeCount) return;
           const range = sel.getRangeAt(0);
           if(!range.collapsed) return;
-          const container = range.startContainer;
-          const offset = range.startOffset;
-          if(container.nodeType === Node.TEXT_NODE){
-            const text = container.textContent;
-            if(e.key === 'Backspace' && offset > 0 && text.charCodeAt(offset-1) === 8203){
-              container.deleteData(offset-1, 1);
-              setCaretPosition(container, offset-1);
-              e.preventDefault();
-              scheduleFitContentPanel();
-              if(mirror === functionText){ renderFunctionPreview(); }
-              else if(mirror) mirror.innerHTML = editor.innerHTML;
-              return;
-            }
-            if(e.key === 'Delete' && offset < text.length && text.charCodeAt(offset) === 8203){
-              container.deleteData(offset, 1);
-              setCaretPosition(container, offset);
-              e.preventDefault();
-              scheduleFitContentPanel();
-              if(mirror === functionText){ renderFunctionPreview(); }
-              else if(mirror) mirror.innerHTML = editor.innerHTML;
-              return;
-            }
-          }
+        const container = range.startContainer;
+        const offset = range.startOffset;
           let targetToken = null;
           const isBackspace = e.key === 'Backspace';
           const isDeleteKey = e.key === 'Delete';
@@ -1815,7 +1859,7 @@
       // ===== Library helpers =====
       function getState(){
         const miscName = normalizeIconName(miscIconInput?.value) || currentMiscIconData?.name || DEFAULT_MISC_ICON;
-        return {
+        return stripZeroWidthSpacesFromState({
           title: titleInput.value || '',
           type: typeSelect.value,
           miscIcon: miscName,
@@ -1827,12 +1871,14 @@
           // store art as dataURL (for portability & html2canvas CORS safety)
           artDataURL: artImg && artImg.src ? artImg.src : null,
           theme: { ...baseTheme }
-        };
+        });
       }
 
       function applyState(state){
         if(!state) return;
-        currentAppliedState = state;
+        const sanitizedState = stripZeroWidthSpacesFromState(state);
+        currentAppliedState = sanitizedState;
+        state = sanitizedState;
         applyThemeFromState(state);
         titleInput.value = state.title || '';
         titleSpan.textContent = state.title || '';
@@ -1852,6 +1898,7 @@
         refreshTitleTear();
         const mergedFunctionHTML = mergeLegacyTagIntoFunction(state.tag, state.functionHTML || '');
         functionEditor.innerHTML = mergedFunctionHTML;
+        stripZeroWidthSpacesInNode(functionEditor);
         const hasHeadingBlock = functionEditor.querySelector('[data-function-heading="true"], .function-heading-block');
         if(!hasHeadingBlock){
           const firstBlockCandidate = Array.from(functionEditor.childNodes).find(node => node.nodeType === Node.ELEMENT_NODE);
@@ -1877,6 +1924,8 @@
         if('tag' in state){ delete state.tag; }
         descriptionEditor.innerHTML = state.descriptionHTML || '';
         descriptionText.innerHTML = state.descriptionHTML || '';
+        stripZeroWidthSpacesInNode(descriptionEditor);
+        stripZeroWidthSpacesInNode(descriptionText);
         upgradeLegacyDiceIcons(descriptionEditor, descriptionText);
         updateDescriptionVisibility();
         if(state.artDataURL){
@@ -1892,10 +1941,23 @@
         fitContentPanel();
       }
 
-      function loadLibrary(){
-        return libraryData.slice();
+      function normalizeLibraryItem(item){
+        if(!item || typeof item !== 'object') return null;
+        const state = stripZeroWidthSpacesFromState(item.state || {});
+        return {
+          ...item,
+          state
+        };
       }
-      function saveLibrary(list){ libraryData = list.slice(); }
+
+      function loadLibrary(){
+        return libraryData.map(record => normalizeLibraryItem(record)).filter(Boolean);
+      }
+      function saveLibrary(list){
+        libraryData = Array.isArray(list)
+          ? list.map(record => normalizeLibraryItem(record)).filter(Boolean)
+          : [];
+      }
 
       function removeLibraryItem(id){
         if(!id) return;
@@ -2198,7 +2260,7 @@
           id,
           createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : new Date().toISOString(),
           thumbnail: typeof raw.thumbnail === 'string' ? raw.thumbnail : '',
-          state: {
+          state: stripZeroWidthSpacesFromState({
             title: typeof stateRaw.title === 'string' ? stateRaw.title : '',
             type,
             miscIcon,
@@ -2210,7 +2272,7 @@
             descriptionHTML: typeof stateRaw.descriptionHTML === 'string' ? stateRaw.descriptionHTML : '',
             artDataURL: typeof stateRaw.artDataURL === 'string' ? stateRaw.artDataURL : null,
             theme
-          },
+          }),
           selected: false,
           printQuantity
         };
