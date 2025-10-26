@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@600;700;800&family=Libre+Franklin:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css">
   <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
@@ -375,6 +376,98 @@
       letter-spacing:.1em;
       color:#8089a2;
       text-align:center;
+    }
+    .cropper-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(11,17,27,0.85);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:2000;
+      padding:20px;
+    }
+    .cropper-overlay.active{ display:flex; }
+    .cropper-dialog{
+      background:var(--panel);
+      color:var(--panel-text);
+      border-radius:14px;
+      width:min(90vw, 860px);
+      max-width:860px;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      box-shadow:0 24px 60px rgba(0,0,0,0.65);
+      border:1px solid var(--panel-border);
+    }
+    .cropper-header{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .cropper-header h3{
+      margin:0;
+      font-size:18px;
+      font-weight:700;
+    }
+    .cropper-header .subtitle{
+      margin:0;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .cropper-body{
+      position:relative;
+      width:100%;
+      height:420px;
+      background:#0f1724;
+      border:1px solid var(--panel-border);
+      border-radius:10px;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .cropper-body img{
+      max-width:100%;
+      max-height:100%;
+      display:block;
+    }
+    .cropper-body .cropper-container{
+      max-width:100% !important;
+      max-height:100% !important;
+    }
+    .cropper-footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .cropper-footer .hint{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .cropper-footer .actions{
+      display:flex;
+      gap:8px;
+    }
+    .cropper-footer button{
+      padding:8px 14px;
+      border-radius:8px;
+      border:1px solid var(--panel-border);
+      background:#25324a;
+      color:var(--panel-text);
+      cursor:pointer;
+      font-size:13px;
+    }
+    .cropper-footer button.primary{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+    .cropper-footer button.primary:hover{
+      filter:brightness(1.08);
     }
     .description-block{
       border:0.6mm solid var(--sheet-border);
@@ -855,6 +948,26 @@
     </main>
   </div>
 
+  <div class="cropper-overlay" id="cropperModal" role="dialog" aria-modal="true" aria-labelledby="cropperTitle">
+    <div class="cropper-dialog">
+      <div class="cropper-header">
+        <h3 id="cropperTitle">Portrait zuschneiden</h3>
+        <p class="subtitle">Ziehe den Rahmen, um den sichtbaren Bereich festzulegen.</p>
+      </div>
+      <div class="cropper-body">
+        <img id="cropperImage" alt="Portrait-Vorschau">
+      </div>
+      <div class="cropper-footer">
+        <span class="hint">Scroll zum Zoomen · Ziehen zum Verschieben</span>
+        <div class="actions">
+          <button type="button" class="secondary" id="cropperCancelBtn">Abbrechen</button>
+          <button type="button" class="primary" id="cropperApplyBtn">Zuschneiden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
   <script>
     (function () {
       "use strict";
@@ -868,11 +981,14 @@
       };
       const DEFAULT_EDITOR_ROWS = 1;
       const MIN_ROWS_PER_CATEGORY = 4;
+      const DEFAULT_PORTRAIT_ASPECT_RATIO = 3 / 4;
+      const PORTRAIT_EXPORT_MAX_DIMENSION = 900;
 
       let abilityIdCounter = 0;
       let state = null;
       let isGeneratingPrint = false;
       let afterPrintHandlerBound = false;
+      let cropperInstance = null;
       const editorRefs = {};
 
       const editorsContainer = document.getElementById("editorsContainer");
@@ -898,6 +1014,10 @@
       const btnPrint = document.getElementById("btnPrint");
       const btnReset = document.getElementById("btnReset");
       const inputImportFile = document.getElementById("inputImportFile");
+      const cropperModal = document.getElementById("cropperModal");
+      const cropperImage = document.getElementById("cropperImage");
+      const cropperCancelBtn = document.getElementById("cropperCancelBtn");
+      const cropperApplyBtn = document.getElementById("cropperApplyBtn");
 
       const sheetNameDisplay = document.getElementById("sheetNameDisplay");
       const sheetGender = document.getElementById("sheetGender");
@@ -1213,10 +1333,25 @@
         });
         inputPortrait.addEventListener("change", handlePortraitUpload);
         btnClearPortrait.addEventListener("click", () => {
-          inputPortrait.value = "";
+          closePortraitCropper();
           state.portrait = null;
           updatePreviewOnly();
         });
+        if (cropperCancelBtn) {
+          cropperCancelBtn.addEventListener("click", () => {
+            closePortraitCropper();
+          });
+        }
+        if (cropperApplyBtn) {
+          cropperApplyBtn.addEventListener("click", applyCroppedPortrait);
+        }
+        if (cropperModal) {
+          cropperModal.addEventListener("click", (modalEvent) => {
+            if (modalEvent.target === cropperModal) {
+              closePortraitCropper();
+            }
+          });
+        }
         btnExportJSON.addEventListener("click", exportToJSON);
         btnImportJSON.addEventListener("click", () => inputImportFile.click());
         inputImportFile.addEventListener("change", handleImportFile);
@@ -1395,6 +1530,140 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
         }
       }
 
+      function getPortraitAspectRatio() {
+        if (!sheetPortraitBox) {
+          return DEFAULT_PORTRAIT_ASPECT_RATIO;
+        }
+        const rect = sheetPortraitBox.getBoundingClientRect();
+        const width = Math.max(1, rect.width);
+        const height = Math.max(1, rect.height);
+        if (!Number.isFinite(width) || !Number.isFinite(height) || height === 0) {
+          return DEFAULT_PORTRAIT_ASPECT_RATIO;
+        }
+        const ratio = width / height;
+        return Number.isFinite(ratio) && ratio > 0 ? ratio : DEFAULT_PORTRAIT_ASPECT_RATIO;
+      }
+
+      function computePortraitExportSize(aspectRatio) {
+        const ratio = Number.isFinite(aspectRatio) && aspectRatio > 0 ? aspectRatio : DEFAULT_PORTRAIT_ASPECT_RATIO;
+        const maxSize = PORTRAIT_EXPORT_MAX_DIMENSION;
+        let targetWidth = maxSize;
+        let targetHeight = Math.round(targetWidth / ratio);
+        if (targetHeight > maxSize) {
+          targetHeight = maxSize;
+          targetWidth = Math.round(targetHeight * ratio);
+        }
+        const minSize = 320;
+        targetWidth = Math.max(minSize, targetWidth);
+        targetHeight = Math.max(minSize, targetHeight);
+        return { width: targetWidth, height: targetHeight };
+      }
+
+      function handleCropperKeydown(event) {
+        if (!cropperModal || !cropperModal.classList.contains("active")) {
+          return;
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closePortraitCropper();
+        } else if ((event.key === "Enter" && (event.metaKey || event.ctrlKey))) {
+          event.preventDefault();
+          applyCroppedPortrait();
+        }
+      }
+
+      function openPortraitCropper(dataUrl) {
+        if (!dataUrl) {
+          return;
+        }
+        if (!window.Cropper || !cropperModal || !cropperImage) {
+          state.portrait = dataUrl;
+          updatePreviewOnly();
+          if (inputPortrait) {
+            inputPortrait.value = "";
+          }
+          return;
+        }
+        cropperModal.classList.add("active");
+        cropperImage.src = dataUrl;
+        window.addEventListener("keydown", handleCropperKeydown);
+        requestAnimationFrame(() => {
+          if (!cropperModal || !cropperModal.classList.contains("active") || !cropperImage || !cropperImage.getAttribute("src")) {
+            return;
+          }
+          if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+          }
+          const aspectRatio = getPortraitAspectRatio();
+          try {
+            cropperInstance = new window.Cropper(cropperImage, {
+              aspectRatio,
+              viewMode: 1,
+              autoCropArea: 1,
+              background: false,
+              responsive: true,
+              movable: true,
+              zoomable: true,
+              scalable: false,
+              rotatable: false,
+            });
+          } catch (error) {
+            console.error("Cropper konnte nicht initialisiert werden:", error);
+            closePortraitCropper();
+            state.portrait = dataUrl;
+            updatePreviewOnly();
+            return;
+          }
+          if (cropperApplyBtn) {
+            cropperApplyBtn.focus();
+          }
+        });
+      }
+
+      function closePortraitCropper() {
+        if (cropperInstance) {
+          cropperInstance.destroy();
+          cropperInstance = null;
+        }
+        if (cropperModal) {
+          cropperModal.classList.remove("active");
+        }
+        if (cropperImage) {
+          cropperImage.src = "";
+        }
+        if (inputPortrait) {
+          inputPortrait.value = "";
+        }
+        window.removeEventListener("keydown", handleCropperKeydown);
+      }
+
+      function applyCroppedPortrait() {
+        if (!cropperInstance) {
+          return;
+        }
+        const aspectRatio = getPortraitAspectRatio();
+        const { width, height } = computePortraitExportSize(aspectRatio);
+        const canvas = cropperInstance.getCroppedCanvas({
+          width,
+          height,
+          imageSmoothingQuality: "high",
+        });
+        if (!canvas) {
+          return;
+        }
+        try {
+          const dataUrl = canvas.toDataURL("image/png");
+          state.portrait = dataUrl;
+          updatePreviewOnly();
+        } catch (error) {
+          console.error("Portrait konnte nicht verarbeitet werden:", error);
+          window.alert("Portrait konnte nicht verarbeitet werden.");
+        } finally {
+          closePortraitCropper();
+        }
+      }
+
       function handlePortraitUpload(event) {
         const file = event.target.files && event.target.files[0];
         if (!file) {
@@ -1408,11 +1677,18 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
         const reader = new FileReader();
         reader.onload = (loadEvent) => {
           const result = loadEvent.target && typeof loadEvent.target.result === "string" ? loadEvent.target.result : null;
-          state.portrait = result;
-          updatePreviewOnly();
+          if (!result) {
+            window.alert("Portrait konnte nicht geladen werden.");
+            if (inputPortrait) {
+              inputPortrait.value = "";
+            }
+            return;
+          }
+          openPortraitCropper(result);
         };
         reader.onerror = () => {
           window.alert("Portrait konnte nicht geladen werden.");
+          event.target.value = "";
         };
         reader.readAsDataURL(file);
       }
