@@ -19,7 +19,7 @@
       --muted:#9aa6c5;
       --accent:#528bff;
       --danger:#ff6b6b;
-      --sheet-bg:#3f862f;
+      --sheet-bg:#468d4b;
       --sheet-ink:#102712;
       --sheet-border:#1f3f1f;
       --sheet-accent:#ffe580;
@@ -286,11 +286,10 @@
       width:100%;
       height:100%;
       background:linear-gradient(180deg,
-        var(--sheet-bg) 0%,
-        #468d4b 40%,
-        #58aa5d 55%,
-        #7dc981 72%,
-        #b6e5b9 88%,
+        #468d4b 0%,
+        #468d4b 60%,
+        #6bb66b 78%,
+        #9fdaa1 90%,
         #ffffff 100%
       );
       z-index:0;
@@ -300,10 +299,110 @@
       width:100%;
       max-height:36%;
       aspect-ratio:1536 / 546;
-      background:url("img/charbg.png") no-repeat top center / contain;
+      background:#468d4b url("img/charbg.png") no-repeat top center / contain;
+      overflow:hidden;
       z-index:1;
     }
+    .sheet-hero-bg::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,
+        rgba(70,141,75,0) 0%,
+        rgba(70,141,75,0) 70%,
+        rgba(70,141,75,0.4) 85%,
+        rgba(70,141,75,0.85) 93%,
+        rgba(70,141,75,1) 100%
+      );
+    }
     .sheet > *:not(.sheet-gradient-bg):not(.sheet-hero-bg){ position:relative; z-index:3; }
+
+    body.bw-mode{
+      --sheet-bg:#ffffff;
+      --sheet-ink:#111;
+      --sheet-border:#3b3b3b;
+      --sheet-accent:#c9c9c9;
+      --sheet-accent-dark:#555555;
+      color:#111;
+    }
+    body.bw-mode .sheet-gradient-bg{ display:none; }
+    body.bw-mode .sheet-hero-bg{
+      filter:grayscale(1);
+      opacity:0.9;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.75) 90%, rgba(255,255,255,1) 100%),
+        url("img/charbg.png") no-repeat top center / contain;
+    }
+    body.bw-mode .sheet-hero-bg img,
+    body.bw-mode .sheet-hero-bg::after,
+    body.bw-mode #sheet img{
+      filter:grayscale(1) contrast(1.05) !important;
+    }
+    body.bw-mode .sheet-hero-bg::after{ display:none; }
+    body.bw-mode .sheet-banner{
+      background:linear-gradient(180deg,#666666, #b5b5b5);
+      border-color:#3b3b3b;
+      box-shadow:0 10px 18px rgba(0,0,0,0.25);
+    }
+    body.bw-mode .sheet-banner h2{
+      color:#ffffff;
+      text-shadow:0 2px 0 rgba(0,0,0,0.45);
+    }
+    body.bw-mode .sheet-name-block{
+      background:linear-gradient(180deg,#ffffff 0%, #ebebeb 100%);
+      border-color:#3b3b3b;
+      color:#111;
+      box-shadow:0 4px 10px rgba(0,0,0,0.12);
+    }
+    body.bw-mode .sheet{
+      border-color:#111;
+    }
+    body.bw-mode .sheet::after{
+      border-color:rgba(0,0,0,0.65);
+    }
+    body.bw-mode .info-cell,
+    body.bw-mode .description-block,
+    body.bw-mode .category-block,
+    body.bw-mode .sheet-box{
+      background:linear-gradient(180deg,#ffffff 0%, #f1f1f1 100%);
+      border-color:#3b3b3b;
+      box-shadow:0 6px 12px rgba(0,0,0,0.12);
+      color:#111;
+    }
+    body.bw-mode .category-title,
+    body.bw-mode .category-geist,
+    body.bw-mode .sheet-footer,
+    body.bw-mode .sheet-box h3 {
+      color:#222222;
+    }
+    body.bw-mode .sheet-footer{
+      border-color:#3b3b3b;
+    }
+    body.bw-mode .category-geist::after{
+      filter:grayscale(1);
+      opacity:0.7;
+    }
+    body.bw-mode .category-table th{
+      background:linear-gradient(180deg,#f5f5f5 0%, #e6e6e6 100%);
+      color:#222222;
+    }
+    body.bw-mode .category-table tbody tr:nth-child(odd){
+      background:#f2f2f2;
+    }
+    body.bw-mode .category-table td:nth-child(n+2){
+      color:#111;
+    }
+    body.bw-mode #sheetPortrait{
+      filter:grayscale(1) contrast(1.1);
+    }
+    body.bw-mode .category-title .category-begabung{
+      color:#ffffff;
+      text-shadow:
+        -0.3mm -0.3mm 0 rgba(0,0,0,0.85),
+        0.3mm -0.3mm 0 rgba(0,0,0,0.85),
+        -0.3mm 0.3mm 0 rgba(0,0,0,0.85),
+        0.3mm 0.3mm 0 rgba(0,0,0,0.85);
+    }
     .sheet-top{
       position:relative;
       display:flex;
@@ -882,7 +981,11 @@
 
       <div class="panel-section">
         <h2>Aktionen</h2>
-        <div class="controls-footer">
+      <div class="controls-footer">
+          <label class="toggle" for="bwModeToggle">
+            <input type="checkbox" id="bwModeToggle">
+            Schwarz-Weiß Modus
+          </label>
           <button id="btnExportJSON" class="primary" type="button">Export JSON</button>
           <button id="btnImportJSON" class="secondary" type="button">Import JSON</button>
           <button id="btnPrint" class="secondary" type="button">Drucken</button>
@@ -1125,6 +1228,7 @@
       const btnPrint = document.getElementById("btnPrint");
       const btnReset = document.getElementById("btnReset");
       const inputImportFile = document.getElementById("inputImportFile");
+      const bwModeToggle = document.getElementById("bwModeToggle");
       const cropperModal = document.getElementById("cropperModal");
       const cropperImage = document.getElementById("cropperImage");
       const cropperCancelBtn = document.getElementById("cropperCancelBtn");
@@ -1201,6 +1305,7 @@
             soziales: createInitialAbilities(),
           },
           totalPoints: DEFAULT_TOTAL_POINTS,
+          bwMode: false,
         };
       }
 
@@ -1369,6 +1474,10 @@
         const totalPoints = Number.isFinite(state.totalPoints) ? state.totalPoints : DEFAULT_TOTAL_POINTS;
         inputTotalPoints.value = totalPoints;
         pointsTotalEl.textContent = totalPoints;
+        if (bwModeToggle) {
+          bwModeToggle.checked = Boolean(state.bwMode);
+        }
+        applyBwMode(state.bwMode);
 
       if (!afterPrintHandlerBound && typeof window !== "undefined") {
         window.addEventListener("afterprint", () => {
@@ -1481,6 +1590,12 @@
             initialize();
           }
         });
+        if (bwModeToggle) {
+          bwModeToggle.addEventListener("change", () => {
+            state.bwMode = bwModeToggle.checked;
+            applyBwMode(state.bwMode);
+          });
+        }
       }
 
       function updatePreviewOnly() {
@@ -1490,6 +1605,7 @@
       }
 
       function render() {
+        applyBwMode(state.bwMode);
         const derived = calculateDerived();
         updateEditorSummaries(derived);
         updatePreview(derived);
@@ -1583,6 +1699,10 @@
         const trimmed = typeof value === "string" ? value.trim() : "";
         const maxLabel = trimmed.length ? trimmed : String(maxDefault);
         element.textContent = `/${maxLabel}`;
+      }
+
+      function applyBwMode(enabled) {
+        document.body.classList.toggle("bw-mode", Boolean(enabled));
       }
 
       function setMultilineContent(element, value) {
@@ -1938,6 +2058,7 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
             portrait: state.portrait,
             categories,
             totalPoints: Number.isFinite(state.totalPoints) ? state.totalPoints : DEFAULT_TOTAL_POINTS,
+            bwMode: Boolean(state.bwMode),
           },
         };
       }
@@ -2048,6 +2169,7 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
           window.print();
           return;
         }
+        applyBwMode(state?.bwMode);
         const canUseHtml2canvas = Boolean(window.html2canvas && typeof window.html2canvas === "function");
         const canUseHtmlToImage = Boolean(window.htmlToImage && typeof window.htmlToImage.toPng === "function");
         if (!canUseHtml2canvas && !canUseHtmlToImage) {
@@ -2263,6 +2385,7 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
         freshState.portrait = typeof character.portrait === "string" && character.portrait.startsWith("data:image")
           ? character.portrait
           : null;
+        freshState.bwMode = Boolean(character.bwMode);
 
         for (const key of CATEGORY_KEYS) {
           const source = Array.isArray(character.categories?.[key]) ? character.categories[key] : [];
