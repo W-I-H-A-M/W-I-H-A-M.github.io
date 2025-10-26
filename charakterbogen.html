@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to be a Hero — Charakterbogen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@600;700;800&family=Libre+Franklin:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b111b;
+      --panel:#1b2434;
+      --panel-border:#2f3d55;
+      --panel-text:#e5ecff;
+      --muted:#9aa6c5;
+      --accent:#528bff;
+      --danger:#ff6b6b;
+      --sheet-bg:#f5f7fa;
+      --sheet-ink:#1d2331;
+      --sheet-border:#1d2331;
+      --sheet-accent:#2c394f;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:var(--bg);
+      color:var(--panel-text);
+      font-family:"Libre Franklin",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      padding:16px;
+    }
+    h1,h2,h3{
+      font-family:"Kanit","Libre Franklin",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      letter-spacing:.04em;
+      margin:0 0 12px;
+      font-weight:700;
+    }
+    label{
+      display:block;
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+      margin-bottom:6px;
+      font-weight:600;
+    }
+    .sr-only{
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      white-space:nowrap;
+      border:0;
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="file"],
+    textarea,
+    select{
+      width:100%;
+      padding:8px 10px;
+      border:1px solid var(--panel-border);
+      border-radius:8px;
+      background:#121a29;
+      color:var(--panel-text);
+      font-size:14px;
+      font-family:inherit;
+    }
+    textarea{resize:vertical; min-height:80px;}
+    input[type="number"]{ -moz-appearance:textfield; }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button{
+      -webkit-appearance:none;
+      margin:0;
+    }
+    button{
+      font-family:"Kanit","Libre Franklin",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      font-weight:600;
+      border:none;
+      border-radius:8px;
+      padding:8px 12px;
+      cursor:pointer;
+      transition:background .18s ease, transform .12s ease;
+    }
+    button.primary{ background:var(--accent); color:#fff; }
+    button.secondary{ background:#25324a; color:var(--panel-text); border:1px solid var(--panel-border); }
+    button.danger{ background:var(--danger); color:#fff; }
+    button:hover{ transform:translateY(-1px); }
+    .app{
+      display:grid;
+      grid-template-columns:minmax(320px,360px) 1fr;
+      gap:20px;
+      align-items:flex-start;
+      max-width:1400px;
+      margin:0 auto;
+    }
+    .control-panel{
+      background:var(--panel);
+      border:1px solid var(--panel-border);
+      border-radius:14px;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      position:sticky;
+      top:16px;
+      max-height:calc(100vh - 32px);
+      overflow:auto;
+    }
+    .control-panel h1{
+      font-size:20px;
+      margin-bottom:4px;
+    }
+    .panel-section{
+      border:1px solid rgba(255,255,255,0.05);
+      border-radius:12px;
+      padding:14px;
+      background:rgba(17,24,38,0.55);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .panel-section h2{
+      font-size:14px;
+      margin-bottom:4px;
+    }
+    .panel-row{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:13px;
+      color:var(--panel-text);
+    }
+    .toggle input{ width:18px; height:18px; accent-color:var(--accent); }
+    .category-editor{
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.06);
+      background:rgba(9,14,22,0.55);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .category-editor-body{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .category-editor-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-weight:700;
+      font-size:14px;
+    }
+    .skill-row-editor{
+      display:grid;
+      grid-template-columns:2fr 100px auto;
+      gap:8px;
+      align-items:center;
+    }
+    .skill-row-editor button{
+      padding:6px 10px;
+      font-size:11px;
+    }
+    .category-footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:6px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .preview-area{
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+    }
+    .sheet-wrapper{
+      width:100%;
+      display:flex;
+      justify-content:center;
+    }
+    .sheet{
+      width:202mm;
+      min-height:272mm;
+      background:var(--sheet-bg);
+      color:var(--sheet-ink);
+      box-shadow:0 28px 60px rgba(0,0,0,0.35);
+      border:2px solid var(--sheet-border);
+      border-radius:6px;
+      padding:10mm 9mm;
+      display:grid;
+      grid-template-columns:1fr;
+      grid-template-rows:auto auto minmax(48mm, auto) minmax(95mm, 1fr) minmax(65mm, auto) auto;
+      gap:7.5mm;
+      position:relative;
+      align-items:stretch;
+    }
+    .sheet.render-for-print{
+      box-shadow:none;
+    }
+    .sheet::after{
+      content:"";
+      position:absolute;
+      inset:3.2mm;
+      border:0.6mm solid rgba(0,0,0,0.08);
+      pointer-events:none;
+    }
+    .sheet-top{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      gap:3mm;
+    }
+    .sheet-banner{
+      height:30mm;
+      border:1mm solid var(--sheet-border);
+      border-radius:4mm;
+      background:linear-gradient(135deg,#424b69,#1f2435);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      position:relative;
+    }
+    .sheet-banner h2{
+      font-family:"Kanit";
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:#f7f8fb;
+      font-size:8mm;
+      margin:0;
+      text-shadow:0 3px 8px rgba(0,0,0,0.45);
+    }
+    .sheet-banner::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at 15% 20%,rgba(255,255,255,0.3),transparent 45%),
+                 radial-gradient(circle at 80% 25%,rgba(255,255,255,0.2),transparent 50%);
+      mix-blend-mode:screen;
+      pointer-events:none;
+    }
+    .sheet-name-block{
+      height:12mm;
+      border:0.8mm solid var(--sheet-border);
+      border-radius:3mm;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      padding:0 5mm;
+      font-family:"Kanit";
+      font-weight:700;
+      font-size:5.2mm;
+      letter-spacing:.08em;
+    }
+    .identity-section{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:4.6mm;
+      align-items:stretch;
+    }
+    .info-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:3mm;
+    }
+    .info-cell{
+      border:0.6mm solid var(--sheet-border);
+      border-radius:2.5mm;
+      padding:2.4mm;
+      min-height:12mm;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      background:#fff;
+    }
+    .info-label{
+      font-size:2.6mm;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      color:#505b75;
+      font-weight:700;
+      margin-bottom:1.4mm;
+    }
+    .info-value{
+      font-size:3.8mm;
+      font-weight:600;
+      color:var(--sheet-ink);
+      min-height:6mm;
+      display:flex;
+      align-items:flex-start;
+      word-break:break-word;
+    }
+    .portrait-box{
+      border:0.8mm solid var(--sheet-border);
+      border-radius:3mm;
+      background:#fff;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .portrait-box img{
+      max-width:100%;
+      max-height:100%;
+      object-fit:cover;
+      display:none;
+    }
+    .portrait-placeholder{
+      font-size:3.4mm;
+      text-transform:uppercase;
+      letter-spacing:.1em;
+      color:#8089a2;
+      text-align:center;
+    }
+    .description-block{
+      border:0.6mm solid var(--sheet-border);
+      border-radius:3mm;
+      padding:3mm;
+      background:#fff;
+      min-height:32mm;
+      font-size:3mm;
+      line-height:1.4;
+    }
+    .sheet-categories{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:4.2mm;
+      min-height:95mm;
+      align-content:stretch;
+      align-items:stretch;
+    }
+    .category-block{
+      border:0.8mm solid var(--sheet-border);
+      border-radius:3mm;
+      background:#fff;
+      padding:2.6mm;
+      display:flex;
+      flex-direction:column;
+      gap:2.6mm;
+      min-height:45mm;
+      height:100%;
+    }
+    .category-header{
+      display:flex;
+      justify-content:space-between;
+      gap:2.8mm;
+      align-items:flex-start;
+      border-bottom:0.4mm solid rgba(0,0,0,0.12);
+      padding-bottom:1.6mm;
+    }
+    .category-title{
+      font-family:"Kanit";
+      font-size:4.2mm;
+      letter-spacing:.08em;
+      font-weight:700;
+      text-transform:uppercase;
+    }
+    .category-metrics{
+      font-size:2.8mm;
+      display:flex;
+      flex-direction:column;
+      gap:1mm;
+      align-items:flex-end;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      font-weight:700;
+    }
+    .category-table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      flex:1;
+    }
+    .category-table th,
+    .category-table td{
+      border:0.4mm solid rgba(0,0,0,0.18);
+      padding:1.4mm;
+      font-size:3mm;
+      word-break:break-word;
+    }
+    .category-table th{
+      font-size:2.6mm;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      background:rgba(44,57,79,0.08);
+    }
+    .category-table th:nth-child(1),
+    .category-table td:nth-child(1){
+      width:52%;
+      font-weight:600;
+      text-align:left;
+    }
+    .category-table th:nth-child(n+2),
+    .category-table td:nth-child(n+2){
+      width:16%;
+      text-align:center;
+    }
+    .category-table td:nth-child(n+2){
+      font-family:"Kanit";
+      font-weight:700;
+      letter-spacing:.03em;
+    }
+    .category-table th.icon-col{
+      padding:1.3mm 0;
+    }
+    .category-table th .icon{
+      display:inline-block;
+      width:4mm;
+      height:4mm;
+      background-repeat:no-repeat;
+      background-position:center;
+      background-size:contain;
+    }
+    .category-table th .icon{
+      display:inline-flex;
+      justify-content:center;
+      align-items:center;
+    }
+    .category-table tbody tr:nth-child(odd){
+      background:rgba(44,57,79,0.05);
+    }
+    .category-table tbody tr td{
+      height:6.2mm;
+      vertical-align:middle;
+      padding-top:0;
+      padding-bottom:0;
+    }
+    .category-table tbody tr.placeholder-row td{
+      opacity:0.35;
+    }
+    .category-table tbody tr.filler-row td{
+      color:transparent;
+    }
+    .sheet-lower{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:4.2mm;
+      min-height:55mm;
+      align-content:stretch;
+      grid-auto-rows:1fr;
+    }
+    .sheet-box{
+      border:0.8mm solid var(--sheet-border);
+      border-radius:3mm;
+      padding:2.8mm;
+      background:#fff;
+      min-height:48mm;
+      display:flex;
+      flex-direction:column;
+      height:100%;
+    }
+    .sheet-box h3{
+      font-size:3.2mm;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:2mm;
+    }
+    .sheet-box-content{
+      flex:1;
+      font-size:3mm;
+      line-height:1.36;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .sheet-footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-top:0.6mm solid rgba(0,0,0,0.18);
+      padding-top:2.6mm;
+      font-size:2.8mm;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:700;
+      flex-shrink:0;
+    }
+    #pointsRemaining.negative{
+      color:#c0392b;
+    }
+    .controls-footer{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .import-input{
+      display:none;
+    }
+    @media (max-width:1100px){
+      .app{ grid-template-columns:1fr; }
+      .control-panel{ position:static; max-height:none; }
+      .sheet{ transform:scale(.88); transform-origin:top center; }
+    }
+    @media (max-width:720px){
+      body{ padding:10px; }
+      .sheet{ transform:scale(.72); }
+    }
+    @media print{
+      body{
+        background:#fff;
+        padding:0;
+      }
+      .control-panel,
+      .controls-footer{
+        display:none !important;
+      }
+      .sheet-wrapper{
+        margin:0;
+      }
+      .sheet{
+        box-shadow:none;
+        border:none;
+        width:calc(210mm - 6mm);
+        height:calc(297mm - 6mm);
+        padding:9mm 5mm 9mm 5mm;
+        gap:6mm;
+        margin:0 auto;
+        min-height:auto;
+        box-sizing:border-box;
+        overflow:hidden;
+        grid-template-rows:auto auto minmax(55mm, auto) minmax(110mm, 1fr) minmax(75mm, auto) auto;
+      }
+      .sheet::after{ display:none; }
+      .sheet-categories{
+        align-content:stretch;
+        align-items:stretch;
+      }
+      .sheet-lower{
+        align-content:stretch;
+      }
+      @page{ size:A4 portrait; margin:3mm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="control-panel">
+      <div>
+        <h1>Charakterbogen</h1>
+        <p style="color:var(--muted); font-size:13px; line-height:1.4;">
+          Erstelle einen Charakter für <strong>How to be a Hero</strong>. Alle Werte aktualisieren sich automatisch.
+        </p>
+      </div>
+
+      <section class="panel-section" id="generalSection">
+        <h2>Allgemein</h2>
+        <label for="inputName">Name</label>
+        <input id="inputName" type="text" placeholder="Name des Charakters">
+
+        <div class="panel-row">
+          <div>
+            <label for="inputGender">Geschlecht</label>
+            <input id="inputGender" type="text" placeholder="z. B. weiblich">
+          </div>
+          <div>
+            <label for="inputAge">Alter</label>
+            <input id="inputAge" type="number" min="0" placeholder="z. B. 28">
+          </div>
+        </div>
+
+        <div class="panel-row">
+          <div>
+            <label for="inputStature">Statur</label>
+            <input id="inputStature" type="text" placeholder="z. B. sportlich">
+          </div>
+          <div>
+            <label for="inputReligion">Religion</label>
+            <input id="inputReligion" type="text" placeholder="z. B. keine">
+          </div>
+        </div>
+
+        <div class="panel-row">
+          <div>
+            <label for="inputProfession">Beruf</label>
+            <input id="inputProfession" type="text" placeholder="z. B. Archäologin">
+          </div>
+          <div>
+            <label for="inputFamily">Familienstand</label>
+            <input id="inputFamily" type="text" placeholder="z. B. ledig">
+          </div>
+        </div>
+
+        <div class="panel-row">
+          <div>
+            <label for="inputHP">Lebenspunkte (max)</label>
+            <input id="inputHP" type="number" min="0" placeholder="z. B. 40">
+          </div>
+          <div id="mentalToggleContainer">
+            <label for="inputMentalHP" id="lblMentalHP">Mentale Gesundheit (max)</label>
+            <input id="inputMentalHP" type="number" min="0" placeholder="Optional" disabled>
+          </div>
+        </div>
+
+        <label class="toggle">
+          <input type="checkbox" id="toggleMental">
+          Mentale Gesundheit verfolgen
+        </label>
+      </section>
+
+      <section class="panel-section">
+        <h2>Portrait &amp; Beschreibung</h2>
+        <label for="inputPortrait">Portrait-Bild</label>
+        <input id="inputPortrait" type="file" accept="image/*">
+        <button id="btnClearPortrait" class="secondary" type="button">Portrait entfernen</button>
+        <label for="inputDescription">Beschreibung</label>
+        <textarea id="inputDescription" placeholder="Kurze Charakterbeschreibung"></textarea>
+      </section>
+
+      <section class="panel-section">
+        <h2>Begabungen &amp; Fähigkeiten</h2>
+        <div id="editorsContainer"></div>
+      </section>
+
+      <section class="panel-section">
+        <h2>Inventar &amp; Notizen</h2>
+        <label for="inputInventory">Inventar</label>
+        <textarea id="inputInventory" placeholder="Ausrüstung, Gegenstände, etc."></textarea>
+        <label for="inputNotes">Anmerkungen</label>
+        <textarea id="inputNotes" placeholder="Zusätzliche Informationen"></textarea>
+      </section>
+
+      <div class="panel-section">
+        <h2>Aktionen</h2>
+        <div class="controls-footer">
+          <button id="btnExportJSON" class="primary" type="button">Export JSON</button>
+          <button id="btnImportJSON" class="secondary" type="button">Import JSON</button>
+          <button id="btnPrint" class="secondary" type="button">Drucken</button>
+          <button id="btnReset" class="danger" type="button">Zurücksetzen</button>
+        </div>
+        <input id="inputImportFile" class="import-input" type="file" accept="application/json">
+      </div>
+    </aside>
+
+    <main class="preview-area">
+      <div class="sheet-wrapper">
+        <div class="sheet" id="sheet">
+          <section class="sheet-top">
+            <div class="sheet-banner">
+              <h2>How to be a Hero</h2>
+            </div>
+            <div class="sheet-name-block" id="sheetNameDisplay">Unbenannter Held</div>
+          </section>
+
+          <section class="identity-section">
+            <div class="info-grid">
+              <div class="info-cell">
+                <div class="info-label">Geschlecht</div>
+                <div class="info-value" id="sheetGender"></div>
+              </div>
+              <div class="info-cell">
+                <div class="info-label">Alter</div>
+                <div class="info-value" id="sheetAge"></div>
+              </div>
+              <div class="info-cell">
+                <div class="info-label">Lebenspunkte</div>
+                <div class="info-value" id="sheetHP"></div>
+              </div>
+              <div class="info-cell" id="sheetMentalCell" style="display:none;">
+                <div class="info-label">Mentale Gesundheit</div>
+                <div class="info-value" id="sheetMentalHP"></div>
+              </div>
+              <div class="info-cell">
+                <div class="info-label">Statur</div>
+                <div class="info-value" id="sheetStature"></div>
+              </div>
+              <div class="info-cell">
+                <div class="info-label">Religion</div>
+                <div class="info-value" id="sheetReligion"></div>
+              </div>
+              <div class="info-cell">
+                <div class="info-label">Beruf</div>
+                <div class="info-value" id="sheetProfession"></div>
+              </div>
+              <div class="info-cell">
+                <div class="info-label">Familienstand</div>
+                <div class="info-value" id="sheetFamily"></div>
+              </div>
+            </div>
+            <div class="portrait-box" id="sheetPortraitBox">
+              <img id="sheetPortrait" alt="Portrait">
+              <div class="portrait-placeholder">Portrait</div>
+            </div>
+          </section>
+
+          <section class="description-block" id="sheetDescription"></section>
+
+          <section class="sheet-categories">
+            <div class="category-block" data-category="handeln">
+              <div class="category-header">
+                <div class="category-title">Handeln</div>
+                <div class="category-metrics">
+                  <span>Begabung: <span id="begabung-handeln">0</span></span>
+                  <span>Geistesblitz: <span id="geist-handeln">0</span></span>
+                </div>
+              </div>
+              <table class="category-table">
+                <thead>
+                  <tr>
+                    <th>Fähigkeit</th>
+                    <th class="icon-col">
+                      <span class="icon" aria-hidden="true">⇅</span>
+                      <span class="sr-only">Basis</span>
+                    </th>
+                    <th class="icon-col">
+                      <span class="icon" aria-hidden="true">+</span>
+                      <span class="sr-only">Bonus</span>
+                    </th>
+                    <th class="icon-col">
+                      <span class="icon" aria-hidden="true">Σ</span>
+                      <span class="sr-only">Gesamt</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="table-handeln"></tbody>
+              </table>
+            </div>
+
+            <div class="category-block" data-category="wissen">
+              <div class="category-header">
+                <div class="category-title">Wissen</div>
+                <div class="category-metrics">
+                  <span>Begabung: <span id="begabung-wissen">0</span></span>
+                  <span>Geistesblitz: <span id="geist-wissen">0</span></span>
+                </div>
+              </div>
+              <table class="category-table">
+                <thead>
+                  <tr>
+                    <th>Fähigkeit</th>
+                    <th class="icon-col">
+                      <span class="icon" aria-hidden="true">⇅</span>
+                      <span class="sr-only">Basis</span>
+                    </th>
+                    <th class="icon-col">
+                      <span class="icon" aria-hidden="true">+</span>
+                      <span class="sr-only">Bonus</span>
+                    </th>
+                    <th class="icon-col">
+                      <span class="icon" aria-hidden="true">Σ</span>
+                      <span class="sr-only">Gesamt</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="table-wissen"></tbody>
+              </table>
+            </div>
+
+            <div class="category-block" data-category="soziales">
+              <div class="category-header">
+                <div class="category-title">Soziales</div>
+                <div class="category-metrics">
+                  <span>Begabung: <span id="begabung-soziales">0</span></span>
+                  <span>Geistesblitz: <span id="geist-soziales">0</span></span>
+                </div>
+              </div>
+              <table class="category-table">
+                <thead>
+                  <tr>
+                    <th>Fähigkeit</th>
+                    <th class="icon-col">
+                      <span class="icon" aria-hidden="true">⇅</span>
+                      <span class="sr-only">Basis</span>
+                    </th>
+                    <th class="icon-col">
+                      <span class="icon" aria-hidden="true">+</span>
+                      <span class="sr-only">Bonus</span>
+                    </th>
+                    <th class="icon-col">
+                      <span class="icon" aria-hidden="true">Σ</span>
+                      <span class="sr-only">Gesamt</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="table-soziales"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="sheet-lower">
+            <div class="sheet-box">
+              <h3>Inventar</h3>
+              <div class="sheet-box-content" id="sheetInventory"></div>
+            </div>
+            <div class="sheet-box">
+              <h3>Anmerkungen</h3>
+              <div class="sheet-box-content" id="sheetNotes"></div>
+            </div>
+          </section>
+
+          <footer class="sheet-footer">
+            <span>Punkte zu vergeben: <span id="pointsTotal">400</span></span>
+            <span>Punkte übrig: <span id="pointsRemaining">400</span></span>
+            <span>Geistesblitz gesamt: <span id="geistTotal">0</span></span>
+          </footer>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const TOTAL_POINTS_LIMIT = 400;
+      const CATEGORY_KEYS = ["handeln", "wissen", "soziales"];
+      const CATEGORY_LABELS = {
+        handeln: "Handeln",
+        wissen: "Wissen",
+        soziales: "Soziales",
+      };
+      const DEFAULT_EDITOR_ROWS = 1;
+      const MIN_ROWS_PER_CATEGORY = 4;
+
+      let abilityIdCounter = 0;
+      let state = null;
+      let isGeneratingPrint = false;
+      let afterPrintHandlerBound = false;
+      const editorRefs = {};
+
+      const editorsContainer = document.getElementById("editorsContainer");
+
+      const inputName = document.getElementById("inputName");
+      const inputGender = document.getElementById("inputGender");
+      const inputAge = document.getElementById("inputAge");
+      const inputStature = document.getElementById("inputStature");
+      const inputReligion = document.getElementById("inputReligion");
+      const inputProfession = document.getElementById("inputProfession");
+      const inputFamily = document.getElementById("inputFamily");
+      const inputHP = document.getElementById("inputHP");
+      const inputMentalHP = document.getElementById("inputMentalHP");
+      const toggleMental = document.getElementById("toggleMental");
+      const inputPortrait = document.getElementById("inputPortrait");
+      const btnClearPortrait = document.getElementById("btnClearPortrait");
+      const inputDescription = document.getElementById("inputDescription");
+      const inputInventory = document.getElementById("inputInventory");
+      const inputNotes = document.getElementById("inputNotes");
+      const btnExportJSON = document.getElementById("btnExportJSON");
+      const btnImportJSON = document.getElementById("btnImportJSON");
+      const btnPrint = document.getElementById("btnPrint");
+      const btnReset = document.getElementById("btnReset");
+      const inputImportFile = document.getElementById("inputImportFile");
+
+      const sheetNameDisplay = document.getElementById("sheetNameDisplay");
+      const sheetGender = document.getElementById("sheetGender");
+      const sheetAge = document.getElementById("sheetAge");
+      const sheetHP = document.getElementById("sheetHP");
+      const sheetMentalCell = document.getElementById("sheetMentalCell");
+      const sheetMentalHP = document.getElementById("sheetMentalHP");
+      const sheetStature = document.getElementById("sheetStature");
+      const sheetReligion = document.getElementById("sheetReligion");
+      const sheetProfession = document.getElementById("sheetProfession");
+      const sheetFamily = document.getElementById("sheetFamily");
+      const sheetDescription = document.getElementById("sheetDescription");
+      const sheetInventory = document.getElementById("sheetInventory");
+      const sheetNotes = document.getElementById("sheetNotes");
+      const sheetPortraitBox = document.getElementById("sheetPortraitBox");
+      const sheetPortrait = document.getElementById("sheetPortrait");
+      const portraitPlaceholder = sheetPortraitBox.querySelector(".portrait-placeholder");
+      const sheetRoot = document.getElementById("sheet");
+
+      const pointsTotalEl = document.getElementById("pointsTotal");
+      const pointsRemainingEl = document.getElementById("pointsRemaining");
+      const geistTotalEl = document.getElementById("geistTotal");
+
+      const begabungDisplays = {
+        handeln: document.getElementById("begabung-handeln"),
+        wissen: document.getElementById("begabung-wissen"),
+        soziales: document.getElementById("begabung-soziales"),
+      };
+      const geistDisplays = {
+        handeln: document.getElementById("geist-handeln"),
+        wissen: document.getElementById("geist-wissen"),
+        soziales: document.getElementById("geist-soziales"),
+      };
+      const categoryTables = {
+        handeln: document.getElementById("table-handeln"),
+        wissen: document.getElementById("table-wissen"),
+        soziales: document.getElementById("table-soziales"),
+      };
+
+      function initialize() {
+        abilityIdCounter = 0;
+        state = createInitialState();
+        rebuildEditors();
+        syncInputsWithState();
+        render();
+      }
+
+      function createInitialState() {
+        return {
+          info: {
+            name: "",
+            gender: "",
+            age: "",
+            stature: "",
+            religion: "",
+            profession: "",
+            family: "",
+            hp: "",
+            mentalHP: "",
+            mentalEnabled: false,
+          },
+          description: "",
+          inventory: "",
+          notes: "",
+          portrait: null,
+          categories: {
+            handeln: createInitialAbilities(),
+            wissen: createInitialAbilities(),
+            soziales: createInitialAbilities(),
+          },
+        };
+      }
+
+      function createInitialAbilities(count = DEFAULT_EDITOR_ROWS) {
+        return Array.from({ length: count }, () => createAbility());
+      }
+
+      function rebuildEditors() {
+        editorsContainer.innerHTML = "";
+        for (const key of CATEGORY_KEYS) {
+          delete editorRefs[key];
+        }
+        for (const key of CATEGORY_KEYS) {
+          const editor = createCategoryEditor(key);
+          editorsContainer.append(editor);
+        }
+      }
+
+      function createAbility(name = "", base = 0) {
+        return {
+          id: generateAbilityId(),
+          name: typeof name === "string" ? name : "",
+          base: normalizeBase(base),
+        };
+      }
+
+      function generateAbilityId() {
+        abilityIdCounter += 1;
+        return `skill-${abilityIdCounter}`;
+      }
+
+      function normalizeBase(value) {
+        const num = Number(value);
+        if (Number.isFinite(num)) {
+          return clamp(Math.round(num), 0, 100);
+        }
+        return 0;
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function createCategoryEditor(categoryKey) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "category-editor";
+        wrapper.dataset.category = categoryKey;
+
+        const header = document.createElement("div");
+        header.className = "category-editor-header";
+        const title = document.createElement("span");
+        title.textContent = CATEGORY_LABELS[categoryKey];
+        const addBtn = document.createElement("button");
+        addBtn.type = "button";
+        addBtn.className = "secondary";
+        addBtn.textContent = "+ Fähigkeit";
+        addBtn.addEventListener("click", () => addAbility(categoryKey));
+        header.append(title, addBtn);
+
+        const body = document.createElement("div");
+        body.className = "category-editor-body";
+        const footer = document.createElement("div");
+        footer.className = "category-footer";
+        const pointsInfo = document.createElement("span");
+        const begabungInfo = document.createElement("span");
+        footer.append(pointsInfo, begabungInfo);
+
+        editorRefs[categoryKey] = {
+          body,
+          pointsInfo,
+          begabungInfo,
+        };
+
+        wrapper.append(header, body);
+        for (const ability of state.categories[categoryKey]) {
+          body.append(createAbilityRow(categoryKey, ability));
+        }
+        wrapper.append(footer);
+        return wrapper;
+      }
+
+      function createAbilityRow(categoryKey, ability) {
+        const row = document.createElement("div");
+        row.className = "skill-row-editor";
+        row.dataset.category = categoryKey;
+        row.dataset.id = ability.id;
+
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.placeholder = "Fähigkeit";
+        nameInput.value = ability.name;
+        nameInput.addEventListener("input", () => {
+          ability.name = nameInput.value;
+          updatePreviewOnly();
+        });
+
+        const pointsInput = document.createElement("input");
+        pointsInput.type = "number";
+        pointsInput.min = "0";
+        pointsInput.max = "100";
+        pointsInput.value = ability.base;
+        pointsInput.addEventListener("input", () => {
+          ability.base = normalizeBase(pointsInput.value);
+          pointsInput.value = ability.base;
+          render();
+        });
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "secondary";
+        removeBtn.textContent = "Entfernen";
+        removeBtn.addEventListener("click", () => removeAbility(categoryKey, ability.id));
+
+        row.append(nameInput, pointsInput, removeBtn);
+        return row;
+      }
+
+      function addAbility(categoryKey) {
+        const ability = createAbility();
+        state.categories[categoryKey].push(ability);
+        const refs = editorRefs[categoryKey];
+        if (refs) {
+          const row = createAbilityRow(categoryKey, ability);
+          refs.body.append(row);
+          const nameInput = row.querySelector('input[type="text"]');
+          if (nameInput) {
+            nameInput.focus();
+          }
+        }
+        render();
+      }
+
+      function removeAbility(categoryKey, id) {
+        const abilities = state.categories[categoryKey];
+        const index = abilities.findIndex((item) => item.id === id);
+        if (index === -1) {
+          return;
+        }
+        abilities.splice(index, 1);
+        const refs = editorRefs[categoryKey];
+        if (refs) {
+          const selector = `.skill-row-editor[data-id="${CSS.escape(id)}"]`;
+          const row = refs.body.querySelector(selector);
+          if (row) {
+            row.remove();
+          }
+        }
+        render();
+      }
+
+      function syncInputsWithState() {
+        inputName.value = state.info.name;
+        inputGender.value = state.info.gender;
+        inputAge.value = state.info.age;
+        inputStature.value = state.info.stature;
+        inputReligion.value = state.info.religion;
+        inputProfession.value = state.info.profession;
+        inputFamily.value = state.info.family;
+        inputHP.value = state.info.hp;
+        toggleMental.checked = Boolean(state.info.mentalEnabled);
+        inputMentalHP.disabled = !toggleMental.checked;
+        inputMentalHP.value = toggleMental.checked ? state.info.mentalHP : "";
+        inputDescription.value = state.description;
+        inputInventory.value = state.inventory;
+      inputNotes.value = state.notes;
+      pointsTotalEl.textContent = TOTAL_POINTS_LIMIT;
+
+      if (!afterPrintHandlerBound && typeof window !== "undefined") {
+        window.addEventListener("afterprint", () => {
+          isGeneratingPrint = false;
+        });
+        afterPrintHandlerBound = true;
+      }
+    }
+
+      function bindEvents() {
+        inputName.addEventListener("input", () => {
+          state.info.name = inputName.value;
+          updatePreviewOnly();
+        });
+        inputGender.addEventListener("input", () => {
+          state.info.gender = inputGender.value;
+          updatePreviewOnly();
+        });
+        inputAge.addEventListener("input", () => {
+          state.info.age = inputAge.value;
+          updatePreviewOnly();
+        });
+        inputStature.addEventListener("input", () => {
+          state.info.stature = inputStature.value;
+          updatePreviewOnly();
+        });
+        inputReligion.addEventListener("input", () => {
+          state.info.religion = inputReligion.value;
+          updatePreviewOnly();
+        });
+        inputProfession.addEventListener("input", () => {
+          state.info.profession = inputProfession.value;
+          updatePreviewOnly();
+        });
+        inputFamily.addEventListener("input", () => {
+          state.info.family = inputFamily.value;
+          updatePreviewOnly();
+        });
+        inputHP.addEventListener("input", () => {
+          state.info.hp = inputHP.value;
+          updatePreviewOnly();
+        });
+        toggleMental.addEventListener("change", () => {
+          state.info.mentalEnabled = toggleMental.checked;
+          if (!toggleMental.checked) {
+            state.info.mentalHP = "";
+            inputMentalHP.value = "";
+          }
+          inputMentalHP.disabled = !toggleMental.checked;
+          render();
+        });
+        inputMentalHP.addEventListener("input", () => {
+          state.info.mentalHP = inputMentalHP.value;
+          updatePreviewOnly();
+        });
+        inputDescription.addEventListener("input", () => {
+          state.description = inputDescription.value;
+          updatePreviewOnly();
+        });
+        inputInventory.addEventListener("input", () => {
+          state.inventory = inputInventory.value;
+          updatePreviewOnly();
+        });
+        inputNotes.addEventListener("input", () => {
+          state.notes = inputNotes.value;
+          updatePreviewOnly();
+        });
+        inputPortrait.addEventListener("change", handlePortraitUpload);
+        btnClearPortrait.addEventListener("click", () => {
+          inputPortrait.value = "";
+          state.portrait = null;
+          updatePreviewOnly();
+        });
+        btnExportJSON.addEventListener("click", exportToJSON);
+        btnImportJSON.addEventListener("click", () => inputImportFile.click());
+        inputImportFile.addEventListener("change", handleImportFile);
+        btnPrint.addEventListener("click", handlePrintRequest);
+        btnReset.addEventListener("click", () => {
+          const confirmed = window.confirm("Möchtest du wirklich alle Eingaben löschen?");
+          if (confirmed) {
+            initialize();
+          }
+        });
+      }
+
+      function updatePreviewOnly() {
+        const derived = calculateDerived();
+        updateEditorSummaries(derived);
+        updatePreview(derived);
+      }
+
+      function render() {
+        const derived = calculateDerived();
+        updateEditorSummaries(derived);
+        updatePreview(derived);
+      }
+
+      function calculateDerived() {
+        const derived = {
+          categories: {},
+          totalAssigned: 0,
+          totalGeistesblitz: 0,
+          pointsRemaining: TOTAL_POINTS_LIMIT,
+        };
+        for (const key of CATEGORY_KEYS) {
+          const list = state.categories[key];
+          const baseSum = list.reduce((sum, ability) => sum + (Number.isFinite(ability.base) ? ability.base : 0), 0);
+          const begabung = Math.round(baseSum / 10);
+          const geistesblitz = Math.round(begabung / 10);
+          derived.categories[key] = {
+            baseSum,
+            begabung,
+            geistesblitz,
+          };
+          derived.totalAssigned += baseSum;
+          derived.totalGeistesblitz += geistesblitz;
+        }
+        derived.pointsRemaining = TOTAL_POINTS_LIMIT - derived.totalAssigned;
+        return derived;
+      }
+
+      function updateEditorSummaries(derived) {
+        for (const key of CATEGORY_KEYS) {
+          const refs = editorRefs[key];
+          if (!refs) continue;
+          const { baseSum, begabung } = derived.categories[key];
+          refs.pointsInfo.innerHTML = `Gesetzte Punkte: <strong>${baseSum}</strong>`;
+          refs.begabungInfo.textContent = `Begabung: ${begabung}`;
+        }
+      }
+
+      function updatePreview(derived) {
+        sheetNameDisplay.textContent = state.info.name.trim() ? state.info.name.trim() : "Unbenannter Held";
+        setInfoCell(sheetGender, state.info.gender);
+        setInfoCell(sheetAge, state.info.age);
+        setInfoCell(sheetHP, state.info.hp);
+
+        if (state.info.mentalEnabled) {
+          sheetMentalCell.style.display = "";
+          setInfoCell(sheetMentalHP, state.info.mentalHP);
+        } else {
+          sheetMentalCell.style.display = "none";
+          sheetMentalHP.textContent = "";
+        }
+
+        setInfoCell(sheetStature, state.info.stature);
+        setInfoCell(sheetReligion, state.info.religion);
+        setInfoCell(sheetProfession, state.info.profession);
+        setInfoCell(sheetFamily, state.info.family);
+
+        setMultilineContent(sheetDescription, state.description);
+        setMultilineContent(sheetInventory, state.inventory);
+        setMultilineContent(sheetNotes, state.notes);
+        updatePortraitBox();
+
+        const uniformRowCount = Math.max(
+          MIN_ROWS_PER_CATEGORY,
+          ...CATEGORY_KEYS.map((categoryKey) => (state.categories[categoryKey]?.length || 0))
+        );
+
+        for (const key of CATEGORY_KEYS) {
+          const metrics = derived.categories[key];
+          begabungDisplays[key].textContent = metrics.begabung;
+          geistDisplays[key].textContent = metrics.geistesblitz;
+          renderCategoryTable(categoryTables[key], state.categories[key], metrics, uniformRowCount);
+        }
+
+        pointsTotalEl.textContent = TOTAL_POINTS_LIMIT;
+        pointsRemainingEl.textContent = derived.pointsRemaining;
+        pointsRemainingEl.classList.toggle("negative", derived.pointsRemaining < 0);
+        geistTotalEl.textContent = derived.totalGeistesblitz;
+      }
+
+      function setInfoCell(element, value) {
+        const text = typeof value === "string" ? value : typeof value === "number" && Number.isFinite(value) ? String(value) : "";
+        element.textContent = text;
+      }
+
+      function setMultilineContent(element, value) {
+        if (typeof value !== "string" || value.trim() === "") {
+          element.innerHTML = "&nbsp;";
+          return;
+        }
+        element.innerHTML = escapeHTML(value).replace(/\r?\n/g, "<br>");
+      }
+
+function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
+        tbody.innerHTML = "";
+        abilities.forEach((ability) => {
+          tbody.append(createSkillRow(ability, metrics));
+        });
+        const totalRows = Math.max(MIN_ROWS_PER_CATEGORY, desiredRowCount || MIN_ROWS_PER_CATEGORY);
+        const fillerCount = Math.max(0, totalRows - abilities.length);
+        for (let i = 0; i < fillerCount; i += 1) {
+          tbody.append(createFillerRow());
+        }
+      }
+
+      function createSkillRow(ability, metrics) {
+        const tr = document.createElement("tr");
+       const nameCell = document.createElement("td");
+       nameCell.className = "skill-name";
+        nameCell.textContent = ability.name || "";
+        nameCell.classList.add("skill-cell");
+
+        const baseCell = document.createElement("td");
+        baseCell.className = "skill-score skill-cell";
+        const bonusCell = document.createElement("td");
+        bonusCell.className = "skill-score skill-cell";
+        const totalCell = document.createElement("td");
+        totalCell.className = "skill-score skill-cell";
+
+        const hasContent = Boolean(ability.name && ability.name.trim()) || ability.base > 0;
+        const bonusValue = metrics.begabung;
+        const totalValue = clamp(ability.base + bonusValue, 0, 100);
+
+        baseCell.textContent = hasContent ? String(ability.base) : "";
+        bonusCell.textContent = hasContent ? String(bonusValue) : "";
+        totalCell.textContent = hasContent ? String(totalValue) : "";
+
+        tr.append(nameCell, baseCell, bonusCell, totalCell);
+        return tr;
+      }
+
+      function createFillerRow() {
+        const tr = document.createElement("tr");
+        tr.className = "placeholder-row filler-row";
+        for (let i = 0; i < 4; i += 1) {
+          const td = document.createElement("td");
+          td.className = i === 0 ? "skill-name" : "skill-score";
+          td.innerHTML = "&nbsp;";
+          td.classList.add("placeholder-cell");
+          tr.append(td);
+        }
+        return tr;
+      }
+
+      function updatePortraitBox() {
+        if (state.portrait) {
+          sheetPortrait.src = state.portrait;
+          sheetPortrait.style.display = "block";
+          portraitPlaceholder.style.display = "none";
+        } else {
+          sheetPortrait.removeAttribute("src");
+          sheetPortrait.style.display = "none";
+          portraitPlaceholder.style.display = "block";
+        }
+      }
+
+      function handlePortraitUpload(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) {
+          return;
+        }
+        if (!file.type.startsWith("image/")) {
+          window.alert("Bitte eine Bilddatei auswählen.");
+          event.target.value = "";
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (loadEvent) => {
+          const result = loadEvent.target && typeof loadEvent.target.result === "string" ? loadEvent.target.result : null;
+          state.portrait = result;
+          updatePreviewOnly();
+        };
+        reader.onerror = () => {
+          window.alert("Portrait konnte nicht geladen werden.");
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function exportToJSON() {
+        try {
+          const payload = buildExportPayload();
+          const json = JSON.stringify(payload, null, 2);
+          const blob = new Blob([json], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = buildExportFilename();
+          document.body.append(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        } catch (error) {
+          window.alert(`Export fehlgeschlagen: ${error.message}`);
+        }
+      }
+
+      function buildExportPayload() {
+        const categories = {};
+        for (const key of CATEGORY_KEYS) {
+          categories[key] = state.categories[key].map((ability) => ({
+            name: ability.name || "",
+            base: ability.base || 0,
+          }));
+        }
+        return {
+          type: "howtohero-character",
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          character: {
+            info: { ...state.info },
+            description: state.description,
+            inventory: state.inventory,
+            notes: state.notes,
+            portrait: state.portrait,
+            categories,
+          },
+        };
+      }
+
+      function buildExportFilename() {
+        const rawName = state.info.name ? state.info.name.trim().toLowerCase() : "";
+        const safeName = rawName ? rawName.replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "") : "unbenannt";
+        const dateStamp = new Date().toISOString().slice(0, 10);
+        return `howtohero-charakter-${safeName || "unbenannt"}-${dateStamp}.json`;
+      }
+
+      function handleImportFile(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) {
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (loadEvent) => {
+          try {
+            const text = loadEvent.target && typeof loadEvent.target.result === "string" ? loadEvent.target.result : "";
+            if (!text) {
+              throw new Error("Leere Datei");
+            }
+            const parsed = JSON.parse(text);
+            applyImportedState(parsed);
+          } catch (error) {
+            window.alert(`Import fehlgeschlagen: ${error.message}`);
+          } finally {
+            inputImportFile.value = "";
+          }
+        };
+        reader.onerror = () => {
+          window.alert("Die Datei konnte nicht gelesen werden.");
+          inputImportFile.value = "";
+        };
+        reader.readAsText(file, "utf-8");
+      }
+
+      async function handlePrintRequest() {
+        if (isGeneratingPrint) return;
+        const PROCESS_TIMEOUT_MS = 20000;
+        let timeoutHandle = null;
+        let timedOut = false;
+        let printProcessPromise = null;
+        try {
+          isGeneratingPrint = true;
+          printProcessPromise = printSheetAsImage();
+          const timeoutPromise = new Promise((_, reject) => {
+            timeoutHandle = window.setTimeout(() => {
+              timedOut = true;
+              reject(new Error("PRINT_TIMEOUT"));
+            }, PROCESS_TIMEOUT_MS);
+          });
+          await Promise.race([printProcessPromise, timeoutPromise]);
+          if (!timedOut) {
+            await printProcessPromise;
+          }
+        } catch (error) {
+          if (timeoutHandle !== null) {
+            window.clearTimeout(timeoutHandle);
+            timeoutHandle = null;
+          }
+          if (timedOut && printProcessPromise && typeof printProcessPromise.catch === "function") {
+            printProcessPromise.catch(() => {});
+          }
+          console.error("Druckvorbereitung fehlgeschlagen:", error);
+          window.alert("Die Druckvorschau konnte nicht erstellt werden. Es wird der Standarddruck gestartet.");
+          window.print();
+        } finally {
+          if (timeoutHandle !== null) {
+            window.clearTimeout(timeoutHandle);
+          }
+          isGeneratingPrint = false;
+        }
+      }
+
+
+      async function printSheetAsImage() {
+        if (!sheetRoot) {
+          window.print();
+          return;
+        }
+        if (!window.htmlToImage || typeof window.htmlToImage.toPng !== "function") {
+          window.print();
+          return;
+        }
+        const EXPORT_WIDTH = 2480;
+        const EXPORT_HEIGHT = Math.round(EXPORT_WIDTH * (297 / 210));
+        sheetRoot.classList.add("render-for-print");
+        try {
+          let dataUrl = null;
+          if (window.htmlToImage && typeof window.htmlToImage.toPng === "function") {
+            try {
+              dataUrl = await window.htmlToImage.toPng(sheetRoot, {
+                backgroundColor: "#ffffff",
+                width: EXPORT_WIDTH,
+                height: EXPORT_HEIGHT,
+                pixelRatio: 1,
+                cacheBust: true,
+              });
+            } catch (primaryError) {
+              console.warn("html-to-image fehlgeschlagen, versuche html2canvas", primaryError);
+            }
+          }
+          if (!dataUrl && window.html2canvas) {
+            try {
+              const canvas = await window.html2canvas(sheetRoot, {
+                backgroundColor: "#ffffff",
+                scale: 2,
+                logging: false,
+              });
+              dataUrl = canvas.toDataURL("image/png", 1.0);
+            } catch (secondaryError) {
+              console.error("html2canvas fehlgeschlagen", secondaryError);
+              throw secondaryError;
+            }
+          }
+          if (!dataUrl) {
+            throw new Error("Keine Druckgrafik verfügbar");
+          }
+          await openImageInPrintFrame(dataUrl);
+        } finally {
+          sheetRoot.classList.remove("render-for-print");
+        }
+      }
+
+      async function openImageInPrintFrame(dataUrl) {
+        await new Promise((resolve, reject) => {
+          const frame = document.createElement("iframe");
+          frame.style.position = "fixed";
+          frame.style.left = "-10000px";
+          frame.style.top = "0";
+          frame.style.width = "210mm";
+          frame.style.height = "297mm";
+          frame.style.border = "0";
+          frame.style.visibility = "hidden";
+
+          const cleanup = () => {
+            setTimeout(() => {
+              frame.parentNode && frame.parentNode.removeChild(frame);
+            }, 300);
+          };
+
+          const finalize = () => {
+            
+            isGeneratingPrint = false;
+          };
+
+          const timeoutId = window.setTimeout(() => {
+            finalize();
+            cleanup();
+            reject(new Error("Druckbild Timeout"));
+          }, 15000);
+
+          try {
+            document.body.appendChild(frame);
+            const doc = frame.contentDocument || frame.contentWindow?.document;
+            if (!doc) {
+              window.clearTimeout(timeoutId);
+              cleanup();
+              finalize();
+              reject(new Error("Druckansicht konnte nicht vorbereitet werden."));
+              return;
+            }
+            doc.open();
+            doc.write(`<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>Charakterbogen Druck</title>
+  <style>
+    @page { size: A4 portrait; margin:0; }
+    body{
+      margin:0;
+      padding:0;
+      background:#fff;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      width:210mm;
+      height:297mm;
+    }
+    img{
+      width:210mm;
+      height:297mm;
+      display:block;
+    }
+  </style>
+</head>
+<body>
+  <img id="sheetPrintImage" src="${dataUrl}" alt="Charakterbogen">
+</body>
+</html>`);
+            doc.close();
+
+            const tryPrint = () => {
+              try {
+                frame.contentWindow?.focus();
+                frame.contentWindow?.print();
+                resolve();
+              } catch (printError) {
+                reject(printError);
+              } finally {
+                window.clearTimeout(timeoutId);
+                finalize();
+                cleanup();
+              }
+            };
+
+            const img = doc.getElementById("sheetPrintImage");
+            if (!img) {
+              window.clearTimeout(timeoutId);
+              finalize();
+              cleanup();
+              reject(new Error("Druckbild konnte nicht erstellt werden."));
+              return;
+            }
+
+            img.onload = tryPrint;
+            img.onerror = () => {
+              window.clearTimeout(timeoutId);
+              finalize();
+              cleanup();
+              reject(new Error("Druckbild konnte nicht geladen werden."));
+            };
+            if (img.complete) {
+              tryPrint();
+            }
+          } catch (error) {
+            window.clearTimeout(timeoutId);
+            finalize();
+            cleanup();
+            reject(error);
+          }
+        });
+      }
+
+      function applyImportedState(payload) {
+        const character = extractCharacterPayload(payload);
+        if (!character) {
+          throw new Error("Datei hat nicht das erwartete Format.");
+        }
+        abilityIdCounter = 0;
+        const freshState = createInitialState();
+        freshState.info = sanitizeInfo(character.info);
+        freshState.description = coerceString(character.description);
+        freshState.inventory = coerceString(character.inventory);
+        freshState.notes = coerceString(character.notes);
+        freshState.portrait = typeof character.portrait === "string" && character.portrait.startsWith("data:image")
+          ? character.portrait
+          : null;
+
+        for (const key of CATEGORY_KEYS) {
+          const source = Array.isArray(character.categories?.[key]) ? character.categories[key] : [];
+          if (source.length > 0) {
+            freshState.categories[key] = source.map((item) => createAbility(coerceString(item.name), normalizeBase(item.base)));
+          }
+        }
+
+        state = freshState;
+        rebuildEditors();
+        syncInputsWithState();
+        render();
+      }
+
+      function extractCharacterPayload(data) {
+        if (!data || typeof data !== "object") {
+          return null;
+        }
+        if (Array.isArray(data)) {
+          return null;
+        }
+        if (data.type && data.type !== "howtohero-character") {
+          throw new Error(`Unbekannter Datentyp: ${data.type}`);
+        }
+        if (data.type === "howtohero-character") {
+          return data.character || data.data || null;
+        }
+        if (data.info && data.categories) {
+          return data;
+        }
+        return null;
+      }
+
+      function sanitizeInfo(info) {
+        const base = {
+          name: "",
+          gender: "",
+          age: "",
+          stature: "",
+          religion: "",
+          profession: "",
+          family: "",
+          hp: "",
+          mentalHP: "",
+          mentalEnabled: false,
+        };
+        if (!info || typeof info !== "object") {
+          return base;
+        }
+        base.name = coerceString(info.name);
+        base.gender = coerceString(info.gender);
+        base.age = coerceString(info.age);
+        base.stature = coerceString(info.stature);
+        base.religion = coerceString(info.religion);
+        base.profession = coerceString(info.profession);
+        base.family = coerceString(info.family);
+        base.hp = coerceString(info.hp);
+        base.mentalHP = coerceString(info.mentalHP);
+        base.mentalEnabled = Boolean(info.mentalEnabled);
+        if (!base.mentalEnabled) {
+          base.mentalHP = "";
+        }
+        return base;
+      }
+
+      function coerceString(value) {
+        if (typeof value === "string") {
+          return value;
+        }
+        if (typeof value === "number" && Number.isFinite(value)) {
+          return String(value);
+        }
+        return "";
+      }
+
+      function escapeHTML(value) {
+        return value.replace(/[&<>"']/g, (char) => {
+          switch (char) {
+            case "&":
+              return "&amp;";
+            case "<":
+              return "&lt;";
+            case ">":
+              return "&gt;";
+            case '"':
+              return "&quot;";
+            case "'":
+              return "&#039;";
+            default:
+              return char;
+          }
+        });
+      }
+
+      bindEvents();
+      initialize();
+    })();
+  </script>
+</body>
+</html>
