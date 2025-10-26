@@ -1913,44 +1913,115 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
       }
 
 
+      async function ensureSheetAssetsLoaded(rootElement = sheetRoot) {
+        const root = rootElement || sheetRoot;
+        if (!root) {
+          return;
+        }
+        const images = Array.from(root.querySelectorAll("img"));
+        if (!images.length) {
+          return;
+        }
+        await Promise.all(images.map((img) => {
+          if (!(img instanceof HTMLImageElement) || !img.src) {
+            return Promise.resolve();
+          }
+          if (img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+            return Promise.resolve();
+          }
+          return new Promise((resolve) => {
+            const handleDone = () => {
+              img.removeEventListener("load", handleDone);
+              img.removeEventListener("error", handleDone);
+              resolve();
+            };
+            img.addEventListener("load", handleDone, { once: true });
+            img.addEventListener("error", handleDone, { once: true });
+          });
+        }));
+      }
+
       async function printSheetAsImage() {
         if (!sheetRoot) {
           window.print();
           return;
         }
-        if (!window.htmlToImage || typeof window.htmlToImage.toPng !== "function") {
+        const canUseHtml2canvas = Boolean(window.html2canvas && typeof window.html2canvas === "function");
+        const canUseHtmlToImage = Boolean(window.htmlToImage && typeof window.htmlToImage.toPng === "function");
+        if (!canUseHtml2canvas && !canUseHtmlToImage) {
           window.print();
           return;
         }
-        const EXPORT_WIDTH = 2480;
-        const EXPORT_HEIGHT = Math.round(EXPORT_WIDTH * (297 / 210));
+        const rect = sheetRoot.getBoundingClientRect();
+        const BASE_WIDTH = Math.max(1, Math.round(rect.width));
+        const BASE_HEIGHT = Math.max(1, Math.round(rect.height));
+        const EXPORT_SCALE = Math.max(2, window.devicePixelRatio || 1);
         sheetRoot.classList.add("render-for-print");
+        let clone = null;
         try {
+          await ensureSheetAssetsLoaded(sheetRoot);
+          if (document.fonts && typeof document.fonts.ready === "object") {
+            try {
+              await document.fonts.ready;
+            } catch {}
+          }
           let dataUrl = null;
-          if (window.htmlToImage && typeof window.htmlToImage.toPng === "function") {
+          if (canUseHtml2canvas) {
+            try {
+              clone = sheetRoot.cloneNode(true);
+              clone.id = "sheetPrintClone";
+              clone.classList.add("render-for-print");
+              clone.style.position = "fixed";
+              clone.style.left = "-12000px";
+              clone.style.top = "0";
+              clone.style.width = `${BASE_WIDTH}px`;
+              clone.style.height = `${BASE_HEIGHT}px`;
+              clone.style.maxWidth = "none";
+              clone.style.maxHeight = "none";
+              clone.style.transform = "scale(1)";
+              clone.style.transformOrigin = "top left";
+              clone.style.background = "#ffffff";
+              clone.style.boxShadow = "none";
+              clone.style.border = "none";
+              document.body.appendChild(clone);
+              await ensureSheetAssetsLoaded(clone);
+              await new Promise((resolve) => {
+                requestAnimationFrame(() => requestAnimationFrame(resolve));
+              });
+              const canvas = await window.html2canvas(clone, {
+                backgroundColor: "#ffffff",
+                width: BASE_WIDTH,
+                height: BASE_HEIGHT,
+                scale: EXPORT_SCALE,
+                logging: false,
+                useCORS: true,
+              });
+              dataUrl = canvas?.toDataURL("image/png", 1.0) || null;
+              if (!dataUrl) {
+                throw new Error("Canvas konnte nicht erzeugt werden");
+              }
+            } catch (html2CanvasError) {
+              console.warn("html2canvas Druckexport fehlgeschlagen, versuche html-to-image", html2CanvasError);
+              dataUrl = null;
+            } finally {
+              if (clone && clone.parentNode) {
+                clone.parentNode.removeChild(clone);
+              }
+              clone = null;
+            }
+          }
+          if (!dataUrl && canUseHtmlToImage) {
             try {
               dataUrl = await window.htmlToImage.toPng(sheetRoot, {
                 backgroundColor: "#ffffff",
-                width: EXPORT_WIDTH,
-                height: EXPORT_HEIGHT,
-                pixelRatio: 1,
+                width: BASE_WIDTH,
+                height: BASE_HEIGHT,
+                pixelRatio: EXPORT_SCALE,
                 cacheBust: true,
               });
-            } catch (primaryError) {
-              console.warn("html-to-image fehlgeschlagen, versuche html2canvas", primaryError);
-            }
-          }
-          if (!dataUrl && window.html2canvas) {
-            try {
-              const canvas = await window.html2canvas(sheetRoot, {
-                backgroundColor: "#ffffff",
-                scale: 2,
-                logging: false,
-              });
-              dataUrl = canvas.toDataURL("image/png", 1.0);
-            } catch (secondaryError) {
-              console.error("html2canvas fehlgeschlagen", secondaryError);
-              throw secondaryError;
+            } catch (fallbackError) {
+              console.error("html-to-image konnte keinen Export erzeugen", fallbackError);
+              dataUrl = null;
             }
           }
           if (!dataUrl) {
@@ -1959,6 +2030,9 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
           await openImageInPrintFrame(dataUrl);
         } finally {
           sheetRoot.classList.remove("render-for-print");
+          if (clone && clone.parentNode) {
+            clone.parentNode.removeChild(clone);
+          }
         }
       }
 
