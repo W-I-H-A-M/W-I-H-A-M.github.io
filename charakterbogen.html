@@ -19,10 +19,15 @@
       --muted:#9aa6c5;
       --accent:#528bff;
       --danger:#ff6b6b;
-      --sheet-bg:#f5f7fa;
-      --sheet-ink:#1d2331;
-      --sheet-border:#1d2331;
-      --sheet-accent:#2c394f;
+      --sheet-bg:#3f862f;
+      --sheet-ink:#102712;
+      --sheet-border:#1f3f1f;
+      --sheet-accent:#ffe580;
+      --sheet-accent-dark:#ffbd3c;
+      --sheet-soft:#ecf6ff;
+      --sheet-muted:#204021;
+      --sheet-sky:#9cd4ff;
+      --sheet-sky-top:#cbe9ff;
     }
     *{box-sizing:border-box;}
     body{
@@ -244,9 +249,9 @@
       aspect-ratio:210 / 297;
       background:var(--sheet-bg);
       color:var(--sheet-ink);
-      box-shadow:0 28px 60px rgba(0,0,0,0.35);
-      border:2px solid var(--sheet-border);
-      border-radius:6px;
+      box-shadow:0 24px 48px rgba(17,39,18,0.32);
+      border:3px solid var(--sheet-border);
+      border-radius:10px;
       padding:7.5mm 9mm;
       display:grid;
       grid-template-columns:1fr;
@@ -254,6 +259,8 @@
       gap:3mm;
       position:relative;
       align-items:stretch;
+      overflow:hidden;
+      background-color:var(--sheet-bg);
     }
     .sheet.render-for-print{
       box-shadow:none;
@@ -262,58 +269,103 @@
       content:"";
       position:absolute;
       inset:4mm;
-      border:0.6mm solid rgba(0,0,0,0.08);
+      border:2px solid rgba(255,255,255,0.45);
+      border-radius:6px;
+      pointer-events:none;
+      z-index:2;
+    }
+    .sheet-gradient-bg,
+    .sheet-hero-bg{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
       pointer-events:none;
     }
+    .sheet-gradient-bg{
+      top:0;
+      width:100%;
+      height:100%;
+      background:linear-gradient(180deg,
+        var(--sheet-bg) 0%,
+        #468d4b 40%,
+        #58aa5d 55%,
+        #7dc981 72%,
+        #b6e5b9 88%,
+        #ffffff 100%
+      );
+      z-index:0;
+    }
+    .sheet-hero-bg{
+      top:0;
+      width:100%;
+      max-height:36%;
+      aspect-ratio:1536 / 546;
+      background:url("img/charbg.png") no-repeat top center / contain;
+      z-index:1;
+    }
+    .sheet > *:not(.sheet-gradient-bg):not(.sheet-hero-bg){ position:relative; z-index:3; }
     .sheet-top{
       position:relative;
       display:flex;
       flex-direction:column;
       gap:3mm;
+      align-items:center;
     }
     .sheet-banner{
-      height:15mm;
-      border:1mm solid var(--sheet-border);
-      border-radius:4mm;
-      background:linear-gradient(135deg,#424b69,#1f2435);
       display:flex;
       align-items:center;
       justify-content:center;
-      overflow:hidden;
-      min-height:34mm;
+      padding:4mm 12mm;
+      border:3px solid var(--sheet-border);
+      border-radius:6mm;
+      background:linear-gradient(135deg,#3f9b3f 0%, #6dd66b 60%, #9be785 100%);
       position:relative;
+      box-shadow:0 12px 20px rgba(16,39,18,0.28);
+      width:fit-content;
+      max-width:100%;
+      margin:0 auto;
+      margin-bottom:75px;
+      overflow:hidden;
     }
     .sheet-banner h2{
-      font-family:"Kanit";
-      font-weight:800;
+      font-family:"Press Start 2P", "Kanit", sans-serif;
+      font-weight:400;
       text-transform:uppercase;
-      letter-spacing:.12em;
-      color:#f7f8fb;
-      font-size:7mm;
+      letter-spacing:.18em;
+      color:#ffffff;
+      font-size:5.4mm;
       margin:0;
-      text-shadow:0 3px 8px rgba(0,0,0,0.45);
+      text-shadow:0 3px 0 rgba(16,39,18,0.35);
+    }
+    .sheet-banner::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 55%);
+      pointer-events:none;
     }
     .sheet-banner::after{
       content:"";
       position:absolute;
       inset:0;
-      background:radial-gradient(circle at 15% 20%,rgba(255,255,255,0.3),transparent 45%),
-                 radial-gradient(circle at 80% 25%,rgba(255,255,255,0.2),transparent 50%);
-      mix-blend-mode:screen;
+      background:repeating-linear-gradient(90deg, rgba(255,255,255,0.2) 0, rgba(255,255,255,0.2) 4mm, transparent 4mm, transparent 6mm);
+      opacity:0.15;
       pointer-events:none;
     }
     .sheet-name-block{
       height:8.5mm;
-      border:0.8mm solid var(--sheet-border);
-      border-radius:3mm;
-      background:#fff;
+      border:2.4px solid var(--sheet-border);
+      border-radius:4mm;
+      background:linear-gradient(180deg,#f0f7ff 0%, #ffffff 100%);
       display:flex;
       align-items:center;
-      padding:0 3mm;
+      padding:0 3.4mm;
       font-family:"Kanit";
       font-weight:700;
-      font-size:4.7mm;
-      letter-spacing:.08em;
+      font-size:4.6mm;
+      letter-spacing:.09em;
+      color:var(--sheet-ink);
+      box-shadow:0 6px 14px rgba(16,39,18,0.18);
     }
     .identity-section{
       display:grid;
@@ -327,22 +379,23 @@
       gap:3mm;
     }
     .info-cell{
-      border:0.6mm solid var(--sheet-border);
-      border-radius:2.5mm;
-      padding:1.6mm;
+      border:2.2px solid var(--sheet-border);
+      border-radius:4mm;
+      padding:1.7mm;
       min-height:7mm;
       display:flex;
       flex-direction:column;
       justify-content:space-between;
-      background:#fff;
+      background:linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(232,248,255,0.92) 100%);
+      box-shadow:0 6px 14px rgba(16,39,18,0.18);
     }
     .info-label{
-      font-size:1.8mm;
-      letter-spacing:.1em;
+      font-size:1.7mm;
+      letter-spacing:.12em;
       text-transform:uppercase;
-      color:#505b75;
+      color:rgba(33,68,36,0.9);
       font-weight:700;
-      margin-bottom:1.4mm;
+      margin-bottom:1.2mm;
     }
     .info-value{
       font-size:3.5mm;
@@ -352,6 +405,8 @@
       display:flex;
       align-items:flex-start;
       word-break:break-word;
+      justify-content:flex-start;
+      text-shadow:0 1px 0 rgba(255,255,255,0.45);
     }
     .info-value.hp-value,
     .info-value.mental-value{
@@ -359,15 +414,16 @@
       font-feature-settings:"tnum" 1;
     }
      .portrait-box{
-      border:0.8mm solid var(--sheet-border);
-      border-radius:3mm;
-      background:#fff;
+      border:2.4px solid var(--sheet-border);
+      border-radius:5mm;
+      background:linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(210,240,255,0.9) 100%);
       position:relative;
       display:flex;
       align-items:center;
       justify-content:center;
       overflow:hidden;
       min-height:44mm;
+      box-shadow:0 10px 20px rgba(16,39,18,0.2);
     }
     .portrait-box img{
       max-width:100%;
@@ -378,8 +434,8 @@
     .portrait-placeholder{
       font-size:3.4mm;
       text-transform:uppercase;
-      letter-spacing:.1em;
-      color:#8089a2;
+      letter-spacing:.12em;
+      color:rgba(33,68,36,0.6);
       text-align:center;
     }
     .cropper-overlay{
@@ -475,13 +531,14 @@
       filter:brightness(1.08);
     }
     .description-block{
-      border:0.6mm solid var(--sheet-border);
-      border-radius:3mm;
-      padding:1.5mm;
-      background:#fff;
+      border:2.2px solid var(--sheet-border);
+      border-radius:4mm;
+      padding:1.8mm;
+      background:linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(230,248,255,0.92) 100%);
       min-height:20mm;
-      font-size:1.8mm;
-      line-height:1.4;
+      font-size:1.85mm;
+      line-height:1.42;
+      box-shadow:0 6px 14px rgba(16,39,18,0.18);
     }
     .sheet-categories{
       display:grid;
@@ -492,42 +549,72 @@
       align-items:stretch;
     }
     .category-block{
-      border:0.8mm solid var(--sheet-border);
-      border-radius:3mm;
-      background:#fff;
-      padding:1.5mm;
+      border:2.2px solid var(--sheet-border);
+      border-radius:4mm;
+      background:linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(235,248,255,0.92) 100%);
+      padding:1.8mm;
       display:flex;
       flex-direction:column;
-      gap:1.8mm;
+      gap:1.9mm;
       min-height:20mm;
       height:100%;
       overflow:hidden;
       min-width:0;
+      box-shadow:0 8px 18px rgba(16,39,18,0.18);
     }
     .category-header{
       display:flex;
       justify-content:space-between;
-      gap:1.8mm;
-      align-items:flex-start;
-      border-bottom:0.4mm solid rgba(0,0,0,0.12);
-      padding-bottom:1.2mm;
+      align-items:center;
+      gap:1.6mm;
+      border-bottom:2px solid rgba(31,63,31,0.2);
+      padding-bottom:1.3mm;
     }
     .category-title{
       font-family:"Kanit";
-      font-size:3.5mm;
-      letter-spacing:.08em;
-      font-weight:700;
+      font-size:3.8mm;
+      letter-spacing:.1em;
+      font-weight:800;
       text-transform:uppercase;
-    }
-    .category-metrics{
-      font-size:1.8mm;
+      color:var(--sheet-accent-dark);
       display:flex;
-      flex-direction:column;
-      gap:1mm;
-      align-items:flex-end;
+      align-items:center;
+      gap:1.2mm;
+    }
+    .category-title .category-begabung{
+      font-family:"Kanit";
+      font-size:1em;
+      font-weight:800;
+      color:var(--sheet-ink);
+      letter-spacing:.04em;
+    }
+    .category-geist{
+      display:flex;
+      align-items:center;
+      gap:1.2mm;
+      color:rgba(33,68,36,0.85);
+      font-family:"Kanit";
+      font-size:1.7mm;
       text-transform:uppercase;
       letter-spacing:.06em;
       font-weight:700;
+    }
+    .category-geist .geist-label{
+      letter-spacing:.06em;
+    }
+    .category-geist span[id^="geist-"]{
+      font-size:2.4mm;
+      font-weight:800;
+      color:var(--sheet-ink);
+      letter-spacing:.02em;
+    }
+    .category-geist::after{
+      content:"🧠";
+      font-size:3.2mm;
+      line-height:1;
+      position:relative;
+      top:-0.2mm;
+    }
     }
     .category-table-wrapper{
       position:relative;
@@ -548,16 +635,17 @@
     }
     .category-table th,
     .category-table td{
-      border:0.4mm solid rgba(0,0,0,0.18);
+      border:0.35mm solid rgba(31,63,31,0.22);
       padding:1mm;
-      font-size:1.8mm;
+      font-size:1.75mm;
       word-break:break-word;
     }
     .category-table th{
-      font-size:1.8mm;
+      font-size:1.7mm;
       text-transform:uppercase;
-      letter-spacing:.06em;
-      background:rgba(44,57,79,0.08);
+      letter-spacing:.08em;
+      background:linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(229,245,255,0.9) 100%);
+      color:rgba(33,68,36,0.85);
     }
     .category-table th:nth-child(1),
     .category-table td:nth-child(1){
@@ -575,6 +663,7 @@
       font-weight:700;
       letter-spacing:.03em;
       white-space:nowrap;
+      color:var(--sheet-ink);
     }
     .category-table th.icon-col{
       padding:1.3mm 0;
@@ -590,9 +679,10 @@
       background-repeat:no-repeat;
       background-position:center;
       background-size:contain;
+      color:var(--sheet-ink);
     }
     .category-table tbody tr:nth-child(odd){
-      background:rgba(44,57,79,0.05);
+      background:rgba(255,255,255,0.6);
     }
     .category-table tbody tr td{
       height:5mm;
@@ -615,20 +705,22 @@
       grid-auto-rows:1fr;
     }
     .sheet-box{
-      border:0.8mm solid var(--sheet-border);
-      border-radius:3mm;
-      padding:1.6mm;
-      background:#fff;
+      border:2.2px solid var(--sheet-border);
+      border-radius:4mm;
+      padding:1.8mm;
+      background:linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(232,248,255,0.92) 100%);
       min-height:20mm;
       display:flex;
       flex-direction:column;
       height:100%;
+      box-shadow:0 6px 14px rgba(16,39,18,0.18);
     }
     .sheet-box h3{
       font-size:2.5mm;
       text-transform:uppercase;
-      letter-spacing:.08em;
-      margin-bottom:1.2mm;
+      letter-spacing:.09em;
+      margin-bottom:1.4mm;
+      color:rgba(33,68,36,0.85);
     }
     .sheet-box-content{
       flex:1;
@@ -641,12 +733,13 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
-      border-top:0.6mm solid rgba(0,0,0,0.18);
+      border-top:2px solid rgba(31,63,31,0.2);
       padding-top:1.8mm;
-      font-size:1.8mm;
+      font-size:1.7mm;
       text-transform:uppercase;
-      letter-spacing:.08em;
+      letter-spacing:.07em;
       font-weight:700;
+      color:rgba(33,68,36,0.85);
       flex-shrink:0;
     }
     #pointsRemaining.negative{
@@ -802,6 +895,8 @@
     <main class="preview-area">
       <div class="sheet-wrapper">
         <div class="sheet" id="sheet">
+          <div class="sheet-gradient-bg" aria-hidden="true"></div>
+          <div class="sheet-hero-bg" aria-hidden="true"></div>
           <section class="sheet-top">
             <div class="sheet-banner">
               <h2>How to be a Hero</h2>
@@ -855,11 +950,8 @@
           <section class="sheet-categories">
             <div class="category-block" data-category="handeln">
               <div class="category-header">
-                <div class="category-title">Handeln</div>
-                <div class="category-metrics">
-                  <span>Begabung: <span id="begabung-handeln">0</span></span>
-                  <span>Geistesblitz: <span id="geist-handeln">0</span></span>
-                </div>
+                <div class="category-title">Handeln <span class="category-begabung" id="begabung-handeln">0</span></div>
+                <div class="category-geist"><span class="geist-label">Geistesblitz</span><span id="geist-handeln">0</span></div>
               </div>
               <div class="category-table-wrapper">
                 <table class="category-table">
@@ -887,11 +979,8 @@
 
             <div class="category-block" data-category="wissen">
               <div class="category-header">
-                <div class="category-title">Wissen</div>
-                <div class="category-metrics">
-                  <span>Begabung: <span id="begabung-wissen">0</span></span>
-                  <span>Geistesblitz: <span id="geist-wissen">0</span></span>
-                </div>
+                <div class="category-title">Wissen <span class="category-begabung" id="begabung-wissen">0</span></div>
+                <div class="category-geist"><span class="geist-label">Geistesblitz</span><span id="geist-wissen">0</span></div>
               </div>
               <div class="category-table-wrapper">
                 <table class="category-table">
@@ -919,11 +1008,8 @@
 
             <div class="category-block" data-category="soziales">
               <div class="category-header">
-                <div class="category-title">Soziales</div>
-                <div class="category-metrics">
-                  <span>Begabung: <span id="begabung-soziales">0</span></span>
-                  <span>Geistesblitz: <span id="geist-soziales">0</span></span>
-                </div>
+                <div class="category-title">Soziales <span class="category-begabung" id="begabung-soziales">0</span></div>
+                <div class="category-geist"><span class="geist-label">Geistesblitz</span><span id="geist-soziales">0</span></div>
               </div>
               <div class="category-table-wrapper">
                 <table class="category-table">
