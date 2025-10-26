@@ -353,6 +353,11 @@
       align-items:flex-start;
       word-break:break-word;
     }
+    .info-value.hp-value,
+    .info-value.mental-value{
+      justify-content:flex-end;
+      font-feature-settings:"tnum" 1;
+    }
      .portrait-box{
       border:0.8mm solid var(--sheet-border);
       border-radius:3mm;
@@ -816,11 +821,11 @@
               </div>
               <div class="info-cell">
                 <div class="info-label">Lebenspunkte</div>
-                <div class="info-value" id="sheetHP"></div>
+                <div class="info-value hp-value" id="sheetHP"></div>
               </div>
               <div class="info-cell" id="sheetMentalCell" style="display:none;">
                 <div class="info-label">Mentale Gesundheit</div>
-                <div class="info-value" id="sheetMentalHP"></div>
+                <div class="info-value mental-value" id="sheetMentalHP"></div>
               </div>
               <div class="info-cell">
                 <div class="info-label">Statur</div>
@@ -991,6 +996,7 @@
       "use strict";
 
       const DEFAULT_TOTAL_POINTS = 400;
+      const DEFAULT_HP_VALUE = 100;
       const CATEGORY_KEYS = ["handeln", "wissen", "soziales"];
       const CATEGORY_LABELS = {
         handeln: "Handeln",
@@ -1095,8 +1101,8 @@
             religion: "",
             profession: "",
             family: "",
-            hp: "",
-            mentalHP: "",
+            hp: String(DEFAULT_HP_VALUE),
+            mentalHP: String(DEFAULT_HP_VALUE),
             mentalEnabled: false,
           },
           description: "",
@@ -1328,6 +1334,9 @@
           if (!toggleMental.checked) {
             state.info.mentalHP = "";
             inputMentalHP.value = "";
+          } else if (!state.info.mentalHP || !state.info.mentalHP.trim()) {
+            state.info.mentalHP = String(DEFAULT_HP_VALUE);
+            inputMentalHP.value = state.info.mentalHP;
           }
           inputMentalHP.disabled = !toggleMental.checked;
           render();
@@ -1440,11 +1449,11 @@
         sheetNameDisplay.textContent = state.info.name.trim() ? state.info.name.trim() : "Unbenannter Held";
         setInfoCell(sheetGender, state.info.gender);
         setInfoCell(sheetAge, state.info.age);
-        setInfoCell(sheetHP, state.info.hp);
+        setHpCell(sheetHP, state.info.hp, DEFAULT_HP_VALUE);
 
         if (state.info.mentalEnabled) {
           sheetMentalCell.style.display = "";
-          setInfoCell(sheetMentalHP, state.info.mentalHP);
+          setHpCell(sheetMentalHP, state.info.mentalHP, DEFAULT_HP_VALUE);
         } else {
           sheetMentalCell.style.display = "none";
           sheetMentalHP.textContent = "";
@@ -1481,6 +1490,13 @@
       function setInfoCell(element, value) {
         const text = typeof value === "string" ? value : typeof value === "number" && Number.isFinite(value) ? String(value) : "";
         element.textContent = text;
+      }
+
+      function setHpCell(element, value, maxDefault) {
+        if (!element) return;
+        const trimmed = typeof value === "string" ? value.trim() : "";
+        const maxLabel = trimmed.length ? trimmed : String(maxDefault);
+        element.textContent = `/${maxLabel}`;
       }
 
       function setMultilineContent(element, value) {
