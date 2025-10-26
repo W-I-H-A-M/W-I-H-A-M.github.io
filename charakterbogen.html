@@ -496,6 +496,8 @@
       gap:1.8mm;
       min-height:20mm;
       height:100%;
+      overflow:hidden;
+      min-width:0;
     }
     .category-header{
       display:flex;
@@ -522,11 +524,22 @@
       letter-spacing:.06em;
       font-weight:700;
     }
-    .category-table{
+    .category-table-wrapper{
+      position:relative;
+      flex:1;
+      min-height:0;
+      min-width:0;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+      overflow:hidden;
+    }
+    .category-table-wrapper .category-table{
       width:100%;
       border-collapse:collapse;
       table-layout:fixed;
       flex:1;
+      transform-origin:top left;
     }
     .category-table th,
     .category-table td{
@@ -562,17 +575,16 @@
       padding:1.3mm 0;
     }
     .category-table th .icon{
-      display:inline-block;
-      width:4mm;
-      height:4mm;
+      display:inline-flex;
+      width:5.5mm;
+      height:5.5mm;
+      font-size:3mm;
+      line-height:1;
+      justify-content:center;
+      align-items:center;
       background-repeat:no-repeat;
       background-position:center;
       background-size:contain;
-    }
-    .category-table th .icon{
-      display:inline-flex;
-      justify-content:center;
-      align-items:center;
     }
     .category-table tbody tr:nth-child(odd){
       background:rgba(44,57,79,0.05);
@@ -844,26 +856,28 @@
                   <span>Geistesblitz: <span id="geist-handeln">0</span></span>
                 </div>
               </div>
-              <table class="category-table">
-                <thead>
-                  <tr>
-                    <th>Fähigkeit</th>
-                    <th class="icon-col">
-                      <span class="icon" aria-hidden="true">⇅</span>
-                      <span class="sr-only">Basis</span>
-                    </th>
-                    <th class="icon-col">
-                      <span class="icon" aria-hidden="true">+</span>
-                      <span class="sr-only">Bonus</span>
-                    </th>
-                    <th class="icon-col">
-                      <span class="icon" aria-hidden="true">Σ</span>
-                      <span class="sr-only">Gesamt</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody id="table-handeln"></tbody>
-              </table>
+              <div class="category-table-wrapper">
+                <table class="category-table">
+                  <thead>
+                    <tr>
+                      <th>Fähigkeit</th>
+                      <th class="icon-col">
+                        <span class="icon" aria-hidden="true">⇅</span>
+                        <span class="sr-only">Basis</span>
+                      </th>
+                      <th class="icon-col">
+                        <span class="icon" aria-hidden="true">+</span>
+                        <span class="sr-only">Bonus</span>
+                      </th>
+                      <th class="icon-col">
+                        <span class="icon" aria-hidden="true">Σ</span>
+                        <span class="sr-only">Gesamt</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-handeln"></tbody>
+                </table>
+              </div>
             </div>
 
             <div class="category-block" data-category="wissen">
@@ -874,26 +888,28 @@
                   <span>Geistesblitz: <span id="geist-wissen">0</span></span>
                 </div>
               </div>
-              <table class="category-table">
-                <thead>
-                  <tr>
-                    <th>Fähigkeit</th>
-                    <th class="icon-col">
-                      <span class="icon" aria-hidden="true">⇅</span>
-                      <span class="sr-only">Basis</span>
-                    </th>
-                    <th class="icon-col">
-                      <span class="icon" aria-hidden="true">+</span>
-                      <span class="sr-only">Bonus</span>
-                    </th>
-                    <th class="icon-col">
-                      <span class="icon" aria-hidden="true">Σ</span>
-                      <span class="sr-only">Gesamt</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody id="table-wissen"></tbody>
-              </table>
+              <div class="category-table-wrapper">
+                <table class="category-table">
+                  <thead>
+                    <tr>
+                      <th>Fähigkeit</th>
+                      <th class="icon-col">
+                        <span class="icon" aria-hidden="true">⇅</span>
+                        <span class="sr-only">Basis</span>
+                      </th>
+                      <th class="icon-col">
+                        <span class="icon" aria-hidden="true">+</span>
+                        <span class="sr-only">Bonus</span>
+                      </th>
+                      <th class="icon-col">
+                        <span class="icon" aria-hidden="true">Σ</span>
+                        <span class="sr-only">Gesamt</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-wissen"></tbody>
+                </table>
+              </div>
             </div>
 
             <div class="category-block" data-category="soziales">
@@ -904,26 +920,28 @@
                   <span>Geistesblitz: <span id="geist-soziales">0</span></span>
                 </div>
               </div>
-              <table class="category-table">
-                <thead>
-                  <tr>
-                    <th>Fähigkeit</th>
-                    <th class="icon-col">
-                      <span class="icon" aria-hidden="true">⇅</span>
-                      <span class="sr-only">Basis</span>
-                    </th>
-                    <th class="icon-col">
-                      <span class="icon" aria-hidden="true">+</span>
-                      <span class="sr-only">Bonus</span>
-                    </th>
-                    <th class="icon-col">
-                      <span class="icon" aria-hidden="true">Σ</span>
-                      <span class="sr-only">Gesamt</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody id="table-soziales"></tbody>
-              </table>
+              <div class="category-table-wrapper">
+                <table class="category-table">
+                  <thead>
+                    <tr>
+                      <th>Fähigkeit</th>
+                      <th class="icon-col">
+                        <span class="icon" aria-hidden="true">⇅</span>
+                        <span class="sr-only">Basis</span>
+                      </th>
+                      <th class="icon-col">
+                        <span class="icon" aria-hidden="true">+</span>
+                        <span class="sr-only">Bonus</span>
+                      </th>
+                      <th class="icon-col">
+                        <span class="icon" aria-hidden="true">Σ</span>
+                        <span class="sr-only">Gesamt</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-soziales"></tbody>
+                </table>
+              </div>
             </div>
           </section>
 
@@ -988,6 +1006,7 @@
       let state = null;
       let isGeneratingPrint = false;
       let afterPrintHandlerBound = false;
+      let resizeHandlerBound = false;
       let cropperInstance = null;
       const editorRefs = {};
 
@@ -1062,6 +1081,7 @@
         state = createInitialState();
         rebuildEditors();
         syncInputsWithState();
+        resetCategoryTableWrappers();
         render();
       }
 
@@ -1263,6 +1283,10 @@
           isGeneratingPrint = false;
         });
         afterPrintHandlerBound = true;
+      }
+      if (!resizeHandlerBound && typeof window !== "undefined") {
+        window.addEventListener("resize", handleWindowResize, { passive: true });
+        resizeHandlerBound = true;
       }
     }
 
@@ -1477,6 +1501,13 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
         for (let i = 0; i < fillerCount; i += 1) {
           tbody.append(createFillerRow());
         }
+        if (typeof window !== "undefined") {
+          window.requestAnimationFrame(() => {
+            fitCategoryTable(tbody);
+          });
+        } else {
+          fitCategoryTable(tbody);
+        }
       }
 
       function createSkillRow(ability, metrics) {
@@ -1516,6 +1547,80 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
           tr.append(td);
         }
         return tr;
+      }
+
+      function fitCategoryTable(tbody) {
+        if (!tbody) {
+          return;
+        }
+        const table = tbody.closest("table");
+        if (!table) {
+          return;
+        }
+        const wrapper = table.parentElement;
+        if (!wrapper || !wrapper.classList.contains("category-table-wrapper")) {
+          return;
+        }
+        table.style.transformOrigin = "top left";
+        table.style.removeProperty("transform");
+        table.style.removeProperty("width");
+        wrapper.classList.remove("table-scaled");
+        wrapper.style.removeProperty("--table-scale");
+        wrapper.style.removeProperty("max-height");
+
+        let availableHeight = wrapper.clientHeight;
+        if (typeof window !== "undefined") {
+          const block = wrapper.closest(".category-block");
+          if (block) {
+            const blockStyle = window.getComputedStyle(block);
+            const paddingBottom = parseFloat(blockStyle.paddingBottom || "0") || 0;
+            const blockRect = block.getBoundingClientRect();
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const rawHeight = blockRect.bottom - paddingBottom - wrapperRect.top;
+            if (Number.isFinite(rawHeight) && rawHeight > 0) {
+              availableHeight = rawHeight;
+            }
+          }
+        }
+        if (availableHeight <= 0) {
+          return;
+        }
+        wrapper.style.maxHeight = `${availableHeight}px`;
+        const requiredHeight = table.scrollHeight;
+        if (!requiredHeight) {
+          return;
+        }
+        const scale = availableHeight / requiredHeight;
+        if (Math.abs(scale - 1) < 0.01) {
+          return;
+        }
+        table.style.transform = `scaleY(${scale})`;
+        wrapper.classList.add("table-scaled");
+        wrapper.style.setProperty("--table-scale", scale.toFixed(4));
+      }
+
+      function resetCategoryTableWrappers() {
+        const wrappers = document.querySelectorAll(".category-table-wrapper");
+        wrappers.forEach((wrapper) => {
+          if (!(wrapper instanceof HTMLElement)) return;
+          wrapper.style.removeProperty("--table-scale");
+          wrapper.style.removeProperty("max-height");
+          wrapper.classList.remove("table-scaled");
+          const table = wrapper.querySelector(".category-table");
+          if (table instanceof HTMLElement) {
+            table.style.removeProperty("transform");
+            table.style.removeProperty("width");
+            table.style.transformOrigin = "top left";
+          }
+        });
+      }
+
+      function handleWindowResize() {
+        if (!state) {
+          return;
+        }
+        resetCategoryTableWrappers();
+        updatePreviewOnly();
       }
 
       function updatePortraitBox() {
