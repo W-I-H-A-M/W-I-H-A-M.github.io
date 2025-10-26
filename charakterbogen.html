@@ -405,19 +405,20 @@
     }
     .category-table th:nth-child(1),
     .category-table td:nth-child(1){
-      width:52%;
+      width:46%;
       font-weight:600;
       text-align:left;
     }
     .category-table th:nth-child(n+2),
     .category-table td:nth-child(n+2){
-      width:16%;
+      width:18%;
       text-align:center;
     }
     .category-table td:nth-child(n+2){
       font-family:"Kanit";
       font-weight:700;
       letter-spacing:.03em;
+      white-space:nowrap;
     }
     .category-table th.icon-col{
       padding:1.3mm 0;
@@ -447,8 +448,8 @@
     .category-table tbody tr.placeholder-row td{
       opacity:0.35;
     }
-    .category-table tbody tr.filler-row td{
-      color:transparent;
+    .category-table tbody td.placeholder-cell{
+      color:rgba(0,0,0,0.45);
     }
     .sheet-lower{
       display:grid;
@@ -613,6 +614,11 @@
           <input type="checkbox" id="toggleMental">
           Mentale Gesundheit verfolgen
         </label>
+
+        <div>
+          <label for="inputTotalPoints">Punkte zu vergeben</label>
+          <input id="inputTotalPoints" type="number" min="0" step="5" placeholder="400">
+        </div>
       </section>
 
       <section class="panel-section">
@@ -819,7 +825,7 @@
     (function () {
       "use strict";
 
-      const TOTAL_POINTS_LIMIT = 400;
+      const DEFAULT_TOTAL_POINTS = 400;
       const CATEGORY_KEYS = ["handeln", "wissen", "soziales"];
       const CATEGORY_LABELS = {
         handeln: "Handeln",
@@ -852,6 +858,7 @@
       const inputDescription = document.getElementById("inputDescription");
       const inputInventory = document.getElementById("inputInventory");
       const inputNotes = document.getElementById("inputNotes");
+      const inputTotalPoints = document.getElementById("inputTotalPoints");
       const btnExportJSON = document.getElementById("btnExportJSON");
       const btnImportJSON = document.getElementById("btnImportJSON");
       const btnPrint = document.getElementById("btnPrint");
@@ -927,6 +934,7 @@
             wissen: createInitialAbilities(),
             soziales: createInitialAbilities(),
           },
+          totalPoints: DEFAULT_TOTAL_POINTS,
         };
       }
 
@@ -1091,8 +1099,10 @@
         inputMentalHP.value = toggleMental.checked ? state.info.mentalHP : "";
         inputDescription.value = state.description;
         inputInventory.value = state.inventory;
-      inputNotes.value = state.notes;
-      pointsTotalEl.textContent = TOTAL_POINTS_LIMIT;
+        inputNotes.value = state.notes;
+        const totalPoints = Number.isFinite(state.totalPoints) ? state.totalPoints : DEFAULT_TOTAL_POINTS;
+        inputTotalPoints.value = totalPoints;
+        pointsTotalEl.textContent = totalPoints;
 
       if (!afterPrintHandlerBound && typeof window !== "undefined") {
         window.addEventListener("afterprint", () => {
@@ -1160,6 +1170,13 @@
           state.notes = inputNotes.value;
           updatePreviewOnly();
         });
+        inputTotalPoints.addEventListener("input", () => {
+          const raw = parseInt(inputTotalPoints.value, 10);
+          const sanitized = Number.isFinite(raw) ? Math.max(0, raw) : DEFAULT_TOTAL_POINTS;
+          state.totalPoints = sanitized;
+          inputTotalPoints.value = sanitized;
+          render();
+        });
         inputPortrait.addEventListener("change", handlePortraitUpload);
         btnClearPortrait.addEventListener("click", () => {
           inputPortrait.value = "";
@@ -1191,11 +1208,13 @@
       }
 
       function calculateDerived() {
+        const totalPointsAvailable = Number.isFinite(state.totalPoints) ? state.totalPoints : DEFAULT_TOTAL_POINTS;
         const derived = {
           categories: {},
           totalAssigned: 0,
           totalGeistesblitz: 0,
-          pointsRemaining: TOTAL_POINTS_LIMIT,
+          totalPoints: totalPointsAvailable,
+          pointsRemaining: totalPointsAvailable,
         };
         for (const key of CATEGORY_KEYS) {
           const list = state.categories[key];
@@ -1210,7 +1229,7 @@
           derived.totalAssigned += baseSum;
           derived.totalGeistesblitz += geistesblitz;
         }
-        derived.pointsRemaining = TOTAL_POINTS_LIMIT - derived.totalAssigned;
+        derived.pointsRemaining = totalPointsAvailable - derived.totalAssigned;
         return derived;
       }
 
@@ -1260,7 +1279,7 @@
           renderCategoryTable(categoryTables[key], state.categories[key], metrics, uniformRowCount);
         }
 
-        pointsTotalEl.textContent = TOTAL_POINTS_LIMIT;
+        pointsTotalEl.textContent = derived.totalPoints;
         pointsRemainingEl.textContent = derived.pointsRemaining;
         pointsRemainingEl.classList.toggle("negative", derived.pointsRemaining < 0);
         geistTotalEl.textContent = derived.totalGeistesblitz;
@@ -1307,7 +1326,7 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
 
         const hasContent = Boolean(ability.name && ability.name.trim()) || ability.base > 0;
         const bonusValue = metrics.begabung;
-        const totalValue = clamp(ability.base + bonusValue, 0, 100);
+        const totalValue = Math.max(0, ability.base + bonusValue);
 
         baseCell.textContent = hasContent ? String(ability.base) : "";
         bonusCell.textContent = hasContent ? String(bonusValue) : "";
@@ -1401,6 +1420,7 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
             notes: state.notes,
             portrait: state.portrait,
             categories,
+            totalPoints: Number.isFinite(state.totalPoints) ? state.totalPoints : DEFAULT_TOTAL_POINTS,
           },
         };
       }
@@ -1659,6 +1679,8 @@ function renderCategoryTable(tbody, abilities, metrics, desiredRowCount) {
             freshState.categories[key] = source.map((item) => createAbility(coerceString(item.name), normalizeBase(item.base)));
           }
         }
+
+        freshState.totalPoints = Number.isFinite(character.totalPoints) ? character.totalPoints : DEFAULT_TOTAL_POINTS;
 
         state = freshState;
         rebuildEditors();
