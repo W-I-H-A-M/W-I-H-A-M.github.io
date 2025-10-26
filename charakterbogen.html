@@ -96,13 +96,14 @@
     button:hover{ transform:translateY(-1px); }
     .app{
       display:grid;
-      grid-template-columns:minmax(320px,360px) 1fr;
-      gap:20px;
+      grid-template-columns:minmax(540px, 1fr) minmax(540px, 1fr);
+      gap:32px;
       align-items:flex-start;
-      max-width:1400px;
+      max-width:2200px;
       margin:0 auto;
     }
     .control-panel{
+      width:100%; max-width:none;
       background:var(--panel);
       border:1px solid var(--panel-border);
       border-radius:14px;
@@ -119,6 +120,12 @@
       font-size:20px;
       margin-bottom:4px;
     }
+    #editorsContainer{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(180px, 1fr));
+      gap:16px;
+    }
+
     .panel-section{
       border:1px solid rgba(255,255,255,0.05);
       border-radius:12px;
@@ -132,10 +139,41 @@
       font-size:14px;
       margin-bottom:4px;
     }
-    .panel-row{
+    .general-grid{
       display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:10px;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      width:100%;;
+      gap:12px 16px;
+      margin-top:12px;
+    }
+    .general-grid .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .general-grid .field label{
+      margin-bottom:0;
+    }
+    .general-grid .field.full-span{
+      grid-column:1 / -1;
+    }
+    .general-grid .field-toggle{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .inline-toggle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      text-transform:none;
+      letter-spacing:0;
+      font-weight:600;
+    }
+    .inline-toggle input{
+      width:18px;
+      height:18px;
     }
     .toggle{
       display:flex;
@@ -189,25 +227,30 @@
       display:flex;
       justify-content:center;
       align-items:flex-start;
+      overflow:auto;
+      padding:0 16px;
     }
     .sheet-wrapper{
       width:100%;
       display:flex;
       justify-content:center;
+      max-width:calc(210mm + 32mm);
+      margin:0 auto;
     }
     .sheet{
-      width:202mm;
-      min-height:272mm;
+      width:210mm;
+      height:297mm;
+      aspect-ratio:210 / 297;
       background:var(--sheet-bg);
       color:var(--sheet-ink);
       box-shadow:0 28px 60px rgba(0,0,0,0.35);
       border:2px solid var(--sheet-border);
       border-radius:6px;
-      padding:10mm 9mm;
+      padding:7.5mm 9mm;
       display:grid;
       grid-template-columns:1fr;
-      grid-template-rows:auto auto minmax(48mm, auto) minmax(95mm, 1fr) minmax(65mm, auto) auto;
-      gap:7.5mm;
+      grid-template-rows:auto auto minmax(28mm, auto) minmax(86mm, 1fr) minmax(36mm, auto) auto;
+      gap:3mm;
       position:relative;
       align-items:stretch;
     }
@@ -217,7 +260,7 @@
     .sheet::after{
       content:"";
       position:absolute;
-      inset:3.2mm;
+      inset:4mm;
       border:0.6mm solid rgba(0,0,0,0.08);
       pointer-events:none;
     }
@@ -228,7 +271,7 @@
       gap:3mm;
     }
     .sheet-banner{
-      height:30mm;
+      height:15mm;
       border:1mm solid var(--sheet-border);
       border-radius:4mm;
       background:linear-gradient(135deg,#424b69,#1f2435);
@@ -236,6 +279,7 @@
       align-items:center;
       justify-content:center;
       overflow:hidden;
+      min-height:34mm;
       position:relative;
     }
     .sheet-banner h2{
@@ -244,7 +288,7 @@
       text-transform:uppercase;
       letter-spacing:.12em;
       color:#f7f8fb;
-      font-size:8mm;
+      font-size:7mm;
       margin:0;
       text-shadow:0 3px 8px rgba(0,0,0,0.45);
     }
@@ -258,22 +302,22 @@
       pointer-events:none;
     }
     .sheet-name-block{
-      height:12mm;
+      height:8.5mm;
       border:0.8mm solid var(--sheet-border);
       border-radius:3mm;
       background:#fff;
       display:flex;
       align-items:center;
-      padding:0 5mm;
+      padding:0 3mm;
       font-family:"Kanit";
       font-weight:700;
-      font-size:5.2mm;
+      font-size:4.7mm;
       letter-spacing:.08em;
     }
     .identity-section{
       display:grid;
-      grid-template-columns:2fr 1fr;
-      gap:4.6mm;
+      grid-template-columns:1.75fr 1fr;
+      gap:4mm;
       align-items:stretch;
     }
     .info-grid{
@@ -284,15 +328,15 @@
     .info-cell{
       border:0.6mm solid var(--sheet-border);
       border-radius:2.5mm;
-      padding:2.4mm;
-      min-height:12mm;
+      padding:1.6mm;
+      min-height:7mm;
       display:flex;
       flex-direction:column;
       justify-content:space-between;
       background:#fff;
     }
     .info-label{
-      font-size:2.6mm;
+      font-size:1.8mm;
       letter-spacing:.1em;
       text-transform:uppercase;
       color:#505b75;
@@ -300,7 +344,7 @@
       margin-bottom:1.4mm;
     }
     .info-value{
-      font-size:3.8mm;
+      font-size:3.5mm;
       font-weight:600;
       color:var(--sheet-ink);
       min-height:6mm;
@@ -308,7 +352,7 @@
       align-items:flex-start;
       word-break:break-word;
     }
-    .portrait-box{
+     .portrait-box{
       border:0.8mm solid var(--sheet-border);
       border-radius:3mm;
       background:#fff;
@@ -317,6 +361,7 @@
       align-items:center;
       justify-content:center;
       overflow:hidden;
+      min-height:44mm;
     }
     .portrait-box img{
       max-width:100%;
@@ -334,17 +379,17 @@
     .description-block{
       border:0.6mm solid var(--sheet-border);
       border-radius:3mm;
-      padding:3mm;
+      padding:1.5mm;
       background:#fff;
-      min-height:32mm;
-      font-size:3mm;
+      min-height:20mm;
+      font-size:1.8mm;
       line-height:1.4;
     }
     .sheet-categories{
       display:grid;
       grid-template-columns:repeat(3, minmax(0,1fr));
-      gap:4.2mm;
-      min-height:95mm;
+      gap:1.8mm;
+      min-height:64mm;
       align-content:stretch;
       align-items:stretch;
     }
@@ -352,30 +397,30 @@
       border:0.8mm solid var(--sheet-border);
       border-radius:3mm;
       background:#fff;
-      padding:2.6mm;
+      padding:1.5mm;
       display:flex;
       flex-direction:column;
-      gap:2.6mm;
-      min-height:45mm;
+      gap:1.8mm;
+      min-height:20mm;
       height:100%;
     }
     .category-header{
       display:flex;
       justify-content:space-between;
-      gap:2.8mm;
+      gap:1.8mm;
       align-items:flex-start;
       border-bottom:0.4mm solid rgba(0,0,0,0.12);
-      padding-bottom:1.6mm;
+      padding-bottom:1.2mm;
     }
     .category-title{
       font-family:"Kanit";
-      font-size:4.2mm;
+      font-size:3.5mm;
       letter-spacing:.08em;
       font-weight:700;
       text-transform:uppercase;
     }
     .category-metrics{
-      font-size:2.8mm;
+      font-size:1.8mm;
       display:flex;
       flex-direction:column;
       gap:1mm;
@@ -393,12 +438,12 @@
     .category-table th,
     .category-table td{
       border:0.4mm solid rgba(0,0,0,0.18);
-      padding:1.4mm;
-      font-size:3mm;
+      padding:1mm;
+      font-size:1.8mm;
       word-break:break-word;
     }
     .category-table th{
-      font-size:2.6mm;
+      font-size:1.8mm;
       text-transform:uppercase;
       letter-spacing:.06em;
       background:rgba(44,57,79,0.08);
@@ -440,7 +485,7 @@
       background:rgba(44,57,79,0.05);
     }
     .category-table tbody tr td{
-      height:6.2mm;
+      height:5mm;
       vertical-align:middle;
       padding-top:0;
       padding-bottom:0;
@@ -454,31 +499,31 @@
     .sheet-lower{
       display:grid;
       grid-template-columns:repeat(2, minmax(0,1fr));
-      gap:4.2mm;
-      min-height:55mm;
+      gap:1.8mm;
+      min-height:20mm;
       align-content:stretch;
       grid-auto-rows:1fr;
     }
     .sheet-box{
       border:0.8mm solid var(--sheet-border);
       border-radius:3mm;
-      padding:2.8mm;
+      padding:1.6mm;
       background:#fff;
-      min-height:48mm;
+      min-height:20mm;
       display:flex;
       flex-direction:column;
       height:100%;
     }
     .sheet-box h3{
-      font-size:3.2mm;
+      font-size:2.5mm;
       text-transform:uppercase;
       letter-spacing:.08em;
-      margin-bottom:2mm;
+      margin-bottom:1.2mm;
     }
     .sheet-box-content{
       flex:1;
-      font-size:3mm;
-      line-height:1.36;
+      font-size:1.8mm;
+      line-height:1.28;
       white-space:pre-wrap;
       word-break:break-word;
     }
@@ -487,8 +532,8 @@
       justify-content:space-between;
       align-items:center;
       border-top:0.6mm solid rgba(0,0,0,0.18);
-      padding-top:2.6mm;
-      font-size:2.8mm;
+      padding-top:1.8mm;
+      font-size:1.8mm;
       text-transform:uppercase;
       letter-spacing:.08em;
       font-weight:700;
@@ -529,15 +574,14 @@
       .sheet{
         box-shadow:none;
         border:none;
-        width:calc(210mm - 6mm);
-        height:calc(297mm - 6mm);
-        padding:9mm 5mm 9mm 5mm;
-        gap:6mm;
+        width:210mm;
+        height:297mm;
+        padding:7.5mm 9mm;
+        gap:3mm;
         margin:0 auto;
-        min-height:auto;
         box-sizing:border-box;
         overflow:hidden;
-        grid-template-rows:auto auto minmax(55mm, auto) minmax(110mm, 1fr) minmax(75mm, auto) auto;
+        grid-template-rows:auto auto minmax(28mm, auto) minmax(86mm, 1fr) minmax(36mm, auto) auto;
       }
       .sheet::after{ display:none; }
       .sheet-categories{
@@ -563,61 +607,51 @@
 
       <section class="panel-section" id="generalSection">
         <h2>Allgemein</h2>
-        <label for="inputName">Name</label>
-        <input id="inputName" type="text" placeholder="Name des Charakters">
-
-        <div class="panel-row">
-          <div>
+        <div class="general-grid">
+          <div class="field full-span">
+            <label for="inputName">Name</label>
+            <input id="inputName" type="text" placeholder="Name des Charakters">
+          </div>
+          <div class="field">
             <label for="inputGender">Geschlecht</label>
             <input id="inputGender" type="text" placeholder="z. B. weiblich">
           </div>
-          <div>
+          <div class="field">
             <label for="inputAge">Alter</label>
             <input id="inputAge" type="number" min="0" placeholder="z. B. 28">
           </div>
-        </div>
-
-        <div class="panel-row">
-          <div>
-            <label for="inputStature">Statur</label>
-            <input id="inputStature" type="text" placeholder="z. B. sportlich">
-          </div>
-          <div>
-            <label for="inputReligion">Religion</label>
-            <input id="inputReligion" type="text" placeholder="z. B. keine">
-          </div>
-        </div>
-
-        <div class="panel-row">
-          <div>
-            <label for="inputProfession">Beruf</label>
-            <input id="inputProfession" type="text" placeholder="z. B. Archäologin">
-          </div>
-          <div>
-            <label for="inputFamily">Familienstand</label>
-            <input id="inputFamily" type="text" placeholder="z. B. ledig">
-          </div>
-        </div>
-
-        <div class="panel-row">
-          <div>
+          <div class="field">
             <label for="inputHP">Lebenspunkte (max)</label>
             <input id="inputHP" type="number" min="0" placeholder="z. B. 40">
           </div>
-          <div id="mentalToggleContainer">
+          <div class="field">
+            <label for="inputStature">Statur</label>
+            <input id="inputStature" type="text" placeholder="z. B. sportlich">
+          </div>
+          <div class="field">
+            <label for="inputReligion">Religion</label>
+            <input id="inputReligion" type="text" placeholder="z. B. keine">
+          </div>
+          <div class="field">
+            <label for="inputProfession">Beruf</label>
+            <input id="inputProfession" type="text" placeholder="z. B. Archäologin">
+          </div>
+          <div class="field full-span">
+            <label for="inputFamily">Familienstand</label>
+            <input id="inputFamily" type="text" placeholder="z. B. ledig">
+          </div>
+          <div class="field field-toggle">
             <label for="inputMentalHP" id="lblMentalHP">Mentale Gesundheit (max)</label>
             <input id="inputMentalHP" type="number" min="0" placeholder="Optional" disabled>
+            <label class="inline-toggle" for="toggleMental">
+              <input type="checkbox" id="toggleMental">
+              Mentale Gesundheit verfolgen
+            </label>
           </div>
-        </div>
-
-        <label class="toggle">
-          <input type="checkbox" id="toggleMental">
-          Mentale Gesundheit verfolgen
-        </label>
-
-        <div>
-          <label for="inputTotalPoints">Punkte zu vergeben</label>
-          <input id="inputTotalPoints" type="number" min="0" step="5" placeholder="400">
+          <div class="field">
+            <label for="inputTotalPoints">Punkte zu vergeben</label>
+            <input id="inputTotalPoints" type="number" min="0" step="5" placeholder="400">
+          </div>
         </div>
       </section>
 
