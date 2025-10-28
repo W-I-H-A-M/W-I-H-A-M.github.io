@@ -357,14 +357,7 @@
       color:#111;
     }
     body.bw-mode .sheet-gradient-bg{ display:none; }
-    body.bw-mode .sheet-hero-bg{
-      background:linear-gradient(180deg,
-        #c9c9c9 0%,
-        #d5d5d5 60%,
-        #ededed 90%,
-        #ffffff 100%
-      );
-    }
+    body.bw-mode .sheet-hero-bg{ background:#ffffff; }
     body.bw-mode .sheet-hero-bg img{
       filter:grayscale(1) contrast(1.05);
       -webkit-print-color-adjust:exact;
@@ -1761,7 +1754,7 @@
         const isEnabled = Boolean(enabled);
         document.body.classList.toggle("bw-mode", isEnabled);
         if (sheetHeroImage) {
-          sheetHeroImage.src = isEnabled ? "img/charbg-bw.png" : "img/charbg.png";
+          sheetHeroImage.src = isEnabled ? "img/charbg-bw-faded.png" : "img/charbg.png";
         }
       }
 
