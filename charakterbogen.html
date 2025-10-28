@@ -212,9 +212,14 @@
     }
     .skill-row-editor{
       display:grid;
-      grid-template-columns:2fr 100px auto;
+      grid-template-columns:minmax(0,1fr) auto auto;
       gap:8px;
       align-items:center;
+    }
+    .skill-row-editor input[type="number"]{
+      width:calc(3ch + 24px);
+      justify-self:start;
+      text-align:center;
     }
     .skill-row-editor button{
       padding:6px 10px;
