@@ -272,6 +272,16 @@
     .sheet.render-for-print{
       box-shadow:none;
     }
+    .sheet.render-for-print .sheet-gradient-bg,
+    .sheet.render-for-print .sheet-hero-bg{
+      left:0;
+      transform:none;
+      width:100%;
+    }
+    .sheet.render-for-print .sheet-hero-bg img{
+      width:100%;
+      height:auto;
+    }
     .sheet::after{
       content:"";
       position:absolute;
@@ -306,9 +316,22 @@
       width:100%;
       max-height:36%;
       aspect-ratio:1536 / 546;
-      background:#468d4b url("img/charbg.png") no-repeat top center / contain;
+      background:#468d4b;
       overflow:hidden;
       z-index:1;
+    }
+    .sheet-hero-bg img{
+      width:100%;
+      height:auto;
+      object-fit:contain;
+      object-position:top center;
+      display:block;
+      pointer-events:none;
+      user-select:none;
+      position:relative;
+      z-index:1;
+      -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 58%, rgba(0,0,0,0.85) 68%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 92%, rgba(0,0,0,0) 100%);
+      mask-image:linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 58%, rgba(0,0,0,0.85) 68%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.05) 92%, rgba(0,0,0,0) 100%);
     }
     .sheet-hero-bg::after{
       content:"";
@@ -321,6 +344,7 @@
         rgba(70,141,75,0.85) 93%,
         rgba(70,141,75,1) 100%
       );
+      z-index:2;
     }
     .sheet > *:not(.sheet-gradient-bg):not(.sheet-hero-bg){ position:relative; z-index:3; }
 
@@ -334,18 +358,33 @@
     }
     body.bw-mode .sheet-gradient-bg{ display:none; }
     body.bw-mode .sheet-hero-bg{
-      filter:grayscale(1);
-      opacity:0.9;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.75) 90%, rgba(255,255,255,1) 100%),
-        url("img/charbg.png") no-repeat top center / contain;
+      background:linear-gradient(180deg,
+        #c9c9c9 0%,
+        #d5d5d5 60%,
+        #ededed 90%,
+        #ffffff 100%
+      );
     }
-    body.bw-mode .sheet-hero-bg img,
+    body.bw-mode .sheet-hero-bg img{
+      filter:grayscale(1) contrast(1.05);
+      -webkit-print-color-adjust:exact;
+      print-color-adjust:exact;
+    }
     body.bw-mode .sheet-hero-bg::after,
     body.bw-mode #sheet img{
       filter:grayscale(1) contrast(1.05) !important;
     }
-    body.bw-mode .sheet-hero-bg::after{ display:none; }
+    body.bw-mode .sheet-hero-bg::after{
+      background:linear-gradient(180deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.12) 48%,
+        rgba(240,240,240,0.3) 62%,
+        rgba(232,232,232,0.55) 74%,
+        rgba(225,225,225,0.8) 86%,
+        rgba(220,220,220,0.95) 94%,
+        rgba(220,220,220,1) 100%
+      );
+    }
     body.bw-mode .sheet-banner{
       background:linear-gradient(180deg,#666666, #b5b5b5);
       border-color:#3b3b3b;
@@ -375,6 +414,14 @@
       border-color:#3b3b3b;
       box-shadow:0 6px 12px rgba(0,0,0,0.12);
       color:#111;
+    }
+    body.bw-mode .portrait-box{
+      background:#ffffff;
+      border-color:#3b3b3b;
+      box-shadow:0 10px 18px rgba(0,0,0,0.16);
+    }
+    body.bw-mode .portrait-placeholder{
+      background:#ffffff;
     }
     body.bw-mode .category-title,
     body.bw-mode .category-geist,
@@ -538,11 +585,10 @@
       display:none;
     }
     .portrait-placeholder{
-      font-size:3.4mm;
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      color:rgba(33,68,36,0.6);
-      text-align:center;
+      width:100%;
+      height:100%;
+      display:block;
+      flex:1;
     }
     .cropper-overlay{
       position:fixed;
@@ -1006,7 +1052,9 @@
       <div class="sheet-wrapper">
         <div class="sheet" id="sheet">
           <div class="sheet-gradient-bg" aria-hidden="true"></div>
-          <div class="sheet-hero-bg" aria-hidden="true"></div>
+          <div class="sheet-hero-bg" aria-hidden="true">
+            <img id="sheetHeroImage" src="img/charbg.png" alt="" aria-hidden="true">
+          </div>
           <section class="sheet-top">
             <div class="sheet-banner">
               <h2>How to be a Hero</h2>
@@ -1051,7 +1099,7 @@
             </div>
             <div class="portrait-box" id="sheetPortraitBox">
               <img id="sheetPortrait" alt="Portrait">
-              <div class="portrait-placeholder">Portrait</div>
+              <div class="portrait-placeholder" aria-hidden="true"></div>
             </div>
           </section>
 
@@ -1257,6 +1305,7 @@
       const sheetPortraitBox = document.getElementById("sheetPortraitBox");
       const sheetPortrait = document.getElementById("sheetPortrait");
       const portraitPlaceholder = sheetPortraitBox.querySelector(".portrait-placeholder");
+      const sheetHeroImage = document.getElementById("sheetHeroImage");
       const sheetRoot = document.getElementById("sheet");
 
       const pointsTotalEl = document.getElementById("pointsTotal");
@@ -1709,7 +1758,11 @@
       }
 
       function applyBwMode(enabled) {
-        document.body.classList.toggle("bw-mode", Boolean(enabled));
+        const isEnabled = Boolean(enabled);
+        document.body.classList.toggle("bw-mode", isEnabled);
+        if (sheetHeroImage) {
+          sheetHeroImage.src = isEnabled ? "img/charbg-bw.png" : "img/charbg.png";
+        }
       }
 
       function setMultilineContent(element, value) {
