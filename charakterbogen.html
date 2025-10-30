@@ -120,7 +120,8 @@
       position:sticky;
       top:16px;
       max-height:calc(100vh - 32px);
-      overflow:auto;
+      overflow-y:auto;
+      overflow-x:hidden;
     }
     .control-panel h1{
       font-size:20px;
@@ -130,6 +131,173 @@
       display:grid;
       grid-template-columns:repeat(3, minmax(180px, 1fr));
       gap:16px;
+    }
+    .field-label{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .field-label label{
+      margin:0;
+      flex:1;
+    }
+    .info-button{
+      position:relative;
+      width:20px;
+      height:20px;
+      border-radius:50%;
+      border:1px solid var(--panel-border);
+      background:rgba(26,36,54,0.8);
+      color:var(--sheet-sky);
+      font-size:12px;
+      font-weight:700;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition:background .18s ease, color .18s ease, transform .18s ease;
+      padding:0;
+      flex-shrink:0;
+    }
+    .info-button:hover,
+    .info-button:focus-visible{
+      background:var(--accent);
+      color:#fff;
+      outline:none;
+      transform:translateY(-1px);
+    }
+    .info-button::after{
+      content:attr(data-info);
+      position:absolute;
+      bottom:calc(100% + 12px);
+      left:50%;
+      transform:translate(-50%,6px);
+      background:rgba(9,14,22,0.96);
+      color:var(--sheet-soft);
+      padding:10px 12px;
+      border-radius:8px;
+      min-width:180px;
+      max-width:min(240px, 70vw);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .16s ease, transform .16s ease;
+      box-shadow:0 12px 24px rgba(5,9,15,0.5);
+      z-index:20;
+      text-align:left;
+      font-size:12px;
+      line-height:1.45;
+      white-space:normal;
+    }
+    .info-button::before{
+      content:"";
+      position:absolute;
+      bottom:calc(100% + 4px);
+      left:50%;
+      width:10px;
+      height:10px;
+      transform:translate(-50%,6px) rotate(45deg);
+      background:rgba(9,14,22,0.96);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .16s ease, transform .16s ease;
+      box-shadow:0 6px 12px rgba(5,9,15,0.35);
+      z-index:19;
+    }
+    .info-button:hover::after,
+    .info-button:focus-visible::after{
+      opacity:1;
+      transform:translate(-50%,-2px);
+    }
+    .info-button:hover::before,
+    .info-button:focus-visible::before{
+      opacity:1;
+      transform:translate(-50%,-2px) rotate(45deg);
+    }
+    .info-button[data-align="start"]::after{
+      left:0;
+      right:auto;
+      transform:translate(0,6px);
+    }
+    .info-button[data-align="start"]::before{
+      left:14px;
+      transform:translate(-50%,6px) rotate(45deg);
+    }
+    .info-button[data-align="start"]:hover::after,
+    .info-button[data-align="start"]:focus-visible::after{
+      transform:translate(0,-2px);
+    }
+    .info-button[data-align="start"]:hover::before,
+    .info-button[data-align="start"]:focus-visible::before{
+      transform:translate(-50%,-2px) rotate(45deg);
+    }
+    .info-button[data-align="end"]::after{
+      left:auto;
+      right:0;
+      transform:translate(0,6px);
+      text-align:right;
+    }
+    .info-button[data-align="end"]::before{
+      left:auto;
+      right:14px;
+      transform:translate(50%,6px) rotate(45deg);
+    }
+    .info-button[data-align="end"]:hover::after,
+    .info-button[data-align="end"]:focus-visible::after{
+      transform:translate(0,-2px);
+    }
+    .info-button[data-align="end"]:hover::before,
+    .info-button[data-align="end"]:focus-visible::before{
+      transform:translate(50%,-2px) rotate(45deg);
+    }
+    .category-editor-title{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-weight:700;
+      font-size:14px;
+      color:var(--panel-text);
+    }
+    .category-editor-title .info-button{
+      flex-shrink:0;
+    }
+    .inline-toggle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      text-transform:none;
+      letter-spacing:0;
+      font-weight:600;
+      color:var(--panel-text);
+    }
+    .inline-toggle input{
+      width:18px;
+      height:18px;
+      accent-color:var(--accent);
+    }
+    .inline-toggle label{
+      margin:0;
+      flex:1;
+      cursor:pointer;
+    }
+    .inline-toggle .info-button{
+      align-self:flex-start;
+      margin-top:-2px;
+    }
+    .section-heading{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .section-heading h2{
+      margin:0;
     }
 
     .panel-section{
@@ -169,27 +337,24 @@
       flex-direction:column;
       gap:8px;
     }
-    .inline-toggle{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-size:13px;
-      text-transform:none;
-      letter-spacing:0;
-      font-weight:600;
-    }
-    .inline-toggle input{
-      width:18px;
-      height:18px;
-    }
     .toggle{
       display:flex;
       align-items:center;
       gap:10px;
       font-size:13px;
       color:var(--panel-text);
+      font-weight:600;
     }
     .toggle input{ width:18px; height:18px; accent-color:var(--accent); }
+    .toggle label{
+      margin:0;
+      flex:1;
+      cursor:pointer;
+    }
+    .toggle .info-button{
+      align-self:flex-start;
+      margin-top:-2px;
+    }
     .category-editor{
       border-radius:10px;
       border:1px solid rgba(255,255,255,0.06);
@@ -946,47 +1111,100 @@
         <h2>Allgemein</h2>
         <div class="general-grid">
           <div class="field full-span">
-            <label for="inputName">Name</label>
+            <div class="field-label">
+              <label for="inputName">Name</label>
+              <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Name" data-info="Gib den vollständigen Namen an, der auf dem Charakterbogen angezeigt werden soll.">
+                i
+              </button>
+            </div>
             <input id="inputName" type="text" placeholder="Name des Charakters">
           </div>
           <div class="field">
-            <label for="inputGender">Geschlecht</label>
+            <div class="field-label">
+              <label for="inputGender">Geschlecht</label>
+              <button type="button" class="info-button" data-align="start" aria-label="Hinweis zu Geschlecht" data-info="Beschreibe, wie sich dein Charakter identifiziert oder wahrgenommen werden möchte. Optional, aber hilfreich für soziale Szenen.">
+                i
+              </button>
+            </div>
             <input id="inputGender" type="text" placeholder="z. B. weiblich">
           </div>
           <div class="field">
-            <label for="inputAge">Alter</label>
+            <div class="field-label">
+              <label for="inputAge">Alter</label>
+              <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Alter" data-info="Alter in Jahren. Unterstützt bei der Einschätzung körperlicher und sozialer Erfahrungen.">
+                i
+              </button>
+            </div>
             <input id="inputAge" type="number" min="0" placeholder="z. B. 28">
           </div>
           <div class="field">
-            <label for="inputHP">Lebenspunkte (max)</label>
+            <div class="field-label">
+              <label for="inputHP">Lebenspunkte (max)</label>
+              <button type="button" class="info-button" data-align="start" aria-label="Hinweis zu Lebenspunkten" data-info="Standardwerte liegen bei 100 Lebenspunkten. Passe sie an, wenn euer Abenteuer besondere Regeln verwendet.">
+                i
+              </button>
+            </div>
             <input id="inputHP" type="number" min="0" placeholder="z. B. 40">
           </div>
           <div class="field">
-            <label for="inputStature">Statur</label>
+            <div class="field-label">
+              <label for="inputStature">Statur</label>
+              <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Statur" data-info="Notiere Erscheinung, Körperbau oder Fitnessgrad. Hilft bei Beschreibungen und körperlichen Proben.">
+                i
+              </button>
+            </div>
             <input id="inputStature" type="text" placeholder="z. B. sportlich">
           </div>
           <div class="field">
-            <label for="inputReligion">Religion</label>
+            <div class="field-label">
+              <label for="inputReligion">Religion</label>
+              <button type="button" class="info-button" data-align="start" aria-label="Hinweis zu Religion" data-info="Glaube, Überzeugungen oder Zugehörigkeit, die soziale Interaktionen und Motivation prägen können.">
+                i
+              </button>
+            </div>
             <input id="inputReligion" type="text" placeholder="z. B. keine">
           </div>
           <div class="field">
-            <label for="inputProfession">Beruf</label>
+            <div class="field-label">
+              <label for="inputProfession">Beruf</label>
+              <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Beruf" data-info="Haupttätigkeit, Ausbildung oder Rolle, die deinem Charakter passende Fähigkeiten verleiht.">
+                i
+              </button>
+            </div>
             <input id="inputProfession" type="text" placeholder="z. B. Archäologin">
           </div>
           <div class="field full-span">
-            <label for="inputFamily">Familienstand</label>
+            <div class="field-label">
+              <label for="inputFamily">Familienstand</label>
+              <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Familienstand" data-info="Familienstatus, wichtige Angehörige oder Bande, die als Aufhänger für Abenteuer dienen können.">
+                i
+              </button>
+            </div>
             <input id="inputFamily" type="text" placeholder="z. B. ledig">
           </div>
           <div class="field field-toggle">
-            <label for="inputMentalHP" id="lblMentalHP">Mentale Gesundheit (max)</label>
+            <div class="field-label">
+              <label for="inputMentalHP" id="lblMentalHP">Mentale Gesundheit (max)</label>
+              <button type="button" class="info-button" data-align="start" aria-label="Hinweis zu Mentaler Gesundheit" data-info="Optionaler Pool für psychische Belastung. Nutze ihn, wenn eure Runde mentale Stabilität gesondert verfolgt.">
+                i
+              </button>
+            </div>
             <input id="inputMentalHP" type="number" min="0" placeholder="Optional" disabled>
-            <label class="inline-toggle" for="toggleMental">
+            <div class="inline-toggle">
               <input type="checkbox" id="toggleMental">
-              Mentale Gesundheit verfolgen
-            </label>
+              <label for="toggleMental">Mentale Gesundheit verfolgen</label>
+              <button type="button" class="info-button" data-align="end" aria-label="Hinweis zur Mentalen Gesundheit verfolgen" data-info="Aktiviere den Schalter, wenn die Gruppe Stress oder Wahnsinn separat von den Lebenspunkten zählt.">
+                i
+              </button>
+            </div>
           </div>
           <div class="field">
-            <label for="inputTotalPoints">Punkte zu vergeben</label>
+            <div class="field-label">
+              <label for="inputTotalPoints">Punkte zu vergeben</label>
+              <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Punktebudget" data-info="Standardmäßig stehen 400 Fähigkeitspunkte zur Verfügung. Passe den Wert an eure Kampagne oder Hausregeln an.">
+                i
+              </button>
+            </div>
             <input id="inputTotalPoints" type="number" min="0" step="5" placeholder="400">
           </div>
         </div>
@@ -994,33 +1212,74 @@
 
       <section class="panel-section">
         <h2>Portrait &amp; Beschreibung</h2>
-        <label for="inputPortrait">Portrait-Bild</label>
-        <input id="inputPortrait" type="file" accept="image/*">
+        <div class="field">
+          <div class="field-label">
+            <label for="inputPortrait">Portrait-Bild</label>
+            <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Portrait-Bild" data-info="Lade ein Portrait hoch, das du anschließend zuschneiden kannst. Das Bild erscheint auf dem Charakterbogen.">
+              i
+            </button>
+          </div>
+          <input id="inputPortrait" type="file" accept="image/*">
+        </div>
         <button id="btnClearPortrait" class="secondary" type="button">Portrait entfernen</button>
-        <label for="inputDescription">Beschreibung</label>
-        <textarea id="inputDescription" placeholder="Kurze Charakterbeschreibung"></textarea>
+        <div class="field">
+          <div class="field-label">
+            <label for="inputDescription">Beschreibung</label>
+            <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Beschreibung" data-info="Fasse Aussehen, Persönlichkeit und Motivation deines Charakters zusammen. Diese Infos erscheinen im Bogentext.">
+              i
+            </button>
+          </div>
+          <textarea id="inputDescription" placeholder="Kurze Charakterbeschreibung"></textarea>
+        </div>
       </section>
 
       <section class="panel-section">
-        <h2>Begabungen &amp; Fähigkeiten</h2>
+        <div class="section-heading">
+          <h2>Begabungen &amp; Fähigkeiten</h2>
+          <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Begabungen &amp; Fähigkeiten" data-info="Verteile deine Fähigkeitspunkte auf konkrete Fertigkeiten. Die Begabungen Handeln, Wissen und Soziales ergeben sich aus der Summe der investierten Punkte geteilt durch 10 (kaufmännisch runden).">
+            i
+          </button>
+        </div>
         <div id="editorsContainer"></div>
       </section>
 
       <section class="panel-section">
-        <h2>Inventar &amp; Notizen</h2>
-        <label for="inputInventory">Inventar</label>
-        <textarea id="inputInventory" placeholder="Ausrüstung, Gegenstände, etc."></textarea>
-        <label for="inputNotes">Anmerkungen</label>
-        <textarea id="inputNotes" placeholder="Zusätzliche Informationen"></textarea>
+        <div class="section-heading">
+          <h2>Inventar &amp; Notizen</h2>
+          <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Inventar &amp; Notizen" data-info="Nutze diese Felder für Ausrüstung, Kontakte, Plot-Hooks und alles, was deinen Charakter im Spiel unterstützt.">
+            i
+          </button>
+        </div>
+        <div class="field">
+          <div class="field-label">
+            <label for="inputInventory">Inventar</label>
+            <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Inventar" data-info="Liste relevante Gegenstände, Waffen oder Ressourcen, die dein Charakter mit sich führt.">
+              i
+            </button>
+          </div>
+          <textarea id="inputInventory" placeholder="Ausrüstung, Gegenstände, etc."></textarea>
+        </div>
+        <div class="field">
+          <div class="field-label">
+            <label for="inputNotes">Anmerkungen</label>
+            <button type="button" class="info-button" data-align="end" aria-label="Hinweis zu Anmerkungen" data-info="Zusätzliche Informationen wie Beziehungen, Ziele, Geheimnisse oder offene Fragen.">
+              i
+            </button>
+          </div>
+          <textarea id="inputNotes" placeholder="Zusätzliche Informationen"></textarea>
+        </div>
       </section>
 
       <div class="panel-section">
         <h2>Aktionen</h2>
       <div class="controls-footer">
-          <label class="toggle" for="bwModeToggle">
+          <div class="toggle">
             <input type="checkbox" id="bwModeToggle">
-            Schwarz-Weiß Modus
-          </label>
+            <label for="bwModeToggle">Schwarz-Weiß Modus</label>
+            <button type="button" class="info-button" data-align="end" aria-label="Hinweis zum Schwarz-Weiß Modus" data-info="Schaltet den Bogen in eine graustufenfreundliche Variante um – ideal zum Ausdrucken.">
+              i
+            </button>
+          </div>
           <button id="btnExportJSON" class="primary" type="button">Export JSON</button>
           <button id="btnImportJSON" class="secondary" type="button">Import JSON</button>
           <button id="btnPrint" class="secondary" type="button">Drucken</button>
@@ -1229,6 +1488,16 @@
         wissen: "Wissen",
         soziales: "Soziales",
       };
+      const CATEGORY_DESCRIPTIONS = {
+        handeln: "Fähigkeiten mit starker körperlicher Komponente – z. B. Klettern, Reiten, Handwerk oder alle Tätigkeiten, bei denen Präzision und Kraft gefragt sind.",
+        wissen: "Analytische und erlernte Wissensgebiete wie Sprachen, Forschung, Naturkunde oder akademische Disziplinen, die Intelligenz und Bildung widerspiegeln.",
+        soziales: "Zwischenmenschliche Fertigkeiten, mit denen du verhandelst, überzeugst oder täuschst – Feilschen, Empathie, Menschenkenntnis und andere soziale Werkzeuge.",
+      };
+      const CATEGORY_TOOLTIP_ALIGN = {
+        handeln: "start",
+        wissen: "",
+        soziales: "end",
+      };
       const DEFAULT_EDITOR_ROWS = 1;
       const MIN_ROWS_PER_CATEGORY = 10;
       const DEFAULT_PORTRAIT_ASPECT_RATIO = 3 / 4;
@@ -1387,6 +1656,19 @@
         return Math.min(max, Math.max(min, value));
       }
 
+      function createInfoButton(label, info, align = "") {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "info-button";
+        btn.setAttribute("aria-label", label);
+        btn.dataset.info = info;
+        if (align) {
+          btn.dataset.align = align;
+        }
+        btn.textContent = "i";
+        return btn;
+      }
+
       function createCategoryEditor(categoryKey) {
         const wrapper = document.createElement("div");
         wrapper.className = "category-editor";
@@ -1394,14 +1676,25 @@
 
         const header = document.createElement("div");
         header.className = "category-editor-header";
+        const titleGroup = document.createElement("div");
+        titleGroup.className = "category-editor-title";
         const title = document.createElement("span");
         title.textContent = CATEGORY_LABELS[categoryKey];
+        titleGroup.append(title);
+        if (CATEGORY_DESCRIPTIONS[categoryKey]) {
+          const infoBtn = createInfoButton(
+            `Hinweis zu ${CATEGORY_LABELS[categoryKey]}`,
+            CATEGORY_DESCRIPTIONS[categoryKey],
+            CATEGORY_TOOLTIP_ALIGN[categoryKey] || ""
+          );
+          titleGroup.append(infoBtn);
+        }
         const addBtn = document.createElement("button");
         addBtn.type = "button";
         addBtn.className = "secondary";
         addBtn.textContent = "+ Fähigkeit";
         addBtn.addEventListener("click", () => addAbility(categoryKey));
-        header.append(title, addBtn);
+        header.append(titleGroup, addBtn);
 
         const body = document.createElement("div");
         body.className = "category-editor-body";
